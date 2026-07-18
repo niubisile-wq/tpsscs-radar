@@ -2,6 +2,8 @@
 
 ## Objective
 
+Archived code and analysis artifacts: https://doi.org/10.5281/zenodo.21425836
+
 - Build a submission-ready manuscript on target-preserving low-false-alarm radar detection using the public AISTAP-SIM sample and the executable TP-SSCS scaffold.
 - Keep the paper inside the public sample boundary and the current claim matrix.
 

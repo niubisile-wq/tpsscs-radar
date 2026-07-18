@@ -1,6 +1,7 @@
 cff-version: 1.2.0
 message: "If you use this repository, please cite the software and associated manuscript."
 title: "Target-Preserving Structured-Clutter Suppression for Low-False-Alarm Radar Detection"
+doi: "10.5281/zenodo.21425836"
 authors:
   - family-names: Liu
     given-names: Zixuan
@@ -28,4 +29,5 @@ preferred-citation:
   title: "Target-Preserving Structured-Clutter Suppression for Low-False-Alarm Radar Detection"
   version: "1.0.0"
   date-released: 2026-07-18
+  doi: "10.5281/zenodo.21425836"
   url: "https://github.com/niubisile-wq/tpsscs-radar"
