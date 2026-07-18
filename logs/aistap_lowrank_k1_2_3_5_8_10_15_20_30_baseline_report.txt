@@ -1,0 +1,31 @@
+﻿AISTAP low-rank baseline
+Root: C:\Users\刘子轩\Desktop\第三批3
+ks: 1,2,3,5,8,10,15,20,30
+
+- simMed: clutter_attenuation_db=2.197, target_loss_db=0.925
+- simMed: clutter_attenuation_db=4.064, target_loss_db=1.911
+- simMed: clutter_attenuation_db=5.494, target_loss_db=2.480
+- simMed: clutter_attenuation_db=7.226, target_loss_db=3.715
+- simMed: clutter_attenuation_db=8.437, target_loss_db=5.939
+- simMed: clutter_attenuation_db=9.009, target_loss_db=7.471
+- simMed: clutter_attenuation_db=10.177, target_loss_db=10.236
+- simMed: clutter_attenuation_db=11.268, target_loss_db=13.906
+- simMed: clutter_attenuation_db=12.951, target_loss_db=19.525
+- simNoiseOnly: clutter_attenuation_db=0.062, target_loss_db=0.925
+- simNoiseOnly: clutter_attenuation_db=0.122, target_loss_db=1.911
+- simNoiseOnly: clutter_attenuation_db=0.176, target_loss_db=2.480
+- simNoiseOnly: clutter_attenuation_db=0.280, target_loss_db=3.715
+- simNoiseOnly: clutter_attenuation_db=0.433, target_loss_db=5.939
+- simNoiseOnly: clutter_attenuation_db=0.534, target_loss_db=7.471
+- simNoiseOnly: clutter_attenuation_db=0.780, target_loss_db=10.236
+- simNoiseOnly: clutter_attenuation_db=1.022, target_loss_db=13.906
+- simNoiseOnly: clutter_attenuation_db=1.506, target_loss_db=19.525
+- simWind: clutter_attenuation_db=2.012, target_loss_db=0.925
+- simWind: clutter_attenuation_db=3.584, target_loss_db=1.911
+- simWind: clutter_attenuation_db=4.766, target_loss_db=2.480
+- simWind: clutter_attenuation_db=6.098, target_loss_db=3.715
+- simWind: clutter_attenuation_db=7.040, target_loss_db=5.939
+- simWind: clutter_attenuation_db=7.531, target_loss_db=7.471
+- simWind: clutter_attenuation_db=8.454, target_loss_db=10.236
+- simWind: clutter_attenuation_db=9.339, target_loss_db=13.906
+- simWind: clutter_attenuation_db=10.813, target_loss_db=19.525

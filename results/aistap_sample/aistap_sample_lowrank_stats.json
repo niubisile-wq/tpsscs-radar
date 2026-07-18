@@ -1,0 +1,47 @@
+﻿[
+  {
+    "dataset": "simMed",
+    "file": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simMed\\simMed_sample.mat",
+    "raw_power": 9.462268270737312,
+    "targ_power": 0.5781626572380665,
+    "raw_to_targ_power_ratio_db": 12.139452191093872,
+    "raw_rank1_energy": 0.3970417403494948,
+    "raw_rank5_energy": 0.8105972685107665,
+    "raw_rank10_energy": 0.8743769685543521,
+    "targ_rank1_energy": 0.19186207480364023,
+    "targ_rank5_energy": 0.5748447637508957,
+    "targ_rank10_energy": 0.8209995964221608,
+    "midp_range": 513.0,
+    "midp_dop": 33.0
+  },
+  {
+    "dataset": "simNoiseOnly",
+    "file": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simNoiseOnly\\simNoiseOnly_sample.mat",
+    "raw_power": 15.000100369116822,
+    "targ_power": 0.5781626572380665,
+    "raw_to_targ_power_ratio_db": 14.14044127294961,
+    "raw_rank1_energy": 0.0141774849611311,
+    "raw_rank5_energy": 0.06251701185967784,
+    "raw_rank10_energy": 0.1156276533785653,
+    "targ_rank1_energy": 0.19186207480364023,
+    "targ_rank5_energy": 0.5748447637508957,
+    "targ_rank10_energy": 0.8209995964221608,
+    "midp_range": 513.0,
+    "midp_dop": 33.0
+  },
+  {
+    "dataset": "simWind",
+    "file": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simWind\\simWind_sample.mat",
+    "raw_power": 7.805641276278486,
+    "targ_power": 0.5781626572380665,
+    "raw_to_targ_power_ratio_db": 11.303585508052818,
+    "raw_rank1_energy": 0.37084822743347173,
+    "raw_rank5_energy": 0.7544099660889374,
+    "raw_rank10_energy": 0.8234414892250234,
+    "targ_rank1_energy": 0.19186207480364023,
+    "targ_rank5_energy": 0.5748447637508957,
+    "targ_rank10_energy": 0.8209995964221608,
+    "midp_range": 513.0,
+    "midp_dop": 33.0
+  }
+]

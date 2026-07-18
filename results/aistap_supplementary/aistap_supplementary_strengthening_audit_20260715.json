@@ -1,0 +1,68 @@
+{
+  "date": "20260715",
+  "bootstrap_replicates": 2000,
+  "seed": 20260715,
+  "priorities": [
+    {
+      "rank": 1,
+      "experiment": "SSDD image-level / annotation-level robustness and bootstrap CI",
+      "status": "not_yet_done",
+      "impact": "high",
+      "cost": "medium",
+      "risk": "low",
+      "reason": "SSDD is the newest external positive source, but the current artifact is Pfa-level aggregate only. Per-image or per-annotation deltas would answer the most likely reviewer question: whether gains are broad or driven by a small subset.",
+      "current_evidence": {
+        "aggregate_rows": 7,
+        "losses_vs_raw": 0,
+        "mean_delta_vs_raw": 0.09085510654600235,
+        "has_image_level_ci": false
+      }
+    },
+    {
+      "rank": 2,
+      "experiment": "AISTAP + IPIX paired bootstrap / confidence interval reporting",
+      "status": "partially_completed_by_this_audit",
+      "impact": "high",
+      "cost": "low",
+      "risk": "low",
+      "reason": "The main wins are already present; confidence intervals convert win-count evidence into reviewer-facing uncertainty evidence.",
+      "current_evidence": {
+        "aistap_all_delta_ci_positive": true,
+        "ipix_raw_positive_ci_points_at_file_level": 7,
+        "ipix_raw_pfa_points": 7
+      }
+    },
+    {
+      "rank": 3,
+      "experiment": "Formal combined full-asset protocol gate over simMed + simWind",
+      "status": "not_yet_done",
+      "impact": "medium",
+      "cost": "low",
+      "risk": "low",
+      "reason": "The cross-condition summary already passes on both assets, but the named finished-detector protocol artifact currently emphasizes simMed. A single combined gate would make the in-domain claim easier to defend."
+    },
+    {
+      "rank": 4,
+      "experiment": "Final-state sensitivity across seed / rank / hidden width on full assets",
+      "status": "not_yet_done",
+      "impact": "medium_high",
+      "cost": "medium",
+      "risk": "medium",
+      "reason": "The sample branch has stability checks, but a reviewer may ask whether the saved full-asset detector is seed-sensitive. Run only if manuscript time allows, because a weak seed may force more explanation."
+    },
+    {
+      "rank": 5,
+      "experiment": "Additional classical detector baselines beyond raw CFAR and low-rank residual",
+      "status": "optional_high_risk",
+      "impact": "medium_high",
+      "cost": "high",
+      "risk": "medium_high",
+      "reason": "This could answer baseline-strength criticism, but only helps if implemented cleanly and fairly. A rushed CA/OS/GOCA/SOCA comparison could create new reviewer attack surface."
+    }
+  ],
+  "artifacts": {
+    "aistap_ci_csv": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_supplementary\\aistap_full_asset_bootstrap_delta_ci_20260715.csv",
+    "ipix_ci_csv": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_supplementary\\ipix_heldout_bootstrap_delta_ci_20260715.csv",
+    "markdown_log": "C:\\Users\\刘子轩\\Desktop\\第三批3\\logs\\aistap_supplementary_experiment_priority_20260715.md"
+  }
+}

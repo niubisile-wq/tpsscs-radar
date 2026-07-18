@@ -1,0 +1,24 @@
+﻿# NEXRAD NEXRAD_KVWX Farneback Baseline
+
+- bucket: unidata-nexrad-level2
+- prefix: 2019/06/26/KVWX/
+- n_triplets: 6
+
+- 2019/06/26/KVWX/KVWX20190626_000255_V06 + 2019/06/26/KVWX/KVWX20190626_001235_V06 -> 2019/06/26/KVWX/KVWX20190626_002215_V06: flow_mae=6.1643 persist_mae=6.3309 flow_rmse=8.1431 persist_rmse=8.4305 flow_csi20=0.0036 persist_csi20=0.0159
+- 2019/06/26/KVWX/KVWX20190626_001235_V06 + 2019/06/26/KVWX/KVWX20190626_002215_V06 -> 2019/06/26/KVWX/KVWX20190626_003155_V06: flow_mae=6.1200 persist_mae=6.3763 flow_rmse=8.0668 persist_rmse=8.4938 flow_csi20=0.0048 persist_csi20=0.0069
+- 2019/06/26/KVWX/KVWX20190626_002215_V06 + 2019/06/26/KVWX/KVWX20190626_003155_V06 -> 2019/06/26/KVWX/KVWX20190626_004135_V06: flow_mae=6.0303 persist_mae=6.2898 flow_rmse=7.9772 persist_rmse=8.4183 flow_csi20=0.0096 persist_csi20=0.0156
+- 2019/06/26/KVWX/KVWX20190626_003155_V06 + 2019/06/26/KVWX/KVWX20190626_004135_V06 -> 2019/06/26/KVWX/KVWX20190626_005114_V06: flow_mae=6.0843 persist_mae=6.3416 flow_rmse=8.0591 persist_rmse=8.4702 flow_csi20=0.0040 persist_csi20=0.0254
+- 2019/06/26/KVWX/KVWX20190626_004135_V06 + 2019/06/26/KVWX/KVWX20190626_005114_V06 -> 2019/06/26/KVWX/KVWX20190626_010054_V06: flow_mae=6.0567 persist_mae=6.2971 flow_rmse=8.0228 persist_rmse=8.4621 flow_csi20=0.0025 persist_csi20=0.0335
+- 2019/06/26/KVWX/KVWX20190626_005114_V06 + 2019/06/26/KVWX/KVWX20190626_010054_V06 -> 2019/06/26/KVWX/KVWX20190626_011034_V06: flow_mae=5.9878 persist_mae=6.2603 flow_rmse=7.9703 persist_rmse=8.4202 flow_csi20=0.0027 persist_csi20=0.0639
+
+## Mean
+- flow_mae: 6.0739
+- persist_mae: 6.3160
+- flow_rmse: 8.0399
+- persist_rmse: 8.4492
+- flow_csi10: 0.0439
+- persist_csi10: 0.0581
+- flow_csi20: 0.0045
+- persist_csi20: 0.0269
+- flow_csi30: 0.0000
+- persist_csi30: 0.0257

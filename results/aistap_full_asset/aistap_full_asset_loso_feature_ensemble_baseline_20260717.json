@@ -1,0 +1,68 @@
+{
+  "learned_method": "loso_supervised_raw_residual_hgb",
+  "proposed_method": "tpsscs_finished_detector",
+  "lowrank_method": "low_rank_residual_k30",
+  "assets": [
+    "simMed_test.mat",
+    "simWind_test.mat"
+  ],
+  "heldout_target_bearing_items": 210,
+  "pfa_points": 7,
+  "asset_level_comparisons": 14,
+  "combined_comparisons": 7,
+  "asset_level_wins_vs_learned": 0,
+  "combined_wins_vs_learned": 0,
+  "min_combined_delta_vs_learned": -0.28757673604247136,
+  "min_asset_delta_vs_learned": -0.2950139166725121,
+  "bootstrap_ci_lower_bounds_positive": false,
+  "all_pfa_calibrated": true,
+  "passed": false,
+  "date": "20260717",
+  "candidate_date": "20260715",
+  "features": [
+    "raw_frame_z",
+    "raw_local_z_5",
+    "raw_local_z_17",
+    "raw_contrast_5",
+    "raw_contrast_17",
+    "raw_gradient_mag",
+    "residual_frame_z",
+    "residual_local_z_5",
+    "residual_local_z_17",
+    "residual_contrast_5",
+    "residual_contrast_17",
+    "residual_gradient_mag",
+    "residual_minus_raw_z",
+    "max_raw_residual_z",
+    "abs_raw_residual_diff_z"
+  ],
+  "rank": 30,
+  "background_per_frame": 4096,
+  "max_iter": 160,
+  "learning_rate": 0.06,
+  "max_leaf_nodes": 31,
+  "l2_regularization": 0.001,
+  "bootstrap_replicates": 2000,
+  "train_infos": [
+    {
+      "train_asset": "simMed_test.mat",
+      "test_asset": "simWind_test.mat",
+      "frames_seen": 128,
+      "positive_frames_seen": 105,
+      "positive_pixels": 3943,
+      "background_pixels": 524288,
+      "positive_frames": 105,
+      "evaluated_positive_frames": 105
+    },
+    {
+      "train_asset": "simWind_test.mat",
+      "test_asset": "simMed_test.mat",
+      "frames_seen": 128,
+      "positive_frames_seen": 105,
+      "positive_pixels": 3943,
+      "background_pixels": 524288,
+      "positive_frames": 105,
+      "evaluated_positive_frames": 105
+    }
+  ]
+}

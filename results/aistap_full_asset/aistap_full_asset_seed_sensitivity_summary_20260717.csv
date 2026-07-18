@@ -1,0 +1,4 @@
+﻿seed,combined_items,combined_wins_vs_raw,combined_wins_vs_lowrank,combined_pfa_points,asset_level_wins_vs_raw,asset_level_wins_vs_lowrank,asset_level_comparisons,min_delta_vs_raw,min_delta_vs_lowrank,all_pfa_calibrated,passed
+7,210,7,7,7,14,14,14,0.10458096223315756,0.02898507256190297,True,True
+11,210,7,7,7,14,14,14,0.10325198033282317,0.03292516797840783,True,True
+23,210,7,7,7,14,14,14,0.10791346715512266,0.025234634747831275,True,True

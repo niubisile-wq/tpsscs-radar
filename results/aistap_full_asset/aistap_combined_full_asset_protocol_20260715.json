@@ -1,0 +1,26 @@
+{
+  "target_method": "tpsscs_finished_detector",
+  "lowrank_method": "low_rank_residual_k30",
+  "assets": [
+    "simMed_test.mat",
+    "simWind_test.mat"
+  ],
+  "combined_target_bearing_items": 210,
+  "pfa_points": 7,
+  "asset_level_comparisons": 14,
+  "combined_comparisons": 7,
+  "asset_level_wins_vs_raw": 14,
+  "asset_level_wins_vs_lowrank": 14,
+  "combined_wins_vs_raw": 7,
+  "combined_wins_vs_lowrank": 7,
+  "all_pfa_calibrated": true,
+  "passed": true,
+  "date": "20260715",
+  "pfa_tolerance": 1.05,
+  "bootstrap_replicates": 2000,
+  "artifacts": {
+    "comparison_csv": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_full_asset\\aistap_combined_full_asset_protocol_20260715.csv",
+    "ci_csv": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_full_asset\\aistap_combined_full_asset_bootstrap_ci_20260715.csv",
+    "markdown_log": "C:\\Users\\刘子轩\\Desktop\\第三批3\\logs\\aistap_combined_full_asset_protocol_20260715.md"
+  }
+}

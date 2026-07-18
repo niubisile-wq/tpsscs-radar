@@ -1,0 +1,71 @@
+{
+  "date": "20260717",
+  "root": ".",
+  "assets": [
+    "simMed_test.mat",
+    "simWind_test.mat"
+  ],
+  "state": "results/aistap_sample/tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt",
+  "rank": 30,
+  "timed_frames_per_asset": 6,
+  "timed_target_frames_total": 12,
+  "profile_scope": "deterministic_target_bearing_frame_sample_across_official_full_assets",
+  "pfas": [
+    1e-05,
+    3e-05,
+    0.0001,
+    0.0003,
+    0.001,
+    0.003,
+    0.01
+  ],
+  "compact_tpsscs_finished_detector_median_ms": 133.6553999935859,
+  "raw_residual_hgb_inference_median_ms": 608.9914499971201,
+  "hgb_over_compact_runtime_ratio": 4.556429818969869,
+  "tpsscs_parameter_count": 2641,
+  "raw_residual_hgb_feature_dim": 15,
+  "hgb_training_profiles": [
+    {
+      "train_asset": "simWind_test.mat",
+      "test_asset": "simMed_test.mat",
+      "frames_seen": 16,
+      "positive_frames_seen": 10,
+      "positive_pixels": 373,
+      "background_pixels": 2048,
+      "feature_dim": 15,
+      "samples": 2421,
+      "positive_samples": 373,
+      "background_samples": 2048,
+      "hgb_max_iter": 100,
+      "hgb_effective_iter": 100,
+      "hgb_max_leaf_nodes": 31
+    },
+    {
+      "train_asset": "simMed_test.mat",
+      "test_asset": "simWind_test.mat",
+      "frames_seen": 16,
+      "positive_frames_seen": 10,
+      "positive_pixels": 373,
+      "background_pixels": 2048,
+      "feature_dim": 15,
+      "samples": 2421,
+      "positive_samples": 373,
+      "background_samples": 2048,
+      "hgb_max_iter": 100,
+      "hgb_effective_iter": 100,
+      "hgb_max_leaf_nodes": 31
+    }
+  ],
+  "python": "3.12.5 (tags/v3.12.5:ff3bc82, Aug  6 2024, 20:45:27) [MSC v.1940 64 bit (AMD64)]",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "processor": "Intel64 Family 6 Model 183 Stepping 1, GenuineIntel",
+  "torch_version": "2.5.1+cu121",
+  "torch_num_threads": 16,
+  "numpy_version": "2.3.5",
+  "interpretation": "compact_inference_no_slower_than_raw_residual_hgb_on_this_cpu_profile",
+  "boundary": [
+    "local_cpu_runtime_profile_not_hardware_independent_speed_benchmark",
+    "supports_bounded_deployment_cost_claim_only",
+    "does_not_claim_universal_real_time_performance"
+  ]
+}

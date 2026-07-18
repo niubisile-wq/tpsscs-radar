@@ -1,0 +1,818 @@
+                                                                                                                                               1
+
+
+
+
+  Random Access Memories: A New Paradigm for
+ Target Detection in High Resolution Aerial Remote
+                   Sensing Images
+                                            Zhengxia Zou and Zhenwei Shi∗ , Member IEEE
+
+
+
+   Abstract—We propose a new paradigm for target detection                     Recent advances in remote sensing target detection methods
+in high resolution aerial remote sensing images under small                    [7–13] have been primarily focusing on deep learning based
+target priors. Previous remote sensing target detection methods                detection methods, especially the ones based on convolutional
+frame the detection as learning of detection model + inference of
+class-label and bounding-box coordinates. Instead, we formulate                neural networks. Despite their great variations, all previous
+it from a Bayesian view that at inference stage, the detection                 methods frame the detection as two stages: 1) learning a de-
+model is adaptively updated to maximize its posterior that                     tection model H from training data Dtr by finding local/global
+is determined by both training and observation. We call this                   maximum of likelihood p(Dtr |H), and 2) making inference
+paradigm “Random Access Memories (RAM)”. In this paradigm,                     of category labels and bounding-box coordinates from the
+“Memories” can be interpreted as any model distribution learned
+from training data and “Random Access” means accessing                         observed image Dob . Arguably, once the learning process has
+memories and randomly adjusting the model at detection phase                   stopped, the model will be fixed at testing time. In this paper,
+to obtain better adaptivity to any unseen distribution of test data.           we will re-examine this problem from another perspective.
+By leveraging some latest detection techniques e.g. deep Convo-                   Random Access Memories (RAM). Here we re-think
+lutional Neural Networks and multi-scale anchors, experimental                 the detection paradigm by assuming that detection model
+results on a public remote sensing target detection dataset show
+our method outperforms several other state of the art methods.                 can be changed adaptively as the model receives different
+We also introduce a new dataset “LEVIR”, which is one order of                 observations. This idea is inspired by a large group of detection
+magnitude larger than other datasets of this field. LEVIR consists             algorithms of signal process field called the Constant False
+of a large set of Google Earth images, with over 22k images                    Alarm Rate algorithms [14] where the algorithm adapts the
+and 10k independently labeled targets. RAM gives noticeable                    parameters of the model to the statistical characteristics of the
+upgrade of accuracy (an mean average precision improvement of
+1%∼4%) of our baseline detectors with acceptable computational                 observation at test time. Similar thoughts can also be found in
+overhead.                                                                      quantum mechanics where the state of any quantum object not
+                                                                               only depends on its states, but also on the measurement itself
+  Index Terms—High resolution aerial remote sensing image,
+Target detection, Convolutional neural networks, Random access                 [15]. Based on the above ideas, we formulate the detection
+memories.                                                                      model as any certain probability distribution p(H) in its
+                                                                               hypothesis space at training phase, and at detection phase the
+                                                                               model is further updated that is determined by both of the
+                          I. I NTRODUCTION                                     training and observation. We call this new paradigm “Random
+      HE rapid development of remote sensing technologies                      Access Memories”. From a Bayesian perspective, “Memories”
+T     has opened a door for people to observe the earth.
+Automatically detecting targets of remote sensing images, e.g.
+                                                                               can be interpreted as any model distribution p(H) learned
+                                                                               from training data, while “Random Access” may be interpreted
+the airplane, oilpot and ship, is one of the core tasks in remote              as accessing to its memories and reaching its maximum of
+sensing applications, and have been drawing more and more                      posterior after a random observation at detection phase. Fig.
+attentions in recent years [1].                                                1 shows the overview of our proposed new paradigm.
+   Most of the early attempts of remote sensing target detection                  Approximate Inference. Most of the CNN based detectors
+[2–6] are designed with the help of some specifically designed                 are built on basis of frequentist statistics, where their detec-
+hand-crafted features and supervised classification algorithms.                tion model can be explicitly determined by the local/global
+                                                                               maximum of the likelihood during the training phase. Instead,
+   The work was supported by the National Natural Science Foundation of        the proposed paradigm is established based on a complete
+China under the Grants 61671037, the Beijing Natural Science Foundation        probability distribution of the detection model. In Bayesian
+under the Grant 4152031, the funding project of State Key Laboratory
+of Virtual Reality Technology and Systems, Beihang University under the        machine learning, Laplace Approximation [16, 17] acts as a
+Grant BUAA-VR-16ZZ-03 and the Excellence Foundation of BUAA for PhD            simple but useful tool to find a Gaussian approximation of the
+Students under the Grant 2017056. (Corresponding author: Zhenwei Shi.)         posterior distribution near the MAP solution. In information
+   Zhengxia Zou ( e-mail: zhengxiazou@buaa.edu.cn) and Zhenwei Shi (Cor-
+responding Author, e-mail: shizhenwei@buaa.edu.cn) are with Image Pro-         theory, Fisher Information [18] has the same essence but
+cessing Center, School of Astronautics, Beihang University, Beijing 100191,    different interpretations. It describes the amount of information
+China, and with Beijing Key Laboratory of Digital Media, Beihang University,   obtained by the Maximum Likelihood Estimation (MLE) of a
+Beijing 100191, China, and also with State Key Laboratory of Virtual Reality
+Technology and Systems, School of Astronautics, Beihang University, Beijing    set of training samples, namely, a measure of the flatness and
+100191, China.                                                                 sharpness of the the model’s distribution at MLE solution Ĥ.
+                                                                                                                                                       2
+
+
+
+
+Fig. 1. An overview of our proposed new detection paradigm. Different from pervious approaches that the detection model is explicitly determined by the
+MLE point of training data, the proposed paradigm formulates the detection from a Bayesian view that at detection phase, the model is updated to maximize
+its posterior that contemporarily determined by both training and observation.
+
+
+
+By computing fisher information and using laplace approxi-                    we will review the recent advances in general object detection
+mation, we can bridge that gap between the mainstream CNN                     for natural images. In section III, we will give a detailed
+detectors and “Random Access Memories” paradigm.                              introduction to our proposed detection paradigm. In section IV,
+   The Small Target Prior in Remote Sensing Image. For                        we will introduce LEVIR, a new dataset for remote sensing
+high resolution aerial remote sensing images, the targets of                  target detection. Some experimental results are given in section
+interest are usually sparse distributed and only occupy a very                V, and the conclusions are drawn in Section VI.
+small number of pixels. In the case of sliding window based
+detectors, the imbalance between background and desired                           II. R ECENT A DVANCES IN NATURAL I MAGE O BJECT
+target could be as extreme as 107 background windows to                                             D ETECTION
+every target window. This could be even true for wide-scale
+                                                                                 In computer vision, there has been great progress of nat-
+remote sensing images. The complex background distribution
+                                                                              ural image object detection methods in recent years. Recent
+leads to a higher demand on the capacity of the model.
+                                                                              advances of deep CNN [19–21] has made a great improve-
+Larger models are able to capture more complex background
+                                                                              ment on the general object detection tasks for natural im-
+distributions, while it may suffer from a higher computation
+                                                                              ages. While early approaches [22–24] simply formulate the
+cost, which is especially infeasible for some on-orbit remote
+                                                                              detection into an sliding window traversal + classification
+sensing applications. An advantage of our method lies that the
+                                                                              problem (background VS objects of interest), recent CNN
+small target prior can be very easily integrated to the proposed
+                                                                              based detection methods mainly focus on the following four
+paradigm, as we are able to compress model’s capacity to
+                                                                              aspects: 1) efficient algorithms for multi-scale detection, 2)
+meet the speed requirement while maintaining the detection
+                                                                              accurate bounding-box prediction 3) training with imbalance
+accuracy.
+                                                                              data and 4) speedup strategy.
+   Contributions. The contributions of our work can be sum-
+                                                                                 For multi-scale detection, the most straight forward way
+marized as follows:
+                                                                              is to build feature map pyramids [25, 26]. Recent progress
+   1) The key innovation of Random Access Memories lies
+                                                                              includes using external object proposals [27–29], multi-scale
+that the detection model can be adaptively changed dur-
+                                                                              anchors [30] and integrated multi-scale detection [31]. For
+ing detection phase that contemporarily determined by both
+                                                                              bounding-box prediction, efforts have been made to improve
+training and the latest observations. Such paradigm can be
+                                                                              the accuracy by stepwise bounding-box correction [32] and
+easily integrated with the current CNN based detectors without
+                                                                              the probabilistic inference of location [33]. For the problem
+complex changes. With RAM, a comparable or even higher
+                                                                              of imbalance data, some useful strategies include cascaded
+detection accuracy of a larger model can be obtained with
+                                                                              training/detection [22, 23, 26] and hard-negative mining [24–
+less parameters and a faster detection speed.
+                                                                              26, 34]. Time efficiency is another key factor in the ob-
+   2) We introduce a new dataset “LEVIR”1 for remote sensing
+                                                                              ject detection, especially for remote sensing images. Early
+target detection task, which is more challenging and one order
+                                                                              approaches, which are designed based on sliding window
+of magnitude larger than existing datasets. We have made
+                                                                              techniques, usually search for objects exhaustively at different
+LEVIR open access at http://levir.buaa.edu.cn/Code.htm.
+                                                                              locations and scales [22–26]. While it may be possible for fast
+   The rest of this paper is organized as follows. In section II,
+                                                                              detection of certain object categories (e.g. face and pedestrian
+  1 LEVIR is the name of the authors’ laboratory: LEarning, VIsion and        [22–24]) with extensive speed up strategies (e.g. integral
+Remote sensing laboratory.                                                    image/channel [22, 23, 35], feature pyramid approximation
+                                                                                                                                                    3
+
+
+
+[36] and cascaded-detection [22, 23, 37, 38]), it is still hard to
+extend such ideas to the fast detection of multiple categories.
+Some of the recent CNN based detection methods [30, 39, 40],
+with larger model capacity and stronger representation ability,
+apply a fixed set of filters with multiple bounding-box refer-
+ences on a fixed set of convolutional feature maps to speed up
+the detection process.
+   Despite that great efforts have been made, for some impor-
+tant remote sensing applications such as wide-scale remote
+sensing monitoring or even on-orbit target detection, these
+algorithms are still far from being practical at present due to
+the complex background features, drastically changes of the
+target scales [41] and the computational cost requirements.
+Although some multi-scale techniques have largely improved
+the detection performance of small objects, such as detecting
+objects from the feature maps of different depth [39, 42],                Fig. 2. Contour line of p(H|Dtr ) on a group of toy data. In our method, the
+or using multi-scale feature fusion [43–45] to improve the                laplace approximation acts like a regularization when updating the memories
+                                                                          at detection phase. Those parameters with small engine values of fisher
+representation ability of small objects, in this paper, we try            information matrix turn out to be more likely to be updated, while those
+to study this problem from another point of view.                         with large engine values are relatively stable.
+
+
+              III. R ANDOM ACCESS M EMORIES                               matrix form I(Ĥ), where its element-wise representation is
+  In this section, we will give a detailed description to our                                                ∂2
+detection paradigm and explain how it works with a CNN                                 I(Ĥ)i,j = −E{              log(p(Dtr |θ))}.               (3)
+                                                                                                           ∂θi ∂θj
+based detector.
+                                                                          I(Ĥ) is equivalent to the Hessian matrix (if it exists) of the
+                                                                          negative log likelihood function. It can be also understood as
+A. Fisher Information                                                     a metric of an appropriate changes of any variables induced
+   The training process of any target detector is essentially             from the Euclidean metric.
+a likelihood estimation process. Here we follow a classical
+learning paradigm that the optimal model Ĥ can be determined             B. Laplace Approximation
+by the i.i.d. training data Dtr and the model’s hypothesis space             Here we use a simple but widely used framework called
+F                                                                         the Laplace approximation, that aims to find a Gaussian
+                    Ĥ = argmaxH∈F p(Dtr |H).                (1)          approximation to a probability density defined over a set
+                                                                          of continuous variables [16]. Laplace Approximation can be
+For any early sliding window based detectors [22–26], Dtr                 implemented by fitting the model with a second order Taylor
+means the collection of image data and label within any sliding           expansion of the log likelihood function log(p(H|Dtr )) around
+window region, while for the recent CNN based detectors                   the its maximum point Ĥ. The estimated distribution finally is
+[30, 31, 39, 40], Dtr corresponds to that of the respective               conducted by Ĥ as the its mean and I(Ĥ) as its covariance
+field. Arguably, under the view of Bayesian statistics, Ĥ is not         matrix
+unique since for any perturbations of training data, the estimat-                            H ∼ N (H|Ĥ, I(Ĥ)−1 ).                  (4)
+ed model maybe different. To describe its potential variants as
+the data Dtr changes, here we introduce fisher information as             In this way, the probability value at any changes of the model
+a basic metric. The fisher information is a way of measuring              can be represented as
+the amount of information that an observable training data Dtr                                                1
+                                                                                        p(Ĥ + δH) ∝ exp(− ∥δH∥2I(Ĥ) ),             (5)
+carries about an unknown model H. For a model with single                                                     2
+parameter θ, the fisher information can be defined as follows:            where ∥·∥2I(Ĥ) represents the I(Ĥ) norm metric of the model
+                                     ∂2                                   changes.
+                I(θ̂) = −E{              log(p(Dtr |θ))},          (2)
+                                     ∂θ2
+                                                                          C. Updating Memories
+which is equivalent to the second derivative (if it exists) of
+the negative log likelihood function. I(θ) can be viewed as                  The fisher information can be regarded as a very important
+a measurement of the “curvature” of the support curve near                prior that guides the update of the model. During detection
+the MLE point θ̂, where a “blunt” support curve (one with a               phase, the detection model Ĥ will be changed according to
+shallow maximum) could have a low negative expected second                both of the approximated distribution (4) and the observation
+derivative, and thus low information, while a sharp one could             Dob . The posterior distribution of H can be represented as
+have a high information.                                                                                     p(H)p(Dob |H)
+                                                                                              p(H|Dob ) =
+   For a detection model H with multiple parameters θ =                                                         p(Dob )                           (6)
+[θ1 , θ2 , . . . , θN ]T , the fisher information can be written as its                                    ∼ p(H)p(Dob |H).
+                                                                                                                                                    4
+
+
+
+
+Fig. 3. A detailed Overview of our proposed new detection paradigm: backbone of the detector and random access memories. The RAM contains three steps:
+1) Approximating the unknown distribution p(H) from Ĥ by Laplace Approximation, 2) updating the memories to get the new detection model Hnew .
+
+
+
+By dividing the likelihood function p(Dob |H) into the positive             D. Integrating The Small Target Priors
+part (target of interest Dob+
+                              ) and negative part (undesired                   It is hard to optimize (8) directly since it contains latent
+              −
+background Dob ), and substituting (5) into p(H), the posterior             variables Dob
+                                                                                        +
+                                                                                           and Dob−
+                                                                                                    , where “+” and “-” represent the latent
+can be expanded as                                                          labels. Since the amount of the negatives are usually far greater
+                                                                            than the positives for a remote sensing image: N − ≫ N + , we
+                               −
+   p(H|Dob ) ∼ p(H)p(Dob
+                      +
+                         |H)p(Dob |H)                                       are reasonable to neglect the positive latent variables. In this
+                  1                          −
+                                                                     (7)    way, (8) can be relaxed to its negative logarithmic likelihood
+         =exp(− ∥H − Ĥ∥2I(Ĥ) )p(Dob+
+                                       |H)p(Dob |H)
+                  2                                                         form
+                                                                                                       −
+For any latest observations, the model should be updated to                   minH L(H|Dob ) = −log(p(Dob |H)) + α∥H − Ĥ∥2I(Ĥ) , (9)
+access the maximum of posterior to best fit the training and
+                                                                            where ∥H− Ĥ∥2I(Ĥ) can be seen as a constraint which controls
+testing data at the same time
+                                                                            the update range of the model. α > 0 is a positive number
+                                                                            controls the degree of the constraint.
+                 Ĥnew = argmaxH∈F p(H|Dob ).                        (8)       Despite the latent variables has been eliminated, another
+                                                                            problem lies that the high dimensional parameter space of a
+   Clearly, for some directions of I(Ĥ), a slight change of                deep CNN makes it still very difficult to directly compute and
+the model δH would cause a rapid decline of the probability                 store the fisher information matrix I(Ĥ). A further assumption
+p(H|Dob ), while for some other directions the probability may              can be made that only a small portion of the memories are
+keep stable. Fig. 2 shows the contour line of p(H|Dtr ) on                  updated during detection phase. Here we take a simple and
+a group of toy data. If we move a step further and make                     straightforward manner, that only optimizing the parameters
+an eigenvalue decomposition of the fisher information matrix                of the final output layer while keeping those of previous
+I(H) = UΣUT , where Σ = diag(λ1 , λ2 , . . . , λN ), an                     layers fixed as feature extractor. More specifically, when a
+important conclusion can be easily derived that the direction               testing image is fed into the network, passing through all
+of the eigenvector with the largest eigenvalue λmax will                    convolutional layers and finally comes to the full-connected
+be the fastest dropping direction of p(Ĥ). We call those                   layer, the RAM operation should be performed. Since the reg-
+associated parameters permanent memories. The direction with                ularization ∥H − Ĥ∥2I(Ĥ) is always convex at any local/gobal
+the smallest eigenvalue λmin will be that of the slowest one.               maximum point, any types of the convex loss functions of
+We call those associated parameters short time memories. The                −log(p(D|θ)), e.g. square loss, smoothed L1 loss [28, 30],
+permanent memories acts as an important regularization at                   L2 loss or cross-entropy loss [46] would lead to a final unique
+inference stage, while short time memories are more likely                  solution. In this way, (9) can be efficiently optimized by
+to be updated according to the observations.                                any convex optimization algorithms, e.g. gradient decent or
+                                                                                                                                                5
+
+
+
+Newton method, and global optimal solution will always be
+guaranteed. For some special cases, saying that using square
+loss or smoothed L1 loss, (9) would degenerate into a non-
+constraint quadratic programming problem, thus a closed form
+solution can be simply obtained, as we will see it later.
+
+
+E. Implementation Details
+   Fig. 3 shows the backbone of our detector and the random
+access memories operation during detection phase. Our imple-
+mentation details are given as follows.
+   Backbone. Current CNN based object detection methods
+can be divided into two important branches based on their
+processing flow. The first branch is cascaded detectors where
+the detection is performed from a coarse to fine manner [27–
+30], while the second branch is integrated ones where the            Fig. 4. An example of respective field and its multi-anchor boxes. For each
+                                                                     anchor scale, the ground-truth label is arranged as two parts: category score
+detection is evaluated only once [31, 39, 40]. In this paper,        and bounding box location coordinates. The final ground-truth label of the
+we take the second one as the backbone of our detector which         respective field can be formed by end-to-end connection of the label of each
+is faster and may have larger rooms of improvements in the           anchor scale.
+future. Here we have designed three types of networks, a
+tiny one, a medium one and a large one. Their configura-
+                                                                     in [27]
+tions are listed as follows (“Layer-name(Number of Filters,                                    {
+Size/Stride)”), where the ReLU layer between a convolutional                                       5(ti − t∗i )2      |ti − t∗i | ⩽ 0.1
+layer and a maxpooling layer is omitted for simplicity:                  Lreg. (ti , t∗i ) =                                                (11)
+                                                                                                   |ti − t∗i | − 0.05 else.
+   Tiny CNN: conv.(256, 3×3/1) + maxpool.(-, 3×3/3) +
+conv.(256, 3×3/1) + maxpool.(-, 3×3/3) + conv.(512, 3×3/1)           We use the parameterized coordinates as it was used in
++ maxpool.(-, 2×2/2) + full-cnect.(512× k(C+4)).                     [30]. For category scoring, we also simply see it as a score
+   Medium CNN: conv.(256, 3×3/1) + maxpool.(-, 2×2/2) +              regression problem with the smoothed L1 loss. Similar ideas
+conv.(512, 3×3/1) + maxpool.(-, 2×2/2) + conv.(512, 3×3/1)           have been used in [31]. Since weights of the fully connected
++ maxpool.(-, 2×2/2) + conv.(1024, 3×3/1) + conv.(1024,              layer are learnt with independent loss. The memory update
+1×1/1) + full-cnect.(1024×k(C+4)).                                   operation can be individual performed with corresponding
+   Large CNN: VGG-f [20] (decision layer removed) + full-            anchor scale and target category. When we use the smoothed
+cnect.(4096×k(C+4)).                                                 L1 loss, the negative log likelihood loss term in (9) can be
+   For tiny and medium size networks, similar to the VGG             represented as
+network, we use mostly 3 × 3 filters [20] except for the last                      −
+fully-connection layer (1 × 1 convolution). The output depth               −log(p(Dob |H)) = E(x,y)∼Dob {Lreg (θθ T x, y)},                 (12)
+of the last layer is k(C + 4), which depends on the number of
+                                                                     where x refers to the features of the last convolutional layer, θ̂
+multi-scale anchors k, number of target categories C, and 4
+                                                                     and y refer to the convolutional filters and ground-truth label
+coordinates of the bounding box. Our implementation of the
+                                                                     of specific category and anchor-scale. Then the optimization
+network is based on matconvnet-1.0 beta23 [47].
+                                                                     problem (9) can be further written as
+   Loss Layer Design. We follow the idea of pre-defined an-
+chors for multi-scale detection [39, 40]. The output dimensions                minθ L(θ |Dob ) = E(x,y)∼Dob {Lreg (θ T x, y)}
+are organized as in Fig. 4. There are 3 predefined anchors:                                                                                 (13)
+                                                                                                     + α∥θ − θ̂ ∥2I(θ̂ ).
+0.9×0.9, 0.7×0.7 and 0.5×0.5 for each detection window. For
+each anchor scale, a multi-task loss is designed which consists      The above optimization problem has an approximated closed
+of a category scoring loss and a bounding box prediction loss        form solution:
+   L(p, p∗ , t, t∗ ) = Lscoring (p, p∗ ) + βI(p)Lpred. (t, t∗ )       θnew = (C + αI(Ĥ))−1 (E(x,y)∼Dob {yx} + αI(Ĥ)θ̂), (14)
+                       {
+                        1 IoU{Anchor(p), t∗ } > 0.5
+              I(p) =                                                 where C and I(Ĥ) has the following expression:
+                        0 else
+                                                              (10)                    I(Ĥ) = E(x,y)∼Dtr {ξ(x, y)xxT }
+where IoU{·} refers to the intersection over union overlap                                C = E(x,y)∼Dob {ξ(x, y)xxT },
+                                                                                               {                                            (15)
+between two regions. Anchor(p) means the anchor box of a                                         1 |θ̂ T x − y| < 0.1
+certain scale. I(p) is an indicator controls whether it is an                        ξ(x, y) =
+                                                                                                 0 else.
+target of interest under a certain anchor scale.
+   For bounding box prediction, we use the smoothed L1 loss          In this way, the model can be updated easily without any
+[28, 30] that is less sensitive to outliers than the L2 loss used    iterative operations.
+                                                                                                                                                                6
+
+
+
+                                      BB Size Distribution (NWPU-VHR-10)                                                    TABLE I
+                                40                                                                                A S UMMARY OF LEVIR DATASET
+                                                                           airplane
+               BB Size Counts
+
+                                                                           ship
+                                30                                         storage tank
+                                                                           baseball diamond
+                                                                                                    Type          Item                                Value
+                                                                           tennis court
+                                20                                         basketball court                       # total images                     21,952
+                                                                           ground track field
+                                                                           harbor                                 image size                 600×800 pixels
+                                10                                         bridge                   Image Info.
+                                                                           vehicle                                image resolution          0.2m∼1.0m/pixel
+                                0                                                                                 modality                       RGB image
+                                101             102                          103
+                                                                                                                  # individual BB                    11,028
+                                         BB Size Distribution (LEVIR)
+                                                                                                                  # airplanes                         4,724
+                        100                                                                                       # ships                             3,025
+                                                                                                    BB Info.
+     BB Size Counts
+
+
+
+
+                                                                                                                  # oilpots                           3,279
+                                50
+                                                                                                                  # BB with hidden parts              2,940
+                                                                                    airplane
+                                                                                    ship
+                                                                                                                  BB size                      10∼600 pixels
+                                                                                    oilpot
+
+
+                                0
+                                101             102                          103
+                                                                                                storage tanks, 390 baseball diamonds, 524 tennis courts, 159
+                                                                                                basketball courts, 163 ground track fields, 224 harbors, 124
+Fig. 5. Distribution of BB size of LEVIR and NWPU-VHR-10.
+                                                                                                bridges, and 477 vehicles manually annotated with BBs for
+                                                                                                ground truth.
+                                                                                                   TAS Aerial Car Detection Dataset (TACDD) [48] consists
+                                                                                                of 30 images acquired from Google Earth with the size of
+                                                                                                729×636 pixels. 1319 vehicles are manually labeled with BBs
+                                                                                                for groundtruth.
+                                                                                                   Overhead Imagery Research Dataset (OIRDS) [49] is
+                                                                                                designed for vehicle detection with the collection of about
+                                                                                                900 images captured by aircraft-mounted camera. The total
+Fig. 6. Heat map of BB location for LEVIR (left) and NWPU-VHR-10 (right).                       number of labeled vehicles is about 1,800.
+                                                                                                   Table II provides a detailed comparison of LEVIR and other
+                                                                                                existing remote sensing target detection datasets. NWPU-
+   IV. LEVIR: A N EW DATASET FOR R EMOTE S ENSING
+                                                                                                VHR-10 has helped drive recent advances [1, 4, 5, 10]
+                 TARGET D ETECTION
+                                                                                                in target detection of remote sensing images. TACDD and
+   Large and challenging datasets are necessary for the                                         OIRDS remain the most widely used for vehicle dtection
+progress in remote sensing applications. Our goal in intro-                                     [48–50]. However, their defects are also obvious. Firstly, all
+ducing the LEVIR detection dataset is to provide a better                                       these datasets are too limited to obtain statistically meaningful
+benchmark and statistically meaningful evaluations for those                                    training and evaluation result for the most current deep learn-
+current and future detection methods.                                                           ing based detection methods. Secondly, NWPU-VHR-10 also
+   LEVIR consists of a large number of high resolution                                          shows a strong bias toward large, unoccluded targets. Last but
+Google Earth images with over 22k images of 800×600 pixels                                      not least, these datasets also have the “center biased” problem,
+and 0.2m∼1.0m/pixel’s resolution. LEVIR covers most types                                       saying that the target tends to appear near the center of a
+of ground features of human living environment, e.g. city,                                      image. In fact, unlike natural images where their contents are
+country, mountain area and ocean. Extreme land environments                                     limited and the objects of interests are usually near the center
+such as glacier, desert and gobi are not considered in our                                      of an image, remote sensing images, if not manually selected
+dataset. There are 3 types of targets in our dataset: airplane,                                 and cropped, usually have no specific region of interest. In Fig.
+ship (including both inshore ships and offshore ships) and                                      5, we histogram the size of all BBs of LEVIR and NWPU-
+oilpot. We label all the images for a total of 11k independent                                  VHR-10. We can see LEVIR contains targets with a larger
+bounding boxes (BB) including 4,724 airplanes, 3,025 ships                                      range of scales, especially for small target. Fig. 6 shows the
+and 3,279 oilpots. The average number of targets per image                                      heat-map of the BB location probability of LEVIR (left) and
+is 0.5. For every image in which a given target of interest is                                  NWPU-VHR-10 (right). As we can see, LEVIR shows a more
+visible, we draw a tight BB that indicates the full extent of                                   evenly distributed BB location than that of NWPU-VHR-10.
+the entire target. It should be noticed that for those targets that
+are partially outside the image boundary or occluded by other
+                                                                                                       V. E XPERIMENTAL R ESULTS AND A NALYSIS
+objects, this involves estimating the location of hidden parts.
+A summary of our dataset is given in Table. I.                                                     In this section, we have made an extensive evaluation and
+   During the last decades, some efforts have been made to                                      comparison with several variants of our model and other
+develop public dataset for target detection from aerial and                                     detection methods. Our experiments are performed on LEVIR
+satellite images. Here we list the detailed overview of three                                   and NWPU-VHR-10. For LEVIR, 70% images are used for
+public available datasets:                                                                      training and rests are used for test. For NWPU-VHR-10,
+   NWPU-VHR-10 [5] is a ten-class dataset which contains                                        we use the same training-testing split criterion with other
+800 images. There are a total of 757 airplanes, 302 ships, 655                                  comparison methods as they originally used in their paper.
+                                                                                                                                                7
+
+
+
+                                                           TABLE II
+                            A C OMPARISON BETWEEN LEVIR AND OTHER REMOTE SENSING DETECTION DATASETS
+
+                                                                                               Property
+                  Dataset                # Imgs    # Classes   # BBs
+                                                                           no selec.bias    occ.target     estim.BB.bound.
+                  NWPU-VHR-10 [5]         0.8k        10       3.8k              ×              ×                 ×
+                  TACDD [48]              0.03k       1        1.3k              ×              ×                 ×
+                  OIRDS [49]              0.9k        1        1.8k              ×              ×                 ×
+                  LEVIR                   22.0k       3        11.0k            X               X                 X
+
+
+A. Training Details                                                                                 TABLE III
+                                                                                                PARAMETER SETTINGS
+   Data Augmentation. To detect targets with different direc-
+tions, each individual target is randomly rotated for several                  Stage                     Parameter                 Value
+times and then randomly resized and translated to make sure                                              epoch num.                   20
+that there are sufficient information for each anchor-scale to                                           learning rate             10−3
+                                                                               Pre-training              batch num.                 100
+learn. We use the similar criterion that is used in [30] that we                                         momentum                    0.9
+assign a target label to two kinds of anchors: 1) the anchor                                             weight decay          5 × 10−4
+with the highest IoU overlap with a ground-truth box, or 2) an                                           IoU thresh                  0.2
+anchor whose IoU overlap is higher than 0.5 with any ground-                   Hard-Neg. Mining          learning rate             10−4
+truth box.                                                                                               mining iter. num.            50
+   Pre-training. For our large-sized model, the initial weight                                           regularizer α              100
+                                                                               Detection
+                                                                                                         octave stride                 2
+is transferred from that of VGG-f which is trained on the
+ImageNet. For our tiny-sized and medium-sized models, the
+networks are first pre-trained with targets and randomly gener-                                  TABLE IV
+                                                                         C OMPARISONS OF THE PROPOSED METHODS AND THEIR BASELINES .
+ated backgrounds. The training is performed for 20 epochs by
+back-propagation and stochastic gradient descent (SGD) [46].              Method                 plane         ship          oilpot     mAP
+   Hard-negative Mining. After pre-training, we fine-tune the             TINY-BASE              45.0%        17.2%          39.6%     33.9%
+model, where in each mining iteration the training set is aug-            TINY-RAM               50.5%        19.3%          43.7%     37.8%
+                                                                          MEDIUM-BASE            73.7%        48.4%          46.4%     56.2%
+mented with hard negative examples. We assign a background                MEDIUM-RAM             76.0%        50.0%          48.1%     58.0%
+label to any detected false negative anchor if its IoU overlap            LARGE-BASE             70.6%        60.5%          42.1%     57.7%
+is lower than 0.2 for all ground-truth BBs. Anchors that are              LARGE-RAM              71.7%        60.8%          43.0%     58.5%
+neither positive nor negative do not contribute to the training.
+In each mining iteration, the detector collects over 500 hard
+negatives and the SGD is performed for 2 epochs.
+                                                                          • Proposed 3: VGG-f based networks+ram (LARGE-RAM).
+   Multi-octave Detection. Although recent advances [30, 31,
+39, 40] advocate using single scale feature map to detection           During evaluation, some ambiguous instances are excluded
+target of multiple scales since it offers trade-off between ac-        from our dataset. There are two kinds of situations that we
+curacy and speed, detection on pyramid feature maps still can          identify it as an ambiguous target. The first type is that the
+be proved with better performance, especially for small sized          targets bounding-box are partially clustered or outside (larger
+targets [21, 43]. Since there is a large scale variation of remote     than 3/4 of its area) the image. The second type refers to the
+sensing targets, we build a sparse image pyramid with octave           instance with very small size, whose length is smaller than
+stride os = 2 as the network’s inputs. For scale variations            20 pixels. To detect smaller target, we suggest using higher
+within a single octave, the scale range can be well captured           resolution images. Any false detection or missing of these
+by the detector of multi-scale anchors. The regularization             targets will not be taken into account neither as a false positive
+parameter α of (9) is set to 100 for all experiments. All the          nor as a true positive.
+important parameters we used are listed in Table III.                     All comparisons use the same settings including networks’
+                                                                       hyperparameters, training parameters and detection parame-
+                                                                       ters. Table IV shows the three baseline methods and their
+B. Overall Results Statistics
+                                                                       variations on LEVIR dataset2 . We can clearly observe RAM
+  Comparisons with Baselines. For fair comparisons with                gives an overall improvement on all of the three classes
+our detection paradigm, we have designed three baseline                and three varies sized models. We also observed that the
+methods:                                                               performance enhancement of the small sized model is more
+  • Baseline 1: tiny-networks (TINY-BASE),                             remarkable than that of the medium and large sized model.
+  • Baseline 2: medium-networks (MEDIUM-BASE),                         This is simply because a smaller model tends to be saturated
+  • Baseline 3: VGG-f based networks (LARGE-BASE),                     when training with background of complex distribution. RAM
+and their improved variants with memories-updating:
+                                                                          2 Sine LARGE-RAM model takes too much time to in RAM process, we
+  • Proposed 1: tiny-networks+ram (TINY-RAM),                          only sample a subset of our test data for this model. For other models, the
+  • Proposed 2: medium-networks+ram (MEDIUM-RAM),                      full test set is used.
+                                                                                                                                                       8
+
+
+
+
+                                                                 TABLE V
+                                  P ERFORMANCE COMPARISON OF DIFFERENT METHODS ON NWPU-VHR-10 DATASET.
+
+        Method                plane      ship      stor.tank    baseb.      tenn.     basket.    gr.trac.      harbor   bridge   vehicle    mAP
+        FDDL[4]               29.2%     37.6%       77.0%       25.8%       2.8%       3.6%      20.1%         25.4%    21.5%     4.5%     24.7%
+        COPD[5]               62.3%     68.9%       63.7%       83.3%      32.1%      36.3%      85.3%         55.3%    14.8%    44.0%     54.6%
+        RICNN[10]             88.4%     77.3%       85.3%       88.1%      40.8%      58.5%      86.7%         86.6%    61.5%    71.1%     72.6%
+        TINY-RAM              83.5%     30.4%       77.3%       62.7%      20.2%       6.3%      34.1%         16.1%     4.5%    42.5%     37.8%
+        MEDIUM-RAM            89.6%     71.7%       72.1%       86.4%      27.6%      30.7%      52.5%         26.4%    23.3%    51.0%     53.1%
+        LARGE-RAM             94.1%     85.5%       85.9%       89.6%      67.1%      63.9%      48.9%         62.9%    58.7%    81.6%     73.8%
+
+
+
+
+Fig. 7. Selected examples of our detection results on LEVIR dataset (categories: airplanes, ships, oilpots).
+
+
+
+
+Fig. 8. Selected examples of our detection results on NWPU-VHR-10 dataset (categories: airplanes, ships, storage tanks, baseball diamonds, tennis courts,
+basketball courts, ground track fields, harbors, bridges and vehicles).
+                                                                                                                                                                         9
+
+
+
+                           TABLE VI                                                                       methods e.g. RICNN [10], COPD [5] and FDDL [4]. Among
+    C OMPARISONS OF THREE DIFFERENT WAYS OF FISHER MATRIX                                                 them, RICNN learns a rotation-invariant CNN model by
+ APPROXIMATION : 1) WITHOUT APPROXIMATION , 2) DIAGONAL MATRIX
+     APPROXIMATION AND 3) IDENTITY MATRIX APPROXIMATION .                                                 introducing and learning a new Rotation-Invariant layer on
+                                                                                                          the basis of the existing CNN architectures to detect remote
+       Method                               I(Ĥ) Approximation                                mAP        sensing target with different orientations. COPD is designed
+       TINY-RAM                                    Fisher                                     37.8%       based on the COllection of Part Detectors with a sliding
+       TINY-RAM                                  Diagonal                                     33.9%       window approach on Histograms of Oriented Gradients map
+       TINY-RAM                                   Identity                                    29.4%
+       MEDIUM-RAM                                  Fisher                                     58.0%
+                                                                                                          and linear support vector machine classifier. FDDL is designed
+       MEDIUM-RAM                                Diagonal                                     56.1%       based on Fisher Discrimination Dictionary Learning method,
+       MEDIUM-RAM                                 Identity                                    52.6%       where a set of target candidate regions are firstly generated by
+       LARGE-RAM                                   Fisher                                     58.5%       a saliency detection method and then a sparse representation
+       LARGE-RAM                                 Diagonal                                     57.7%       based classifier is adopted on each candidate to perform multi-
+       LARGE-RAM                                  Identity                                    53.4%
+                                                                                                          class detection.
+       TINY-BASE                                      –                                       33.9%
+       MEDIUM-BASE                                    –                                       56.2%          We use the same training-testing split criterion as those
+       LARGE-BASE                                     –                                       57.7%       was used in [10] for a fair comparison. Table V lists their
+                                                                                                          performance. Since the training data is limited for large
+                                                                                                          networks (vgg based model) to obtain statistically meaningful
+                    a=1, c=1             a=1, c=2                  a=1, c=3                  a=1, c=4
+                                                                                                          training results, we have added some external data in training
+        10 0                     10 0                  10 0                      10 0                     set, including the LEVIR data and some other samples from
+                                                                                                          Google Earth images. The results of RICNN, COPD and
+                                                                                                          FDDL are reported by [10]. We can see our model (LARGE-
+       10 -10                 10 -10                  10 -10                    10 -10
+                0     500 1000       0     500 1000            0     500 1000            0     500 1000   RAM) obtains the best detection results.
+                    a=2, c=1             a=2, c=2                  a=2, c=3                  a=2, c=4
+        10 0                     10 0                  10 0                      10 0
+                                                                                                             How Important is Fisher Information? The way to
+                                                                                                          compute the fisher information matrix is a key point of our
+                                                                                                          method that it describes how well the model distribution is ap-
+       10 -10                 10 -10                  10 -10                    10 -10
+                0     500 1000       0     500 1000            0     500 1000            0     500 1000   proximated at its MLE point. In this experiment, we give two
+                    a=3, c=1             a=3, c=2                  a=3, c=3                  a=3, c=4     approximation forms to its original one: 1) the diagonal matrix
+        10 0                     10 0                  10 0                      10 0
+                                                                                                          approximation where only its diagonal elements are left while
+                                                                                                          others are set zeros and 2) the identity matrix approximation
+       10 -10                 10 -10                  10 -10                    10 -10                    where the matrix is further simplified as an identity matrix.
+                0     500 1000       0     500 1000            0     500 1000            0     500 1000
+                                                                                                          Table VI shows their comparisons based on the three pro-
+                                                                                                          posed variations. For identity matrix approximation, updating
+Fig. 9. Each sub-figure shows the eigenvalues of the fisher information matrix                            memories under such priors means that the pre-trained model
+with a specific anchor scale “a” and class id “c”. The fisher information
+matrices are accumulated with both pre-training data and hard negatives at                                has an equivalent probability of updating their parameters in
+MLE point. Since most of the eigenvalues are very close to zeros (less than                               any directions in the parameter space. The updating process
+10−3 , marked as dark blue bars) except for a few large ones (marked as light                             can be simply viewed as a maximization of likelihood of
+blue bars), our model will have a free update on those eigenvectors at the
+detection phase.                                                                                          observations under a Euclidean distance constraint. We can
+                                                                                                          see there is a little drop of accuracy compared with their
+                                                                                                          fisher-approximated models in this condition. For diagonal
+helps small model concentrate on the newly observed data and                                              matrix approximation, a similar explanation can be given while
+“forget” part of the useless memories previously learned from                                             the only difference is that the dimensions are weighted by
+the training data. Fig. 7 and Fig. 8 shows some examples                                                  its diagonal elements when computing the Euclidean distance
+of detection results on LEVIR dataset and NWPU-VHR-10                                                     constraint. The accuracy also drops at this time.
+dataset.                                                                                                     Hyper-parameter Stability. The regularization coefficient
+   Fig. 9 shows the eigenvalues of the fisher information                                                 α of (9) serves as a very important hyper-parameter in our
+matrices accumulated on our training data (include pre-training                                           method. Fig. 10 and Fig. 11 show the performances of the
+data and hard negatives) at MLE point. As we can see,                                                     above three approximation ways and their baselines respective-
+most of the eigenvalues stay almost close to zero (marked as                                              ly with different α. Performance enhancement can be observed
+dark blue bars) except for only a few large ones (marked as                                               with a wide range of the choice of parameter. When α is set
+light blue bars). This phenomenon indicates that although our                                             too small, the accuracy is lower than the baseline method as we
+model is fully trained, their uncertainty is still large at these                                         expected. This is because the constraint on the model near the
+corresponding eigenvector directions and any disturbance on                                               MLE point is so weak that some targets are over-suppressed.
+these directions will not make clear decrements of the training                                           When α is set too large, the model will be bounded at a very
+objective function. These eigenvectors serve as the main paths                                            small feasible region near its MLE point thus the improvement
+for updating the model.                                                                                   is very little. When α → ∞, Hnew equals to Ĥ.
+   Comparisons on NWPU-VHR-10. We also evaluate the                                                          Speed Performance We test our method on an Intel i7 PC
+performance of our method on NWPU-VHR-10 dataset and                                                      with a Nvidia GTX 1080Ti graphics card. We use the GPU
+compare with other state-of-the-art remote sensing detection                                              to accelerate the training and detection process. The training
+                                                                                                                                                        10
+
+
+
+           0.6
+                                                                                    connected layer.
+                                                                                       With random access the memories, we can obtain a com-
+          0.58
+                                                                                    parable or even higher detection accuracy of a larger model
+          0.56                                                                      with less parameters and a faster detection speed. For example,
+          0.54                                                                      in Table III and Table VI, a lighter model, MEDIUM-RAM
+                                                                                    achieves higher mAP than a VGG-based baseline model
+    mAP
+
+
+
+
+          0.52
+                                                                                    LARGE-BASE (mAP 58.0% VS 57.7%), meanwhile, the
+           0.5
+                                                                                    former one has faster detection speed (speed: 0.492s VS
+          0.48                                         LARGE-RAM (Fisher)
+                                                       LARGE-RAM (Diagonal)         0.710s). Notice that the vgg-based model takes quite long time
+          0.46                                         LARGE-RAM (Identity)
+                                                       LARGE-RAM (Baseline)
+                                                                                    to update memories, this is because the dimension of its full-
+          0.44                                                                      connected layer is 4096, which is much higher than other two
+             101     102           103         104          105           106
+                                         α
+                                                                                    models. Nevertheless, as long as the parameter number of the
+                                                                                    fully connected layer is well configured, the calculation time
+Fig. 10. Performances of our method on LEVIR dataset with different values          can be controlled within an acceptable range.
+of regularization coefficient α.
+
+                                                                                                            VI. C ONCLUSION
+
+          0.74
+                                                                                       We propose a new paradigm called “Random Access Mem-
+                                                                                    ories” for target detection for high resolution aerial remote
+          0.72                                                                      sensing image. We also provide a new challenging dataset
+           0.7
+                                                                                    for remote sensing target detection which is one order of
+                                                                                    magnitude larger than existing datasets. Experiments have con-
+    mAP
+
+
+
+
+          0.68                                                                      firmed the validity of the proposed paradigm where noticeable
+          0.66
+                                                                                    improvements over a CNN based detectors can be observed.
+                                                       LARGE RAM (Fisher)
+                                                       LARGE RAM (Diagonal)
+                                                                                    The proposed method outperforms several other state-of-the-
+          0.64                                         LARGE RAM (Identity)         art remote sensing target detection methods. Besides, RAM
+                                                       LARGE RAM (Baseline)
+
+          0.62
+                                                                                    may open some novel opportunities of investigation in other
+             101   102       103         104         105          106         107   applications under small target priors, such as the fast detection
+                                         α
+                                                                                    of natural image objects, instance segmentation and even
+Fig. 11. Performances of our method on NWPU-VHR-10 dataset with                     image retrieval tasks.
+different values of regularization coefficient α.
+                                                                                                               R EFERENCES
+process takes a few hours to days on various sized models.                           [1] G. Cheng and J. Han, “A survey on object detection in optical
+                                                                                         remote sensing images,” Isprs Journal of Photogrammetry and
+For a 800 × 600 sized input image, a fast version of our                                 Remote Sensing, vol. 117, pp. 11–28, 2016.
+method only takes about 0.1s (10fps) to finish the forward                           [2] Z. Shi, X. Yu, Z. Jiang, and B. Li, “Ship detection in high-
+pass (0.02s) + memories updating process (0.10s). Table VII                              resolution optical imagery based on anomaly detector and local
+lists the total detection time and memory updating time of the                           shape feature,” IEEE Transactions on Geoscience and Remote
+baseline methods and the proposed four variants. For RICNN                               Sensing, vol. 52, no. 8, pp. 4511–4523, 2014.
+                                                                                     [3] L. Liu and Z. Shi, “Airplane detection based on rotation
+and FDDL, the running time is reported by their authors, and                             invariant and sparse coding in remote sensing images,” Optik -
+the testing image is about the same size. The authors of COPD                            International Journal for Light and Electron Optics, vol. 125,
+did not report their time. All our models run much faster in                             no. 18, pp. 5327–5333, 2014.
+spite that the memory updating process takes the most of the                         [4] J. Han, P. Zhou, D. Zhang, G. Cheng, L. Guo, Z. Liu, S. Bu, and
+running time. The main time cost when updating memories is                               J. Wu, “Efficient, simultaneous detection of multi-class geospa-
+                                                                                         tial targets based on visual saliency modeling and discriminative
+from the matrix inversion operation in (15), which has a cubic                           learning of sparse coding,” Isprs Journal of Photogrammetry
+computational complexity of the number of weights in fully                               and Remote Sensing, vol. 89, no. 1, pp. 37–48, 2014.
+                                                                                     [5] G. Cheng, J. Han, P. Zhou, and L. Guo, “Multi-class geospatial
+                                                                                         object detection and geographic image classification based on
+                          TABLE VII                                                      collection of part detectors,” Isprs Journal of Photogrammetry
+T IME PERFORMANCE OF DIFFERENT METHODS FOR A 600 × 800 IMAGE .                           and Remote Sensing, vol. 98, no. 1, pp. 119–132, 2014.
+                                                                                     [6] X. Yu and Z. Shi, “Vehicle detection in remote sensing imagery
+   Method                  Mem. Updating Time              Total Detec. Time             based on salient information and local shape feature ,” Optik -
+   TINY-RAM                             0.100s                        0.122s             International Journal for Light and Electron Optics, vol. 126,
+   MEDIUM-RAM                           0.408s                        0.492s             no. 20, pp. 2485–2490, 2015.
+   LARGE-RAM                            4.001s                        4.711s         [7] F. Zhang, B. Du, L. Zhang, and M. Xu, “Weakly supervised
+   TINY-BASE                                 –                        0.022s             learning based on coupled convolutional neural networks for
+   MEDIUM-BASE                               –                        0.084s             aircraft detection,” IEEE Transactions on Geoscience and Re-
+   LARGE-BASE                                –                        0.710s             mote Sensing, vol. 54, no. 9, pp. 5553–5563, 2016.
+   FDDL[4]                                   –                       ≥40.0s          [8] J. Han, D. Zhang, G. Cheng, L. Guo, and J. Ren, “Object
+   RICNN[10]                                 –                        8.700s             detection in optical remote sensing images based on weak-
+                                                                                         ly supervised learning and high-level feature learning,” IEEE
+                                                                                                                                             11
+
+
+
+     Transactions on Geoscience and Remote Sensing, vol. 53, no. 6,           vol. 37, no. 9, pp. 1904–1916, 2015.
+     pp. 3325–3337, 2015.                                                [30] S. Ren, K. He, R. Girshick, and J. Sun, “Faster r-cnn: Towards
+ [9] L. Zhang, Z. Shi, and J. Wu, “A hierarchical oil tank detec-             real-time object detection with region proposal networks,” in
+     tor with deep surrounding features for high-resolution optical           Conference and Workshop on Neural Information Processing
+     satellite imagery,” IEEE Journal of Selected Topics in Applied           Systems (NIPS), 2015, pp. 91–99.
+     Earth Observations and Remote Sensing, vol. 8, no. 10, pp.          [31] J. Redmon, S. Divvala, R. Girshick, and A. Farhadi, “You only
+     4895–4909, 2015.                                                         look once: Unified, real-time object detection,” in IEEE Con-
+[10] G. Cheng, P. Zhou, and J. Han, “Learning rotation-invariant              ference on Computer Vision and Pattern Recognition (CVPR),
+     convolutional neural networks for object detection in vhr optical        2016, pp. 779–788.
+     remote sensing images,” IEEE Transactions on Geoscience and         [32] D. Yoo, S. Park, J.-Y. Lee, A. S. Paek, and I. So Kweon,
+     Remote Sensing, vol. 54, no. 12, pp. 7405–7415, 2016.                    “Attentionnet: Aggregating weak directions for accurate object
+[11] Z. Zou and Z. Shi, “Ship detection in spaceborne optical image           detection,” in International Conference on Computer Vision
+     with svd networks,” IEEE Transactions on Geoscience and                  (ICCV), 2015, pp. 2659–2667.
+     Remote Sensing, vol. 54, no. 10, pp. 5832–5845, 2016.               [33] S. Gidaris and N. Komodakis, “Locnet: Improving localization
+[12] Z. Shi and Z. Zou, “Can a machine generate humanlike language            accuracy for object detection,” in IEEE Conference on Comput-
+     descriptions for a remote sensing image?” IEEE Transactions              er Vision and Pattern Recognition (CVPR), 2016, pp. 789–798.
+     on Geoscience and Remote Sensing, vol. 55, no. 6, pp. 3623–         [34] A. Shrivastava, A. Gupta, and R. Girshick, “Training region-
+     3634, 2017.                                                              based object detectors with online hard example mining,” in
+[13] H. Lin, Z. Shi, and Z. Zou, “Maritime semantic labeling of op-           IEEE Conference on Computer Vision and Pattern Recognition
+     tical remote sensing images with multi-scale fully convolutional         (CVPR), 2016, pp. 761–769.
+     network,” Remote Sensing, vol. 9, no. 5, pp. 480–500, 2017.         [35] P. Dollár, Z. Tu, P. Perona, and S. Belongie, “Integral channel
+[14] D. Manolakis, D. Marden, and G. A. Shaw, “Hyperspectral                  features,” in British Machine Vision Conference (BMVC).
+     image processing for automatic target detection applications,”      [36] P. Dollár, R. Appel, S. Belongie, and P. Perona, “Fast feature
+     Lincoln Laboratory Journal, vol. 14, no. 1, pp. 79–116, 2003.            pyramids for object detection,” IEEE Transactions on Pattern
+[15] R. P. Feynman, R. B. Leighton, M. Sands, and R. B. Lindsay,              Analysis and Machine Intelligence, vol. 36, no. 8, pp. 1532–
+     The feynman lectures on physics, vol. 3: Quantum mechanics.              1545, 2014.
+     AIP, 1966.                                                          [37] Q. Zhu, M.-C. Yeh, K.-T. Cheng, and S. Avidan, “Fast human
+[16] C. M. Bishop, Pattern recognition and machine learning.                  detection using a cascade of histograms of oriented gradients,”
+     Springer, 2006.                                                          in IEEE Conference on Computer Vision and Pattern Recogni-
+[17] C. E. Rasmussen, Gaussian processes for machine learning.                tion (CVPR), vol. 2. IEEE, 2006, pp. 1491–1498.
+     Citeseer, 2006.                                                     [38] R. Benenson, M. Mathias, R. Timofte, and L. Van Gool, “Pedes-
+[18] K. P. Murphy, Machine learning: a probabilistic perspective.             trian detection at 100 frames per second,” in IEEE Conference
+     MIT press, 2012.                                                         on Computer Vision and Pattern Recognition (CVPR). IEEE,
+[19] A. Krizhevsky, I. Sutskever, and G. E. Hinton, “Imagenet                 2012, pp. 2903–2910.
+     classification with deep convolutional neural networks,” in         [39] W. Liu, D. Anguelov, D. Erhan, C. Szegedy, S. Reed, C.-Y.
+     Conference and Workshop on Neural Information Processing                 Fu, and A. C. Berg, “Ssd: Single shot multibox detector,” in
+     Systems (NIPS), 2012, pp. 1097–1105.                                     European Conference on Computer Vision (ECCV). Springer,
+[20] K. Simonyan and A. Zisserman, “Very deep convolutional                   2016, pp. 21–37.
+     networks for large-scale image recognition,” arXiv preprint         [40] J. Redmon and A. Farhadi, “Yolo9000: Better, faster, stronger,”
+     arXiv:1409.1556, 2014.                                                   arXiv preprint arXiv:1612.08242, 2016.
+[21] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning        [41] L. Zhang, L. Zhang, and B. Du, “Deep learning for remote
+     for image recognition,” in IEEE Conference on Computer Vision            sensing data: A technical tutorial on the state of the art,” IEEE
+     and Pattern Recognition (CVPR), 2016, pp. 770–778.                       Geoscience and Remote Sensing Magazine, vol. 4, no. 2, pp.
+[22] P. Viola and M. Jones, “Rapid object detection using a boosted           22–40, 2016.
+     cascade of simple features,” in IEEE Conference on Computer         [42] Z. Cai, Q. Fan, R. S. Feris, and N. Vasconcelos, “A unified
+     Vision and Pattern Recognition (CVPR). IEEE, 2001.                       multi-scale deep convolutional neural network for fast object
+[23] P. Viola and M. J. Jones, “Robust real-time face detection,”             detection,” in European Conference on Computer Vision (EC-
+     International Journal of Computer Vision, vol. 57, no. 2, pp.            CV), 2016, pp. 354–370.
+     137–154, 2004.                                                      [43] T.-Y. Lin, P. Dollár, R. Girshick, K. He, B. Hariharan, and
+[24] N. Dalal and B. Triggs, “Histograms of oriented gradients for            S. Belongie, “Feature pyramid networks for object detection,”
+     human detection,” in IEEE Conference on Computer Vision and              arXiv preprint arXiv:1612.03144, 2016.
+     Pattern Recognition (CVPR), vol. 1. IEEE, 2005, pp. 886–893.        [44] T. Kong, A. Yao, Y. Chen, and F. Sun, “Hypernet: Towards ac-
+[25] P. Felzenszwalb, D. McAllester, and D. Ramanan, “A dis-                  curate region proposal generation and joint object detection,” in
+     criminatively trained, multiscale, deformable part model,” in            IEEE Conference on Computer Vision and Pattern Recognition
+     IEEE Conference on Computer Vision and Pattern Recognition               (CVPR), 2016, pp. 845–853.
+     (CVPR). IEEE, 2008, pp. 1–8.                                        [45] S. Bell, C. Lawrence Zitnick, K. Bala, and R. Girshick, “Inside-
+[26] P. F. Felzenszwalb, R. B. Girshick, D. McAllester, and D. Ra-            outside net: Detecting objects in context with skip pooling and
+     manan, “Object detection with discriminatively trained part-             recurrent neural networks,” in IEEE Conference on Computer
+     based models,” IEEE Transactions on Pattern Analysis and                 Vision and Pattern Recognition (CVPR), 2016, pp. 2874–2883.
+     Machine Intelligence, vol. 32, no. 9, pp. 1627–1645, 2010.          [46] I. Goodfellow, Y. Bengio, and A. Courville, Deep learning.
+[27] R. Girshick, J. Donahue, T. Darrell, and J. Malik, “Rich                 MIT Press, 2016.
+     feature hierarchies for accurate object detection and semantic      [47] A. Vedaldi and K. Lenc, “Matconvnet: Convolutional neural
+     segmentation,” in IEEE Conference on Computer Vision and                 networks for matlab,” in Proceedings of the 23rd ACM interna-
+     Pattern Recognition (CVPR), 2014, pp. 580–587.                           tional conference on Multimedia. ACM, 2015, pp. 689–692.
+[28] R. Girshick, “Fast r-cnn,” in International Conference on Com-      [48] G. Heitz and D. Koller, “Learning spatial context: Using stuff
+     puter Vision (ICCV), 2015, pp. 1440–1448.                                to find things,” in European Conference on Computer Vision,
+[29] K. He, X. Zhang, S. Ren, and J. Sun, “Spatial pyramid pooling            2008, pp. 30–43.
+     in deep convolutional networks for visual recognition,” IEEE        [49] F. Tanner, B. Colder, C. Pullen, D. Heagy, M. Eppolito, V. Car-
+     Transactions on Pattern Analysis and Machine Intelligence,               lan, C. Oertel, and P. Sallee, “Overhead imagery research data
+                                                                                12
+
+
+
+     set - an annotated data library and tools to aid in the devel-
+     opment of computer vision algorithms,” in Applied Imagery
+     Pattern Recognition Workshop, 2009, pp. 1–8.
+[50] A. Kembhavi, D. Harwood, and L. S. Davis, “Vehicle detection
+     using partial least squares,” IEEE Transactions on Pattern
+     Analysis and Machine Intelligence, vol. 33, no. 6, pp. 1250–
+     65, 2011.
+
+
+
+
+                         Zhengxia Zou received his B.S. degree in the
+                         School of Astronautics, Beihang University, Beijing,
+                         China, in 2013. He is currently working toward his
+                         Ph.D. degree in the Image Processing Center, School
+                         of Astronautics, Beihang University. His research
+                         interests include remote sensing image processing
+                         and other related topics in computer vision and
+                         machine learning.
+
+
+
+
+                         Zhenwei Shi (M13) received his Ph.D. degree in
+                         mathematics from Dalian University of Technolo-
+                         gy, Dalian, China, in 2005. He was a Postdoctor-
+                         al Researcher in the Department of Automation,
+                         Tsinghua University, Beijing, China, from 2005 to
+                         2007. He was Visiting Scholar in the Department
+                         of Electrical Engineering and Computer Science,
+                         Northwestern University, U.S.A., from 2013 to 2014.
+                         He is currently a professor and the chairman of the
+                         Image Processing Center, School of Astronautics,
+                         Beihang University. His current research interests
+include remote sensing image processing and analysis, computer vision,
+pattern recognition, and machine learning.
+   Dr. Shi serves as an Associate Editor for the Infrared Physics and Tech-
+nology. He has authored or co-authored over 100 scientific papers in refereed
+journals and proceedings, including the IEEE Transactions on Pattern Analysis
+and Machine Intelligence, the IEEE Transactions on Neural Networks, the
+IEEE Transactions on Geoscience and Remote Sensing, the IEEE Geoscience
+and Remote Sensing Letters and the IEEE Conference on Computer Vision
+and Pattern Recognition. His personal website is http://levir.buaa.edu.cn/.
+

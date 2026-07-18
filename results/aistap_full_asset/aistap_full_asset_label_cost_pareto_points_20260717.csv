@@ -1,0 +1,14 @@
+method,label_budget,positive_target_pixels,runtime_ms,log_pfa_auc,source,description,pareto_dominated,dominated_by
+compact_tpsscs,0,0,133.6553999935859,0.5313080161181634,finished_detector,zero official full-asset positive target pixels; compact finished detector,False,
+low_label_raw_residual_hgb_budget_64,64,64,608.9914499971201,0.5834465145199683,low_positive_pixel_hgb,raw/residual HGB with 64 source-domain positive target pixels,False,
+low_label_raw_residual_hgb_budget_128,128,128,608.9914499971201,0.6517710259179464,low_positive_pixel_hgb,raw/residual HGB with 128 source-domain positive target pixels,False,
+low_label_raw_residual_hgb_budget_256,256,256,608.9914499971201,0.6749842076050883,low_positive_pixel_hgb,raw/residual HGB with 256 source-domain positive target pixels,False,
+low_label_raw_residual_hgb_budget_512,512,512,608.9914499971201,0.692444418012927,low_positive_pixel_hgb,raw/residual HGB with 512 source-domain positive target pixels,False,
+low_label_raw_residual_hgb_budget_all,all,3943,608.9914499971201,0.7270838730074157,low_positive_pixel_hgb,raw/residual HGB with all source-domain positive target pixels,False,
+low_label_raw_residual_hgb_budget_1,1,1,608.9914499971201,0.1380132724268561,low_positive_pixel_hgb,raw/residual HGB with 1 source-domain positive target pixels,True,compact_tpsscs
+low_label_raw_residual_hgb_budget_2,2,2,608.9914499971201,0.1959144395562859,low_positive_pixel_hgb,raw/residual HGB with 2 source-domain positive target pixels,True,compact_tpsscs
+low_label_raw_residual_hgb_budget_4,4,4,608.9914499971201,0.30630567714337,low_positive_pixel_hgb,raw/residual HGB with 4 source-domain positive target pixels,True,compact_tpsscs
+low_label_raw_residual_hgb_budget_8,8,8,608.9914499971201,0.34685771954776695,low_positive_pixel_hgb,raw/residual HGB with 8 source-domain positive target pixels,True,compact_tpsscs
+low_label_raw_residual_hgb_budget_16,16,16,608.9914499971201,0.4567459873925053,low_positive_pixel_hgb,raw/residual HGB with 16 source-domain positive target pixels,True,compact_tpsscs
+low_label_raw_residual_hgb_budget_32,32,32,608.9914499971201,0.5300707761317943,low_positive_pixel_hgb,raw/residual HGB with 32 source-domain positive target pixels,True,compact_tpsscs
+raw_residual_hgb_full_boundary,all_boundary,3943,608.9914499971201,0.7156040756556384,full_feature_ensemble_boundary,strong raw/residual HGB boundary from the LOSO feature-ensemble audit,True,low_label_raw_residual_hgb_budget_all

@@ -1,0 +1,724 @@
+{
+  "date": "20260715",
+  "state": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_sample\\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt",
+  "development_files": [
+    "19931107_135603_starea.cdf"
+  ],
+  "validation_files": [
+    "19931107_141630_starea.cdf"
+  ],
+  "test_files": [
+    "19931107_145028_starea.cdf",
+    "19931108_213827_starea.cdf",
+    "19931108_220902_starea.cdf",
+    "19931109_191449_starea.cdf",
+    "19931109_202217_starea.cdf",
+    "19931110_001635_starea.cdf",
+    "19931111_163625_starea.cdf",
+    "19931118_023604_stareC0000.cdf",
+    "19931118_035737_stareC0000.cdf",
+    "19931118_162155_stareC0000.cdf",
+    "19931118_162658_stareC0000.cdf",
+    "19931118_174259_stareC0000.cdf"
+  ],
+  "selected_beta": 1.5,
+  "validation_grid": [
+    {
+      "beta": 0.0,
+      "wins_raw": 7,
+      "wins_lowrank": 7,
+      "mean_delta_vs_raw": 0.0
+    },
+    {
+      "beta": 0.25,
+      "wins_raw": 7,
+      "wins_lowrank": 7,
+      "mean_delta_vs_raw": 0.002955845424107143
+    },
+    {
+      "beta": 0.5,
+      "wins_raw": 7,
+      "wins_lowrank": 7,
+      "mean_delta_vs_raw": 0.003914969308035714
+    },
+    {
+      "beta": 0.75,
+      "wins_raw": 7,
+      "wins_lowrank": 7,
+      "mean_delta_vs_raw": 0.004374912806919643
+    },
+    {
+      "beta": 1.0,
+      "wins_raw": 7,
+      "wins_lowrank": 7,
+      "mean_delta_vs_raw": 0.004504612513950893
+    },
+    {
+      "beta": 1.5,
+      "wins_raw": 7,
+      "wins_lowrank": 7,
+      "mean_delta_vs_raw": 0.00457000732421875
+    },
+    {
+      "beta": 2.0,
+      "wins_raw": 7,
+      "wins_lowrank": 7,
+      "mean_delta_vs_raw": 0.004544939313616071
+    }
+  ],
+  "development_info": [
+    {
+      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931107_135603_starea.cdf",
+      "window": 1024,
+      "stride": 1024,
+      "windows": 128,
+      "nrange": 14,
+      "ntxpol": 2,
+      "prf": 1000.0,
+      "ranges_m": [
+        2574.0,
+        2589.0,
+        2604.0,
+        2619.0,
+        2634.0,
+        2649.0,
+        2664.0,
+        2679.0,
+        2694.0,
+        2709.0,
+        2724.0,
+        2738.999755859375,
+        2754.0,
+        2769.0
+      ]
+    }
+  ],
+  "validation_info": [
+    {
+      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931107_141630_starea.cdf",
+      "window": 1024,
+      "stride": 1024,
+      "windows": 128,
+      "nrange": 14,
+      "ntxpol": 2,
+      "prf": 1000.0,
+      "ranges_m": [
+        2574.0,
+        2589.0,
+        2604.0,
+        2619.0,
+        2634.0,
+        2649.0,
+        2664.0,
+        2679.0,
+        2694.0,
+        2709.0,
+        2724.0,
+        2738.999755859375,
+        2754.0,
+        2769.0
+      ]
+    }
+  ],
+  "test_info": [
+    {
+      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931107_145028_starea.cdf",
+      "window": 1024,
+      "stride": 1024,
+      "windows": 128,
+      "nrange": 14,
+      "ntxpol": 2,
+      "prf": 1000.0,
+      "ranges_m": [
+        5474.99951171875,
+        5490.00048828125,
+        5505.0,
+        5520.0,
+        5535.0,
+        5550.0,
+        5564.99951171875,
+        5580.0,
+        5595.0,
+        5610.0,
+        5625.0,
+        5639.99951171875,
+        5655.00048828125,
+        5670.0
+      ]
+    },
+    {
+      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931108_213827_starea.cdf",
+      "window": 1024,
+      "stride": 1024,
+      "windows": 128,
+      "nrange": 14,
+      "ntxpol": 2,
+      "prf": 1000.0,
+      "ranges_m": [
+        2574.0,
+        2589.0,
+        2604.0,
+        2619.0,
+        2634.0,
+        2649.0,
+        2664.0,
+        2679.0,
+        2694.0,
+        2709.0,
+        2724.0,
+        2738.999755859375,
+        2754.0,
+        2769.0
+      ]
+    },
+    {
+      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931108_220902_starea.cdf",
+      "window": 1024,
+      "stride": 1024,
+      "windows": 128,
+      "nrange": 14,
+      "ntxpol": 2,
+      "prf": 1000.0,
+      "ranges_m": [
+        2574.0,
+        2589.0,
+        2604.0,
+        2619.0,
+        2634.0,
+        2649.0,
+        2664.0,
+        2679.0,
+        2694.0,
+        2709.0,
+        2724.0,
+        2738.999755859375,
+        2754.0,
+        2769.0
+      ]
+    },
+    {
+      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931109_191449_starea.cdf",
+      "window": 1024,
+      "stride": 1024,
+      "windows": 128,
+      "nrange": 14,
+      "ntxpol": 2,
+      "prf": 1000.0,
+      "ranges_m": [
+        2574.0,
+        2589.0,
+        2604.0,
+        2619.0,
+        2634.0,
+        2649.0,
+        2664.0,
+        2679.0,
+        2694.0,
+        2709.0,
+        2724.0,
+        2738.999755859375,
+        2754.0,
+        2769.0
+      ]
+    },
+    {
+      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931109_202217_starea.cdf",
+      "window": 1024,
+      "stride": 1024,
+      "windows": 128,
+      "nrange": 14,
+      "ntxpol": 2,
+      "prf": 1000.0,
+      "ranges_m": [
+        2574.0,
+        2589.0,
+        2604.0,
+        2619.0,
+        2634.0,
+        2649.0,
+        2664.0,
+        2679.0,
+        2694.0,
+        2709.0,
+        2724.0,
+        2738.999755859375,
+        2754.0,
+        2769.0
+      ]
+    },
+    {
+      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931110_001635_starea.cdf",
+      "window": 1024,
+      "stride": 1024,
+      "windows": 128,
+      "nrange": 14,
+      "ntxpol": 2,
+      "prf": 1000.0,
+      "ranges_m": [
+        2574.0,
+        2589.0,
+        2604.0,
+        2619.0,
+        2634.0,
+        2649.0,
+        2664.0,
+        2679.0,
+        2694.0,
+        2709.0,
+        2724.0,
+        2738.999755859375,
+        2754.0,
+        2769.0
+      ]
+    },
+    {
+      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931111_163625_starea.cdf",
+      "window": 1024,
+      "stride": 1024,
+      "windows": 128,
+      "nrange": 14,
+      "ntxpol": 2,
+      "prf": 1000.0,
+      "ranges_m": [
+        2574.0,
+        2589.0,
+        2604.0,
+        2619.0,
+        2634.0,
+        2649.0,
+        2664.0,
+        2679.0,
+        2694.0,
+        2709.0,
+        2724.0,
+        2738.999755859375,
+        2754.0,
+        2769.0
+      ]
+    },
+    {
+      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931118_023604_stareC0000.cdf",
+      "window": 1024,
+      "stride": 1024,
+      "windows": 128,
+      "nrange": 14,
+      "ntxpol": 2,
+      "prf": 1000.0,
+      "ranges_m": [
+        2550.0,
+        2565.0,
+        2580.0,
+        2595.0,
+        2610.0,
+        2625.0,
+        2640.0,
+        2655.0,
+        2670.0,
+        2685.0,
+        2700.0,
+        2715.0,
+        2730.000244140625,
+        2745.0
+      ]
+    },
+    {
+      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931118_035737_stareC0000.cdf",
+      "window": 1024,
+      "stride": 1024,
+      "windows": 128,
+      "nrange": 14,
+      "ntxpol": 2,
+      "prf": 1000.0,
+      "ranges_m": [
+        2550.0,
+        2565.0,
+        2580.0,
+        2595.0,
+        2610.0,
+        2625.0,
+        2640.0,
+        2655.0,
+        2670.0,
+        2685.0,
+        2700.0,
+        2715.0,
+        2730.000244140625,
+        2745.0
+      ]
+    },
+    {
+      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931118_162155_stareC0000.cdf",
+      "window": 1024,
+      "stride": 1024,
+      "windows": 128,
+      "nrange": 14,
+      "ntxpol": 2,
+      "prf": 1000.0,
+      "ranges_m": [
+        2649.0,
+        2664.0,
+        2679.0,
+        2694.0,
+        2709.0,
+        2724.0,
+        2738.999755859375,
+        2754.0,
+        2769.0,
+        2783.999755859375,
+        2799.0,
+        2814.0,
+        2829.000244140625,
+        2844.0
+      ]
+    },
+    {
+      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931118_162658_stareC0000.cdf",
+      "window": 1024,
+      "stride": 1024,
+      "windows": 128,
+      "nrange": 14,
+      "ntxpol": 2,
+      "prf": 1000.0,
+      "ranges_m": [
+        2649.0,
+        2664.0,
+        2679.0,
+        2694.0,
+        2709.0,
+        2724.0,
+        2738.999755859375,
+        2754.0,
+        2769.0,
+        2783.999755859375,
+        2799.0,
+        2814.0,
+        2829.000244140625,
+        2844.0
+      ]
+    },
+    {
+      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931118_174259_stareC0000.cdf",
+      "window": 1024,
+      "stride": 1024,
+      "windows": 128,
+      "nrange": 14,
+      "ntxpol": 2,
+      "prf": 1000.0,
+      "ranges_m": [
+        2649.0,
+        2664.0,
+        2679.0,
+        2694.0,
+        2709.0,
+        2724.0,
+        2738.999755859375,
+        2754.0,
+        2769.0,
+        2783.999755859375,
+        2799.0,
+        2814.0,
+        2829.000244140625,
+        2844.0
+      ]
+    }
+  ],
+  "test_stats": {
+    "wins_raw": 7,
+    "wins_lowrank": 7,
+    "mean_delta_vs_raw": 0.022313163394019724,
+    "comparisons": [
+      {
+        "pfa": 1e-05,
+        "candidate_pd": 0.06435966491699219,
+        "raw_pd": 0.051282246907552086,
+        "lowrank_pd": 0.0002930959065755208,
+        "candidate_empirical_pfa": 0.0,
+        "beats_raw": true,
+        "beats_lowrank": true
+      },
+      {
+        "pfa": 3e-05,
+        "candidate_pd": 0.06435966491699219,
+        "raw_pd": 0.051282246907552086,
+        "lowrank_pd": 0.0002930959065755208,
+        "candidate_empirical_pfa": 0.0,
+        "beats_raw": true,
+        "beats_lowrank": true
+      },
+      {
+        "pfa": 0.0001,
+        "candidate_pd": 0.0695330301920573,
+        "raw_pd": 0.05321566263834635,
+        "lowrank_pd": 0.0004590352376302083,
+        "candidate_empirical_pfa": 8.655894886363637e-05,
+        "beats_raw": true,
+        "beats_lowrank": true
+      },
+      {
+        "pfa": 0.0003,
+        "candidate_pd": 0.07699394226074219,
+        "raw_pd": 0.05821545918782552,
+        "lowrank_pd": 0.0007088979085286459,
+        "candidate_empirical_pfa": 0.0002777613373316498,
+        "beats_raw": true,
+        "beats_lowrank": true
+      },
+      {
+        "pfa": 0.001,
+        "candidate_pd": 0.08970896402994792,
+        "raw_pd": 0.06571133931477864,
+        "lowrank_pd": 0.0015621185302734375,
+        "candidate_empirical_pfa": 0.0009765625,
+        "beats_raw": true,
+        "beats_lowrank": true
+      },
+      {
+        "pfa": 0.003,
+        "candidate_pd": 0.10621579488118489,
+        "raw_pd": 0.07547314961751302,
+        "lowrank_pd": 0.0034542083740234375,
+        "candidate_empirical_pfa": 0.0029296875,
+        "beats_raw": true,
+        "beats_lowrank": true
+      },
+      {
+        "pfa": 0.01,
+        "candidate_pd": 0.13744672139485678,
+        "raw_pd": 0.0972455342610677,
+        "lowrank_pd": 0.009611765543619791,
+        "candidate_empirical_pfa": 0.009956827388468013,
+        "beats_raw": true,
+        "beats_lowrank": true
+      }
+    ]
+  },
+  "test_summary": [
+    {
+      "method": "ipix_validated_residual_fusion",
+      "pfa_target": 1e-05,
+      "pd_mean": 0.06435966491699219,
+      "pd_std": 0.21664283326083308,
+      "empirical_pfa_mean": 0.0,
+      "n_windows": 1536
+    },
+    {
+      "method": "ipix_validated_residual_fusion",
+      "pfa_target": 3e-05,
+      "pd_mean": 0.06435966491699219,
+      "pd_std": 0.21664283326083308,
+      "empirical_pfa_mean": 0.0,
+      "n_windows": 1536
+    },
+    {
+      "method": "ipix_validated_residual_fusion",
+      "pfa_target": 0.0001,
+      "pd_mean": 0.0695330301920573,
+      "pd_std": 0.2230904182648331,
+      "empirical_pfa_mean": 8.655894886363637e-05,
+      "n_windows": 1536
+    },
+    {
+      "method": "ipix_validated_residual_fusion",
+      "pfa_target": 0.0003,
+      "pd_mean": 0.07699394226074219,
+      "pd_std": 0.23264067266521005,
+      "empirical_pfa_mean": 0.0002777613373316498,
+      "n_windows": 1536
+    },
+    {
+      "method": "ipix_validated_residual_fusion",
+      "pfa_target": 0.001,
+      "pd_mean": 0.08970896402994792,
+      "pd_std": 0.24662641364131122,
+      "empirical_pfa_mean": 0.0009765625,
+      "n_windows": 1536
+    },
+    {
+      "method": "ipix_validated_residual_fusion",
+      "pfa_target": 0.003,
+      "pd_mean": 0.10621579488118489,
+      "pd_std": 0.2617735096290003,
+      "empirical_pfa_mean": 0.0029296875,
+      "n_windows": 1536
+    },
+    {
+      "method": "ipix_validated_residual_fusion",
+      "pfa_target": 0.01,
+      "pd_mean": 0.13744672139485678,
+      "pd_std": 0.2856334315358371,
+      "empirical_pfa_mean": 0.009956827388468013,
+      "n_windows": 1536
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 1e-05,
+      "pd_mean": 0.0002930959065755208,
+      "pd_std": 0.0015281332223123754,
+      "empirical_pfa_mean": 0.0,
+      "n_windows": 1536
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 3e-05,
+      "pd_mean": 0.0002930959065755208,
+      "pd_std": 0.0015281332223123754,
+      "empirical_pfa_mean": 0.0,
+      "n_windows": 1536
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.0001,
+      "pd_mean": 0.0004590352376302083,
+      "pd_std": 0.0021587110003520368,
+      "empirical_pfa_mean": 8.655894886363637e-05,
+      "n_windows": 1536
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.0003,
+      "pd_mean": 0.0007088979085286459,
+      "pd_std": 0.002765688448692785,
+      "empirical_pfa_mean": 0.0002777613373316498,
+      "n_windows": 1536
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.001,
+      "pd_mean": 0.0015621185302734375,
+      "pd_std": 0.005115083231972722,
+      "empirical_pfa_mean": 0.0009765625,
+      "n_windows": 1536
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.003,
+      "pd_mean": 0.0034542083740234375,
+      "pd_std": 0.009363139508812816,
+      "empirical_pfa_mean": 0.0029296875,
+      "n_windows": 1536
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.01,
+      "pd_mean": 0.009611765543619791,
+      "pd_std": 0.01976237862580659,
+      "empirical_pfa_mean": 0.009956827388468013,
+      "n_windows": 1536
+    },
+    {
+      "method": "raw",
+      "pfa_target": 1e-05,
+      "pd_mean": 0.051282246907552086,
+      "pd_std": 0.1820929276957985,
+      "empirical_pfa_mean": 0.0,
+      "n_windows": 1536
+    },
+    {
+      "method": "raw",
+      "pfa_target": 3e-05,
+      "pd_mean": 0.051282246907552086,
+      "pd_std": 0.1820929276957985,
+      "empirical_pfa_mean": 0.0,
+      "n_windows": 1536
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.0001,
+      "pd_mean": 0.05321566263834635,
+      "pd_std": 0.1848273505556833,
+      "empirical_pfa_mean": 8.655894886363637e-05,
+      "n_windows": 1536
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.0003,
+      "pd_mean": 0.05821545918782552,
+      "pd_std": 0.19259711337683444,
+      "empirical_pfa_mean": 0.0002777613373316498,
+      "n_windows": 1536
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.001,
+      "pd_mean": 0.06571133931477864,
+      "pd_std": 0.20205944903193235,
+      "empirical_pfa_mean": 0.0009765625,
+      "n_windows": 1536
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.003,
+      "pd_mean": 0.07547314961751302,
+      "pd_std": 0.21098659142844814,
+      "empirical_pfa_mean": 0.0029296875,
+      "n_windows": 1536
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.01,
+      "pd_mean": 0.0972455342610677,
+      "pd_std": 0.2256931336962832,
+      "empirical_pfa_mean": 0.009956827388468013,
+      "n_windows": 1536
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 1e-05,
+      "pd_mean": 0.0411675771077474,
+      "pd_std": 0.17144710163338597,
+      "empirical_pfa_mean": 0.0,
+      "n_windows": 1536
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 3e-05,
+      "pd_mean": 0.0411675771077474,
+      "pd_std": 0.17144710163338597,
+      "empirical_pfa_mean": 0.0,
+      "n_windows": 1536
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.0001,
+      "pd_mean": 0.0413214365641276,
+      "pd_std": 0.1714177149199487,
+      "empirical_pfa_mean": 8.655894886363637e-05,
+      "n_windows": 1536
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.0003,
+      "pd_mean": 0.04155604044596354,
+      "pd_std": 0.17137461403420268,
+      "empirical_pfa_mean": 0.0002777613373316498,
+      "n_windows": 1536
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.001,
+      "pd_mean": 0.04237937927246094,
+      "pd_std": 0.1712370470170997,
+      "empirical_pfa_mean": 0.0009765625,
+      "n_windows": 1536
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.003,
+      "pd_mean": 0.04422950744628906,
+      "pd_std": 0.1709855595971336,
+      "empirical_pfa_mean": 0.0029296875,
+      "n_windows": 1536
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.01,
+      "pd_mean": 0.05029424031575521,
+      "pd_std": 0.1704735057789897,
+      "empirical_pfa_mean": 0.009956827388468013,
+      "n_windows": 1536
+    }
+  ],
+  "passed": true,
+  "failures": [],
+  "boundary": "Independent IPIX validation-selected residual-aware fusion; beta selected on validation file and reported on disjoint test file."
+}

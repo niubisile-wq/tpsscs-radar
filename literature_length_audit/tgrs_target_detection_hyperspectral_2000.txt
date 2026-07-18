@@ -1,0 +1,1050 @@
+1044                                                       IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 38, NO. 2, MARCH 2000
+
+
+
+
+An Experiment-Based Quantitative and Comparative
+Analysis of Target Detection and Image Classification
+       Algorithms for Hyperspectral Imagery
+                       Chein-I Chang, Senior Member, IEEE, and Hsuan Ren, Student Member, IEEE
+
+
+    Abstract—Over the past years, many algorithms have been de-          a result, criteria used for multispectral image classification
+veloped for multispectral and hyperspectral image classification.        are usually designed to explore spectral characteristics rather
+A general approach to mixed pixel classification is linear spectral      than spatial properties, as used in digital image processing
+unmixing, which uses a linear mixture model to estimate the abun-
+dance fractions of signatures within a mixed pixel. As a result, the     [2]–[5]. A unique feature of multispectral image classification
+images generated for classification are usually gray scale images,       that does not exist in standard image processing is the occur-
+where the gray level value of a pixel represents a combined amount       rence of spectral mixtures within pixels. Spectral unmixing is
+of the abundance of spectral signatures residing in this pixel. Due      particularly important with high spectral resolution imaging
+to a lack of standardized data, these mixed pixel algorithms have        spectrometers. These sensors use as many as 200 contiguous
+not been rigorously compared using a unified framework. In this
+paper, we present a comparative study of some popular classifica-        bands and can uncover narrow-band diagnostic spectral fea-
+tion algorithms through a standardized HYDICE data set with a            tures of materials that cannot be resolved by multispectral
+custom-designed detection and classification criterion. The algo-        imagers. Two such important imagers currently in use are
+rithms to be considered for this study are those developed for spec-     the NASA Jet Propulsion Laboratory's 224-band Airborne
+tral unmixing, the orthogonal subspace projection (OSP), max-            Visible/InfraRed Imaging Spectrometer (AVIRIS) and the
+imum likelihood, minimum distance, and Fisher's linear discrimi-
+nant analysis (LDA). In order to compare mixed pixel classification      Naval Research Laboratory's 210-band HYperspectral Digital
+algorithms against pure pixel classification algorithms, the mixed       Imagery Collection Experiment (HYDICE) sensor. One of
+pixels are converted to pure ones by a designed mixed-to-pure pixel      major challenges in hyperspectral image processing is how
+converter. The standardized HYDICE data are then used to eval-           to process the enormous amount of information provided by
+uate the performance of various pure and mixed pixel classification      hyperspectral images without spending effort on undesired/un-
+algorithms. Since all targets in the HYDICE image scenes can be
+spatially located to pixel level, the experimental results can be pre-   wanted information [6]. Additionally, the data dimensionality
+sented by tallies of the number of targets detected and classified for   of hyperspectral imagery is generally tens of times more than
+quantitative analysis.                                                   that of multispectral imagery. As a consequence, methods
+   Index Terms—Linear discriminant analysis (LDA), linear un-            developed for multispectral image processing such as principal
+mixing, maximum likelihood estimator (MLE), minimum distance,            components analysis/canonical analysis [7], minimum distance
+mixed-to-pure pixel (M/P) converter (M/P converter), oblique sub-        [1], maximum likelihood (ML) classification [8]–[13], and
+space projection (OBSP), orthogonal subspace projection (OSP),           decision boundary-based feature extraction [14] can be further
+signature space projection (SSP), winner-take-all M/P converter          improved for hyperspectral imagery.
+(WTAMPC).
+                                                                            Harsanyi and Chang [15], [16] introduced an orthogonal sub-
+                                                                         space projection (OSP)-based classifier for hyperspectral image
+                         I. INTRODUCTION                                 classification. It implemented an orthogonal subspace projector
+   MAGE classification is a segmentation method that aggre-              in conjunction with a matched filter to derive a classifier for
+gates image pixels into a finite number of classes by certain            mixed pixel classification. It has been successfully applied for
+rules so that each class represents a distinct entity with spe-          HYDICE data exploitation [17]–[19]. A variety of OSP-based
+cific properties [1]. In general, it can be viewed as a label            classifiers were also developed, such as the a posteriori OSP
+assignment by which image pixels sharing similar properties              (LSOSP) classifier [20], the oblique subspace projection clas-
+will be assigned to the same class. Since multispectral images           sifier (OBC) [21], the desired target detection and classifica-
+are acquired at different spectral wavelengths, a multispectral          tion algorithm (DTDCA) and the automatic target detection and
+image pixel can be represented by a pixel vector, in which               classification algorithm (ATDCA) [22]. In particular, the OSP-
+each component corresponds to a specific wavelength. As                  based methods were also shown in [21], [23], [24] to be equiv-
+                                                                         alent to the maximum likelihood classifier, given that the noise
+                                                                         is additive and Gaussian. So all of these classifiers turned out to
+                                                                         perform the same spectral unmixing.
+   Manuscript received June 12, 1998; revised December 9, 1999.             There is a lack of standardized data that can be used to
+   The authors are with the Remote Sensing Signal and Image Processing   evaluate individual algorithms. In addition, no unified crite-
+Laboratory, Department of Computer Science and Electrical Engineering,   rion has been accepted for rigorous and impartial compar-
+University of Maryland, Baltimore County, Baltimore, MD 21250 USA
+(e-mail: cchang@umbc.edu).                                               isons. The importance of this issue cannot be understated.
+   Publisher Item Identifier S 0196-2892(00)02835-7.                     Without standardized data and effective evaluation criteria,
+                                                       0196–2892/00$10.00 © 2000 IEEE
+CHANG AND REN: EXPERIMENT-BASED QUANTITATIVE AND COMPARATIVE ANALYSIS OF TARGET DETECTION                                           1045
+
+
+
+the performance of any new algorithm cannot be substanti-             tion to used for experiments. Section VI presents a comparative
+ated. In this paper, we take a first step by conducting a com-        performance analysis for classifiers described in Sections III and
+parative study of performance analysis among several classi-          IV, and Section VII concludes with some remarks.
+fication algorithms. We confine our study to linear spectral
+mixing problems only. Additionally, we consider two types                  II. LINEAR MIXING PROBLEMS AND OSP APPROACH
+of classification: mixed pixel classification and pure pixel
+                                                                         Linear spectral unmixing is a widely used approach in re-
+classification. A general approach to mixed pixel classifica-
+                                                                      motely sensed imagery to determine and quantify individual
+tion (such as spectral unmixing) is to estimate the abundance
+                                                                      components [25], [26]. Since every pixel is acquired by multiple
+fraction of a material of interest present in an image pixel,
+                                                                      spectral bands, it can be represented by a column vector where
+and then the estimated abundance fraction is used to clas-
+                                                                      each component represents a particular band. Suppose that is
+sify the pixel. However, this generally requires visual inter-
+                                                                      the number of spectral bands. Let be an            column vector
+pretation. Such human intervention is rather subjective and
+                                                                      in a multispectral or hyperspectral image where vectors are all
+may not be reliable or repeatable. With no availability of
+                                                                      boldfaced. In this case, each pixel is considered to be a pixel
+standardized data or objective criteria, a quantitative analysis
+                                                                      vector of dimension . Assume that          is an         signature
+for mixed pixel classification is almost impossible. By con-
+                                                                      matrix denoted by                        , where      is an
+trast, pure pixel classification does not have such a problem.
+                                                                      column vector representing the -th spectral signature resident
+Unlike mixed pixel classification, it does not require abun-
+                                                                      in the pixel , and is the number of signatures of interest. Let
+dance fractions of spectral signatures to be used for class
+                                                                                                 be a        abundance column vector
+assignment. Its performance is completely determined by the
+                                                                      associated with , where       denotes the fraction of the -th sig-
+criteria used for classification. So, two major contributions
+                                                                      nature in the pixel .
+of this paper are 1) to establish a link between pure and
+mixed pixel classification by designing a mixed-to-pure pixel
+(M/P) converter and 2) to conduct experimental comparisons            A. Linear Spectral Mixture Model
+among a set of selected pure and mixed classification algo-              A classical approach to solving the mixed pixel classification
+rithms, including quantitative performance analysis. In order         problem is linear unmixing, which assumes that the materials
+to validate such a study, a standardized HYDICE data set              (endmembers) present in a pixel vector are linearly mixed. A
+is used where all man-made targets present in image scenes            pixel vector can be described by a linear regression model as
+have been precisely located to the pixel level and designated         follows:
+as either target center pixels or target masking pixels. The
+reason for using target masking pixels is to include partial                                                                        (1)
+target pixels, target background pixels, and target shadow
+pixels to account for all possible pixels that may have im-           where is an             column vector that can be viewed as either
+pacts on targets of interest. In addition, a custom-designed          noise or an error correction term resulting from data fitting.
+criterion for target detection and classification is also intro-         The algorithms to be used for our comparative study only
+duced for the purpose of tallying target pixels detected and          include those derived from OSP, minimum distance approaches,
+classified. By making use of this data set, along with the            and Fisher's linear discriminant analysis (LDA). This selection
+designed criterion, a comparative analysis for classification         is made for three major reasons.
+accuracy becomes possible. The significance of these exper-               1) As mentioned earlier, if the noise in a linear mixing
+imental results is to offer a performance evaluation of the                  problem is white Gaussian, ML estimation and the OSP
+classification algorithms in a rigorous fashion so that each                 approach for mixed pixel classification are equivalent
+algorithm is fairly compared on the same common ground.                      and both can be viewed as a spectral unmixing method.
+   A standardized HYDICE data set is used for evaluation. The             2) The white Gaussian noise assumption also simplifies and
+experiments show that the OSP-based classification algorithms                reduces the Gaussian ML classifier to a minimum dis-
+resulting from an M/P conversion perform better than the min-                tance classifier.
+imum distance-based classification algorithms, but not as well            3) Fisher's LDA has been widely used for classification since
+as LDA. On the other hand, the same experiments also show that               its criterion is based on the maximization of class separa-
+the abundance-based images generated by mixed pixel classi-                  bility.
+fication algorithms significantly improve classification results.     These facts allow us to restrict the mixed pixel classification
+These facts substantiate the need for mixed pixel classification      algorithms to three classes of classification algorithms listed
+for multispectral/hyperspectral imagery.                              above (the OSP-based classifiers, minimum distance-based
+   This paper is organized as follows. Section II formulates the      classifiers, and LDA). The difference between the OSP and the
+mixed pixel classification problem as a linear mixture model.         other approaches (i.e., minimum distance, LDA) is that the OSP
+Section III describes various approaches to abundance estima-         was designed for mixed pixel classification, whereas the latter
+tion for mixed pixel classification (e.g., OSP-based and ML           is for pure pixel classification. Nevertheless, we will show that
+classifiers). Section IV introduces the concept of mixed-to-pure      by imposing appropriate constraints on the abundance fractions,
+pixel conversion to reduce a mixed pixel classification problem       the mixed pixel classification can be reinterpreted and reduced
+to a conventional pure pixel classification problem. Section V        to pure pixel classification. By means of a mixed-to-pure
+derives an objective criterion for target detection and classifica-   pixel (M/P) conversion, mixed pixel classification algorithms
+1046                                                    IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 38, NO. 2, MARCH 2000
+
+
+
+can then be directly compared with minimum distance-based            or (2) can be cast in terms of an a posteriori formulation and
+classifiers and LDA.                                                 can be given by
+
+B. Orthogonal Subspace Projection (OSP)
+   Without loss of generality, we assume that there is a signature                                                                    (5)
+of interest in model (1),           . So the signature matrix
+                                                                     where        ,      , and     are estimates of , , and , re-
+can be partitioned into the desired signature vector and an
+                                                                     spectively, based on the observed pixel itself . Because of this,
+undesired signature matrix denoted by . By separating from
+                                                                     model (5) is called an a posteriori model as opposed to model
+  , model (1) can be expressed as follows:
+                                                                     (1), which can be viewed as a Bayes or a priori model. For sim-
+                                                              (2)    plicity, the dependency on will be dropped from all the nota-
+                                                                     tions of estimates throughout the rest of this paper.
+where the subscript    is suppressed throughout this paper and          1) Signature Subspace Projection (SSP) [20], [21]: Using
+                            . Let            and    be the spaces    the least squares error as an optimal criterion for model (5)
+linearly spanned by , , and          respectively. The reason for    yields the optimal least squares estimate of           given by
+separating from         in model (2) is to allow us to design an
+orthogonal subspace projector to annihilate from an observed                                                                          (6)
+pixel prior to classification. One such desired orthogonal sub-
+                                                                     Substituting (6) for the estimate of   in model (5) results in
+space projector was derived in [15] given by                    ,
+where                         is the pseudo-inverse of and the                                                                        (7)
+notation indicates that the projector          maps the observed
+pixel into the range space          , the orthogonal complement      where
+of     .
+   Now, applying      to model (2) results in a new spectral sig-                                                                     (8)
+nature model
+                                                                     From (6), we define                             to be the signa-
+                                                              (3)    ture space orthogonal projector that projects into the signature
+                                                                     space       and apply      to model (5), which yields
+where the undesired signatures in vanish due to orthogonal
+projection elimination, and the original noise has been sup-                                                                        (9)
+pressed to        .                                                                                                                (10)
+   Equation (3) represents a standard signal detection problem
+and can be solved by a matched filter         given by               where               and the term          vanishes in (9) since
+      . So, an orthogonal subspace projection (OSP) classifier            annihilates    .
+        derived in [15] can be implemented by an undesired sig-        By coupling       with the OSP classifier      given by (4),
+nature annihilator      , followed by a desired signature matched    a classifier     , called signature space projection classifier
+filter                                                               (SSC) derived in [21] is given by
+
+                                                              (4)                                                                  (11)
+
+                                                                        Now we apply        to both a priori model (1) and a poste-
+III. HYPERSPECTRAL ABUNDANCE ESTIMATION ALGORITHMS                   riori model (5), we obtain
+            FOR MIXED PIXEL CLASSIFICATION
+
+   Equation (1) represents a general linear model for mixed pixel                                                                  (12)
+classification where the signature matrix     and the abundance
+vector are assumed to be known a priori. In reality, is gen-         and
+erally not known and must be estimated. In order to estimate
+  , a common approach is spectral unmixing via an inverse of
+the linear mixture model given by (1) (e.g., [27]). In this paper,                                                                 (13)
+we will describe two general approaches in Sections III and IV,
+the estimation of abundance and the classification of abundance,     Equating (12) and (13) yields
+with the former closely related to the spectral unmixing and the
+latter reduced to distance-based classification.                                                                                   (14)
+
+                                                                     Dividing (14) by                , we obtain the estimate of        ,
+A. A Posteriori Orthogonal Subspace Projection
+                                                                     denoted by       .
+   In order to estimate                         , several tech-
+niques have been developed in [20]–[24] based on a posteriori
+                                                                                                                                   (15)
+information obtained from the data cube. As a result, model (1)
+CHANG AND REN: EXPERIMENT-BASED QUANTITATIVE AND COMPARATIVE ANALYSIS OF TARGET DETECTION                                           1047
+
+
+
+where the last equality holds because                              .   In particular, the estimate of the -th abundance     is given by
+The estimation error resulting from (15) is given by
+
+                                                               (16)
+
+    2) Oblique Subspace Projection (OBSP) [21]: In SSP, the
+noise is suppressed by making use of          , and the undesired
+signatures in are subsequently nulled by the projector          . It                                                               (27)
+would be convenient if we could have these two operations done
+in one step. One such operator, called an oblique subspace pro-        and the associated estimation error is
+jection, was developed in [21] and designates         as its range
+space and       as its null space. In this case, the oblique sub-                                                                  (28)
+space projection is no longer orthogonal. Furthermore, it was
+shown in [28] that the orthogonal subspace projector        can be     From (6) and (26), SSC and MLE both generate an identical
+decomposed as a sum of two oblique projectors, one of which            abundance estimate                                     , but dif-
+is the oblique subspace projection.                                    ferent noise estimates are produced,
+    Let      be a projector with its range space and null space        for SSC in (16), and                          for MLE in (28).
+   . The     can be decomposed and expressed by                        However, if we further compare (24) to (27) and (25) to (28), we
+                                                                       discover that both sets of equations are identical. This implies
+                                                               (17)    that MLE is indeed OBC, given the condition that the noise is
+                                                                       white Gaussian. In this case, MLE can be replaced by OBC in
+with                                                                   mixed pixel classification.
+                                                               (18)
+                                                                       B. Unsupervised OSP [22]
+                                                               (19)       Until now, we have made an important assumption that
+particularly,            and            .                              the signature matrix was given a priori. Due to significantly
+   In analogy with (11), an oblique subspace projection classi-        improved spectral resolution, hyperspectral sensors generally
+fier (OBC) denoted by        can be constructed via (18) by            extract much more information than what we expect, partic-
+                                                                       ularly more spectral signatures than desired. These include
+                                                               (20)    natural background signatures, unwanted interferers, or clutter.
+                                                                       Under such circumstances, identifying these signatures is
+                                                               (21)
+                                                                       almost impossible and prohibitive in practice. In order to cope
+Applying (20) to model (1) and model (5) results in                    with this problem, an unsupervised OSP was recently devel-
+                                                                       oped in [22], where the undesired and unwanted signatures
+                                                                       can be found automatically via an unsupervised process. One
+                                                               (22)    such algorithm, referred to as Automatic Target Detection and
+                                                                       Classification Algorithm (ATDCA), is a two-stage process con-
+where               .                                                  sisting of a target generation process and target classification
+  Equating (21) and (22) yields                                        process and can be summarized as follows.
+                                                                          ATDCA
+                                                               (23)    Stage 1) Target Generation Process (TGP)
+and                                                                                   Step 1) Initial condition:
+                                                                                              Select a pixel vector with the maximum
+                                                               (24)                           length as an initial target denoted by ,
+                                                                                              i.e.,
+So, the estimation error          can be obtained from (24) as
+
+                                                               (25)
+
+  3) Maximum Likelihood Estimation (MLE) [23]: In the sub-                                   Set        and          .
+space projection approaches described in Subsections 1 and 2,                        Step 2) Find the orthogonal projections of all
+we only assumed that the variance of the noise is given by                                   image pixels with respect to        by ap-
+and is independent of the signatures. We further assume that is                              plying                        to all image
+an additive white Gaussian noise. Then        in model (1) can be                            pixel vectors , where       is the pseudo-
+expressed as a Gaussian distribution with mean          and vari-                            inverse of     .
+ance          (i.e.,                         ). The MLE of for                       Step 3) Find the first target, denoted by      , by
+model (5) can be obtained in [23], [24] and [29] by                                          finding
+
+                                                               (26)
+1048                                                     IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 38, NO. 2, MARCH 2000
+
+
+
+              Step 4) If                        with         ,        an a posteriori model and requires an estimate of . This results
+                      go to step 7. Otherwise, let        and         in a posteriori OSP approach where the abundance estimation
+                      continue.                                       is solved as an unconstrained least squares problem. In the latter
+              Step 5) Find the th target      generated by the        case,     is an estimate of the abundance fraction     of a desired
+                       -th stage, i.e.,                               signature specified by in model (1). The images generated by
+                                                                      these algorithms are presented as gray scale, with the gray level
+                                                                      value used to represent the estimated abundance fraction of a
+                                                                      desired signature present in a mixed pixel vector. The clas-
+                      Let                         be the target       sification of any given pixel vector is then based on the esti-
+                      matrix generated in the th stage.               mated abundance fraction . In the past, this has been done
+              Step 6) Stopping rule.                                  by visual interpretation and later supported by ground truth.
+                      Calculate                                       So, technically speaking, OSP and a posteriori OSP are signa-
+                                                                      ture abundance estimation algorithms, not classification algo-
+                                                              (29)    rithms. In order to use these algorithms as classifiers, we need
+                                                                      a process, called a mixed-to-pure pixel converter that can con-
+                        and compare it to the prescribed
+                                                                      vert mixed pixel abundance estimation to mixed pixel classifica-
+                        threshold . If             , go to step 5.
+                                                                      tion. A similar process, referred to an analog-to-digital converter
+                        Otherwise, continue. (Note that each
+                                                                      (A/D converter) has been widely used in communications and
+                        iteration from step 5 to step 6 in the
+                                                                      signal processing. Such an A/D converter is generally imple-
+                        ATDCA generates and detects one target
+                                                                      mented by vector quantization. As a matter of fact, the concept
+                        at a time.)
+                                                                      of using vector quantization (VQ) to generate desired targets has
+               Step 7) At this point, the target generation
+                                                                      been explored in [30], where each codeword in the VQ-gener-
+                        process will be terminated. In this case,
+                                                                      ated codebook corresponded to one potential target in an image
+                        the process is called to be convergent.
+                                                                      scene. Furthermore, to make classification fully automated, a
+                        The set
+                                                                      computer-aided classification criterion must be also provided.
+                        will be the desired target set used for the
+                        next stage of target classification.          A. Winner-Take-All Mixed-to-Pure Pixel Converter
+Stage 2) Target Classification Process (TCP)                          (WTAMPC)
+            In this stage, the target set                     gen-
+            erated by TGP is ready for classification. Let       be       In order to compare pure pixel classification to mixed pixel
+            the th target for           . Apply the OSP classifier    classification, we need to interpret a mixed pixel classification
+                               given by (4) to classify    , where    problem in the context of pure pixel classification. One way
+                                                                      is to convert the abundance estimation for mixed pixels to the
+                                                      is the unde-
+                                                                      classification of pure pixels by considering model (1) as a con-
+            sired signature matrix made up of all signatures in
+                                                                      strained problem with some specific restrictions imposed on the
+                                 except for the desired signature
+                                                                      estimated abundance vector .
+                .
+                                                                          Assume that the abundance vector in model (1) satisfies
+   It is worth noting that the OPCI stopping criterion
+                                                                      constraints           for all          and                . Addi-
+                      given by (29), actually arises from the
+                                                                      tionally, the estimate is constrained to a set of -dimensional
+constant           appearing in the estimation errors derived in
+                                                                      vectors with one in only one component and zeros in the re-
+(16), (25) and (28). One comment on OPCI is useful regarding
+                                                                      maining        components. Such vectors will be denoted by -di-
+implementation of ATDCA. The OPCI only provides a guide
+                                                                      mensional unit vectors. If is a -dimensional vector with 1 in
+to terminate ATDCA. Unfortunately, no optimal number of
+                                                                      the -th component and 0's in all other remaining components
+targets can be set for TGP to generate. The number of targets
+                                                                      (i.e.,                                     ), then is called the
+needed to be generated by TGP is determined by the prescribed
+                                                                                                  -
+error threshold set for OPCI in step 6, which is determined
+empirically. Another way to terminate ATDCA is to preset the            -th -dimensional unit vector. In this case, the estimated abun-
+number of targets. In this case, there is no need to use OPCI as      dance vector is forced to be a pure signature. Thus, there are
+a stopping criterion described in step 6. Which one is a better       only choices for . In other words, can be assigned to only
+approach depends upon different applications and varies with          one of classes, which reduces a mixed pixel classification to
+scene-by-scene.                                                       a -class classification problem. It then can be solved by pure
+                                                                      pixel classification techniques. With these constraints model (5)
+     IV. CONVERSION OF HYPERSPECTRAL ABUNDANCE                        becomes
+  ESTIMATION ALGORITHMS TO PURE PIXEL CLASSIFICATION
+                                                                                                         for some                   (30)
+   The objective of mixed pixel classification algorithms is to
+estimate                          in a pixel vector using the         where         is called a mixed-to-pure pixel (M/P) converter
+linear mixture model described by (1) or (5). Since the abun-         operating on a pixel vector that assigns to signature        for
+dance vector in the a priori model (1) is assumed to be known,        some . It should be noted that the estimated noise in model
+there is no need to estimate for OSP. On the other hand, (5) is       (5) has been absorbed into      for classification accuracy. So
+CHANG AND REN: EXPERIMENT-BASED QUANTITATIVE AND COMPARATIVE ANALYSIS OF TARGET DETECTION                                               1049
+
+
+
+if we interpret model (1) by model (30), each signature vector
+in     represents a distinct class, and any sample pixel vector
+   will be assigned to one of the signatures in         via an M/P
+converter                     in the sense of a certain criterion.
+Using (30), we can assign 1 to a target pixel and 0 otherwise. The
+resulting image will be a binary image which shows only target
+pixels. An important but difficult task is to design an effective
+M/P converter for (30), which will preserve as much information
+as possible from mixed pixels during the mixed-to-pure pixel
+conversion.                                                             Fig. 1. Typical mask target.
+   A simple M/P converter is to use the abundance percentage
+as a cut-off threshold value. If the estimated abundance fraction
+    of a signature accounts for more than a certain percentage          as misclassification error. So, if the noise in model (1) is rein-
+within , we may classify to the material specified by the sig-          terpreted as the error resulting from classification and is also
+nature . However, in order for such an M/P converter to be              modeled as a white Gaussian, then the mixed pixel classifiers,
+effective, a percentage value needs to be appropriately selected        OSP and a posteriori OSP described above, become Gaussian
+to threshold an abundance-based image to a binary image with            maximum likelihood classifiers
+target pixels assigned by 1 and others by 0. Unfortunately, this
+was shown not effective in [31].                                                                                                       (31)
+   An alternative way is the one proposed in [31], called the
+WTA thresholding criterion as described later, and is very              where                                               for some , and
+similar to the winner-take-all learning algorithm used in neural                  for all              and         (i.e.,
+networks [32]. This WTA thresholding criterion can be used                                                                          ). In
+as an M/P converter and serve as a mechanism for (30) to                other words, the estimated abundance vector in (31) must
+convert a mixed pixel to a pure pixel. Instead of focusing              be a -dimensional unit vector. Since there are components,
+on the abundance estimation of the desired signature            , as    there are only options in . Due to the Gaussian structure
+done in all OSP-based classifiers, we look at the complete              assumed in       , the classification using (31) can be simplified
+spectrum of abundance estimates for all signatures present              to a classifier based on the distance between class means
+in . Assume that there are            signatures              where                and a pixel vector as shown later.
+     is the -th signature. Let be a mixed pixel vector to be               Assume that                                 is a general sample
+classified and                                               be the     pixel vector to be classified in a hyperspectral image. Let
+associated -dimensional abundance vector. Let                be the                         be the set of classes of interest and     be the
+unconstrained estimated abundance fraction of             contained     class representing the -th signature                               .
+in produced by mixed pixel classifiers. We then compare                 Assume that          is the -th sample vector in class , and
+all estimated abundance fractions                                                              is the set of sample vectors to be used for
+and find the one with the maximum fraction, say                (i.e.,   classification where        is the number of sample vectors in the
+                                  ). It will be used to classify the     -th class, and                              is the total number of
+   by assigning to the -th signature              . In other words,     sample vectors. Two types of distance-based classifiers can be
+using the WTA thresholding criterion and (30), we can define            considered depending upon sample statistics.
+a WTA-based M/P converter
+                                                                           1) The first-order statistics classifier.
+(referred to as WTAMPC) by setting                              and
+                                                                               Minimum distance classifier:
+                for          . As a result of such assignment,
+the mixed abundance vector                is then converted to a                  a) Euclidean distance
+pure abundance vector, the -th -dimensional unit vector
+                                         .                                                                                             (32)
+                       -
+                                                                                     Since the quadratic term in of (32) is independent
+B. Minimum Distance-Based Classification Algorithms                                  of class , the Euclidean distance-based minimum
+   In Section IV.A, we described a WTAMPC that directly con-                         distance classifier is a linear classifier.
+verted the abundance estimation of a mixed pixel to the classi-                   b) City block distance
+fication of a pure pixel. In the following two sections, we use
+(30) as a vehicle to reinterpret two commonly used pure pixel                                                                          (33)
+classification methods, minimum distance-based classification
+and Fisher's linear discriminant analysis, in the context of con-
+strained mixed pixel classification.                                              c) Tchebyshev (maxmimum) distance (TD)
+   As noted in (30), there is no noise term present in the equa-
+tion. This is because the noise can be interpreted and described                                                                       (34)
+1050                                                          IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 38, NO. 2, MARCH 2000
+
+
+
+
+Fig. 2.   (a) HYDICE image Scene (b) Same scene as Fig. 2(a) but with vehicles masked by BLACK and WHITE.
+
+
+   2) Second-order statistics classifiers.                                 C. Fisher's Linear Discriminant Analysis (LDA)
+        a) Mahalanobis classifier [33]                                       From Fisher's discriminant analysis [1], we can form total,
+                                                                           between-class and within-class scatter matrices as follows. Let
+                                                                                                   be the global mean.
+                                                                   (35)
+
+              In general, the Mahalanobis classifier is a quadratic
+              classifier. When            for any class , then the                                                                     (37)
+              Mahalanobis classifier is reduced to the minimum-
+              distance classifier with Euclidean distance.
+           b) Bhattacharyya classifier [33]                                                                                            (38)
+
+
+                                                                                                                                       (39)
+
+
+                                                                           From (37)–(39)
+                                                                   (36)
+                                                                                                                                       (40)
+             When             for classes and , then the Bhat-
+             tacharyya classifier is reduced to the Mahalanobis              In order to minimize the misclassification error, we maximize
+             classifier.                                                   the Raleigh quotient
+  If the covariance matrices in (35) and (36) are not of full
+rank, their inverses will be replaced by their pseudo-inverses
+                      .                                                                                           over                 (41)
+CHANG AND REN: EXPERIMENT-BASED QUANTITATIVE AND COMPARATIVE ANALYSIS OF TARGET DETECTION                                                       1051
+
+
+
+
+                                                                     Fig. 4. Average radiances for target signatures, vehicles of Type 1, Type 2, and
+                                                                     Type 3 and two types of man-made objects.
+
+
+                                                                     these         Fisher's discriminants         , we construct an
+                                                                     eigenmatrix given by                                to map the
+                                                                     pixel vector into a new vector           in a new space lin-
+                                                                     early spanned by           . Then the LDA classification is car-
+                                                                     ried out in the space using the minimum distance measures
+                                                                     given by (32)–(36).
+
+                                                                     D. Unsupervised Classification
+                                                                       Although the distance-based classifiers described above are
+                                                                     supervised based on a set of training samples, they can be
+                                                                     extended to unsupervised classifiers by including a clustering
+                                                                     process such as the nearest neighboring rule [1] or a neural
+                                                                     network-based, self-organization algorithm [32]. For example,
+                                                                     the minimum distance classifier can be implemented by its
+                                                                     unsupervised version, ISODATA [1].
+
+                                                                     V. CRITERION FOR TARGET DETECTION AND CLASSIFICATION
+                                                                        The standardized HYDICE data set used for the following
+                                                                     experiments contains ten vehicles and four man-made objects.
+                                                                     The precise spatial locations of all these targets are provided by
+Fig. 3. Subscene from Fig. 2(a).                                     ground truth where two types of target pixels are designated,
+                                                                     BLACK and WHITE. The BLACK-masked (B) pixels are as-
+Finding the solution to (41) is equivalent to solving the fol-       sumed to be target center pixels, while WHITE-masked (W)
+lowing generalized eigenvalue problem                                pixels may be target boundary pixels or target pixels mixed with
+                                                                     background pixels [see Fig. 2(b)]. The positions of these two
+                                                             (42)    types of pixels were located in the image by           coordinates,
+                                                                     where and represent row and column, respectively. The size
+or equivalently                                                      of a mask used for a target varies and depends upon the size of
+                                                                     the target. A typical masked target of size            is shown in
+                                                             (43)    Fig. 1 where black (B) pixels are centered in the mask that are
+                                                                     considered to be the target center pixels and white (W) pixels
+where the eigenvector       is called the -th Fisher's linear dis-   surrounding B pixels are target pixels that may be either target
+criminant.                                                           boundary pixels or target pixels mixed with background pixels.
+   Since only signatures need to be classified, there are only       Here we make a subtle distinction between a target detected and
+       nonzero eigenvalues. Assume that                              a target hit. When a target is detected, it means that at least one
+           are such        values arranged in decreasing order of    B target pixel is detected. When a target is hit, it means that at
+magnitude. Then their corresponding eigenvectors               re-   least either one B or one W pixel is detected. As long as one
+sulting from (42) are called Fisher's discriminants. For instance,   of these B or W pixels is detected, we declare the target is hit.
+   corresponding to is the first Fisher's discriminant, cor-         So, by way of this definition, a target detected always implies a
+responding to     is the second Fisher's discriminant, etc. Using    target hit, but not vice versa. Using these B and W pixels, we
+1052                                                         IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 38, NO. 2, MARCH 2000
+
+
+
+
+                                           (a)                                                       (b)
+
+
+
+
+                                                                          (c)
+
+Fig. 5. (a) Images produced by OSP, (b) images produced by OBSP, and (c) Images produced by SSP.
+CHANG AND REN: EXPERIMENT-BASED QUANTITATIVE AND COMPARATIVE ANALYSIS OF TARGET DETECTION                                                      1053
+
+
+
+
+                                   (a)                                                                          (b)
+
+Fig. 6. (a) Error images produced by taking absolute difference between OSP-generated and OBSP-generated images. (b) Error images produced by taking
+absolute difference between OBSP-generated and SSP-generated images.
+
+
+
+can actually tally the number of target pixels detected or hit by                                total number of WHITE-masked            pixels
+a particular algorithm.                                                                          detected;
+   The criteria that we use in this paper are                                                    total number of false alarms pixels, i.e., total
+   1) How many target B pixels are detected;                                                     number of pixels which are neither BLACK-
+   2) How many target W pixels are detected;                                                     masked nor WHITE-masked            pixels de-
+   3) How many pixels are detected as false alarms for a                                         tected;
+       target in which case neither a BLACK-masked pixel or a
+       WHITE-masked pixel is detected;                                                        total number of BLACK-masked or
+   4) How many target B pixels are missed.                                                    WHITE-masked pixels missed.
+For example, suppose that the shaded pixels in Fig. 1 are those               Using the above notations, we can further define the detection
+detected by a detection algorithm. We declare the target to be             rate           for B pixels of target by
+detected with one B pixel as well as hit with one B and two W
+pixels. There are no false alarm pixels, but have three B pixels
+                                                                                                                                               (44)
+missed. In order to quantitatively study target detection perfor-
+mance, the following definitions are introduced.
+                     total number of sample pixel vectors;                 and the detection rate                 for W pixels of target      by
+                     specific target to be detected;
+                     total number of BLACK-masked plus
+                     WHITE-masked pixels;                                                                                                      (45)
+                     total number of BLACK-masked pixels;
+                     total number of WHITE-masked pixels;                  Since B pixels represent target center pixels and W pixels are
+                     total number of either BLACK-masked or                target boundary pixels mixed with background pixels, a good
+                     WHITE-masked pixels detected;                         detection algorithm must have a higher rate of target B pixels
+                     total number of BLACK-masked          pixels          detected           . On the other hand, detecting a W pixel does
+                     detected;                                             not necessarily mean a target detected. Nevertheless, we can
+1054                                                        IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 38, NO. 2, MARCH 2000
+
+
+
+declare the target to be hit. For this purpose, we define the target
+hit rate           for target by
+
+                                                                  (46)
+
+So from (46) a higher target hit rate              does not imply a
+higher target detection rate               or vice versa. This is be-
+cause the number of W pixels are generally much greater than
+the number of B pixels. Thus, the W pixels may actually dom-
+inate the performance of              . As will be shown in the ex-
+periments, a detection algorithm may detect all B pixels but no
+W pixels. In this case, this algorithm achieves 100% target pixel
+detection rate                  , but                  . As a result,
+its target hit rate         is very small because                     .
+On the other hand, if the target hit rate                 , it implies
+that all B and W pixels are detected. In this case, even though the
+target is hit, we may still not be able to precisely locate where
+the target is. So the B target pixel detection rate                  is
+more important than               since it provides the information
+about the exact location of the target.
+   In addition to (44)–(46), we are also interested in target false
+alarm rate              and target miss rate                   defined
+later
+                                                                                                            (a)
+                                                                  (47)
+
+
+
+
+                                                                  (48)
+
+If there are targets                  needing to be classified, the
+overall detection rate             for a class of targets can be
+defined as
+
+                                                                  (49)
+
+
+where                                            for              . As
+will be seen in the following experiments, a higher
+does not imply higher classification accuracy, because it may
+happen that several targets are detected in one single image due
+to their similar signature spectra and it is difficult to discriminate
+one from another. This results in poor classification. In order to
+account for this phenomenon we define the classification rate
+for a specific target ,             as
+
+                                                                  (50)
+                                                                                                            (b)
+and the overall classification rate as
+                                                                          Fig. 7. (a) Abundance-based gray scale images generated by OSP using
+                                                                          B pixels. (b) Binary images resulting from WTAMPC applied to images in
+                                                                  (51)    Fig. 7(a).
+
+
+where        and           are defined by (49) and (50) respec-             Since the target detection and classification algorithms
+tively. Now using (44)–(51) as criteria, we can evaluate the              described in Section III are based on the abundance fractions
+detection and classification performance of various algorithms            of targets estimated from mixed pixels, the images produced
+through the HYDICE experiments.                                           by mixed pixel classification are gray-scale with the gray level
+CHANG AND REN: EXPERIMENT-BASED QUANTITATIVE AND COMPARATIVE ANALYSIS OF TARGET DETECTION                                         1055
+
+
+
+                                                              TABLE I
+                    TALLIES OF TARGET PIXELS FOR OSP-DETECTION USING B PIXELS AFTER WTAMPC, WITH DETECTION RATES
+
+
+
+
+                                                              TABLE II
+                 TALLIES OF TARGET PIXELS FOR OSP-DETECTION USING B AND W PIXELS AFTER WTAMPC WITH DETECTION RATES
+
+
+
+
+                                                              TABLE III
+                TALLIES OF TARGET PIXELS FOR OSP-DETECTION USING MANUAL SAMPLING AFTER WTAMPC WITH DETECTION RATES
+
+
+
+
+values representing the abundance fractions of targets present      the right. This grass field contains a road along the right edge
+in mixed pixels. With the availability of standardized data and     of the image. There are ten vehicles,
+the help of the MPC algorithms developed in Section IV, we can              ,     and      parked along the tree line and aligned ver-
+evaluate these algorithms objectively via (44)–(51) by actually     tically. They belong to three different types, denoted by V1 for
+tallying the number of target pixels detected for performance       Type 1, V2 for Type 2 and V3 for Type 3. The bottom four,
+analysis.                                                           denoted by                and     belong to V1 with size approx-
+                                                                    imately 4 m 8 m. The middle three, denoted by                  and
+                                                                         belong to V2 with size approximately 3 m 6 m. The top
+VI. COMPARATIVE PERFORMANCE ANALYSIS USING HYDICE                   three, denoted by            and      belong to V3 but have the
+                       DATA                                         same size as V2. In addition to vehicles, four man-made objects
+   This section contains a series of experiments which use a HY-    of two types are shown in the image. Two are located in the near
+DICE standardized data set to conduct a comprehensive com-          center of the scene, the bottom one denoted by         and the top
+parison among the OSP-based mixed pixel classification and          one by      , and another two are on the right edge, the bottom
+distance-based pure pixel classification algorithms. Three com-     one denoted by , and the top one by           .    and      belong
+parative studies are designed. First of all, we describe the HY-    to the same type, indicated by O1, , and         belong to another
+DICE image scene.                                                   type indicated by O2. In terms of class separation, there are five
+                                                                    distinct classes of targets in the image scene, three for vehicles
+                                                                    and two for man-made objects. It is worth noting that the HY-
+A. HYDICE Image Scene
+                                                                    DICE scene in Fig. 2(a) was geometrically corrected to precisely
+   The data used for the experiments are an image scene in          locate the spatial coordinates of all vehicles by either BLACK
+Maryland taken by a HYDICE sensor in August 1995 using 210          or WHITE masks, where the BLACK-masked pixels are center
+bands of spectral coverage 0.4–2.5 m with resolution 10 nm.         pixels of targets and WHITE-masked pixels may be part of the
+The scene is of size           , shown in Fig. 2(a), taken from a   target pixels or target background pixels or target shadow pixels.
+flight altitude of 10 000 ft within a GSD of approximately 1.5      So, BLACK-masked target pixels are always in WHITE mask
+m. Each pixel vector has a dimensionality of 210. This figure       frames. However, in this paper, the BLACK-masked pixels will
+shows a tree line along the left edge and a large grass field on    be considered separately from WHITE-masked pixels since they
+1056                                                            IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 38, NO. 2, MARCH 2000
+
+
+
+
+Fig. 8.   (top) Abundance-based gray scale images generated by ATDCA. (bottom) Binary images resulting from WTAMPC applied to images in Fig. 8(a).
+
+
+
+
+                                                                   TABLE IV
+                                    TALLIES OF TARGET PIXELS FOR ATDCA AFTER WTAMPC WITH DETECTION RATES
+
+
+
+
+will be used as target signatures for classification. This informa-           top vehicle   belongs to V2 and the bottom three
+tion allows us to perform a quantitative analysis and compara-                belong to V1.
+tive study of various classification algorithms. A smaller scene
+shown in Fig. 3, cropped from the lower part of Fig. 2 will be                B. HYDICE Experiments
+also used for more detailed studies. It is the exact same image                 Since the exact locations of all the vehicles and man-made
+scene studied in [6], [7], [19], [31] and has a different GSD 0.78            objects in Fig. 2 are available, we can extract target center
+meters with the image turned upside down. It contains only four               pixels masked by BLACK and mixed pixels masked by
+vehicles              and      and one man-made object . The                  WHITE directly from the image scene for each vehicle. The
+CHANG AND REN: EXPERIMENT-BASED QUANTITATIVE AND COMPARATIVE ANALYSIS OF TARGET DETECTION                                        1057
+
+
+
+
+Fig. 9.    Spectral signatures of the ten targets in Fig. 2.
+
+
+
+
+                                                                 Fig. 11.   Images generated by MD using B pixels.
+
+
+                                                                 HYDICE data. Since both OBSP and MLE generate an iden-
+                                                                 tical estimation error given by (25) and (28), a fact also reported
+                                                                 in [21], [23] and [24], we will only focus our experiments on
+                                                                 OSP, OBSP and SSP. It is interesting to note that if we apply
+                                                                 a scaled OSP classifier,                       to model (2), it re-
+                                                                 sults in the same equations given by Eqs. (24) and (28) with
+                                                                 both            and          replaced by . This implies that if
+                                                                 the knowledge about the abundance vector is given a priori,
+                                                                 then OBSP and MLE are reduced to OSP. On the other hand, if
+                                                                 the abundance vector is not known and needs to be estimated
+                                                                 by , then OBSP and MLE will be used to replace OSP. Conse-
+                                                                 quently, OSP can be viewed as the a priori version of OBSP and
+                                                                 MLE, while OBSP and MLE can be thought of as a posteriori
+                                                                 version of OSP. So, the experiments done in [15] were actually
+                                                                 based on the a posteriori version of OSP.
+Fig. 10.    Images generated by ED using B pixels.
+                                                                    As shown in (4) and (20), OSP and OBSP produced an iden-
+                                                                 tical classification vector,        with an extra scaling constant
+average radiances for three types of vehicles were calculated                    appearing in OBSP classifier. As reported in [23]
+and plotted in Fig. 4. The spectral signatures in Fig. 4 were    and [24], this scaling constant accounts for the amount of the
+used as the desired target information in implementation of      abundance fractions resident in classified pixels and results in
+the algorithms.                                                  two completely different gray level ranges for OSP and OBSP.
+  Example 1: The theoretical studies on comparative analysis     However, an interesting finding was observed. The scaling con-
+among subspace projection methods were investigated previ-       stant does not have impact on images displayed on computer
+ously and separately in [15], [16], [20], [21] based on AVIRIS   because the images generated by OSP and OBSP for computer
+data. In this example, we conduct an experiment-based com-       display are all scaled to 256 gray levels. In this case, the scaling
+parison among OSP, OBSP, MLE and SSP using standardized          constant                  is absorbed in the scaling process for
+1058                                                      IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 38, NO. 2, MARCH 2000
+
+
+
+
+Fig. 12.   Images generated by LDAED using B pixels.                   Fig. 13.   Images generated by LDAMD using B pixels.
+
+
+computer display. So, from a display point of view, they all pro-      terest, the images in Fig. 6(b) contain more random noise which
+duce identical results as shown in Fig. 5(a) and (b), where the        blurs the targets, and particularly, the classification of the ob-
+man-made object O2 and a small portion of O4 in the scene in           ject. Unfortunately, such improvements and differences cannot
+Fig. 3 were classified. In addition, this scaling process is also      be visualized on a 256-gray scale computer display device be-
+invariant to the abundance percentage, as mentioned in the end         cause the dynamic range of the abundance is far beyond 256
+of Section V. This is because the abundance percentage is cal-         scales, ranging from some negative values due to noise to num-
+culated based on relative proportions among abundance frac-            bers in thousands. So, when we display the OSP, the OBSP
+tions. In order to overcome this problem, we took their abso-          and SSP-generated images by scaling down to a 256-gray level
+lute differences to substantiate the difference between the abun-      range, their differences are suppressed and cannot be substanti-
+dance fractions generated by OSP and OBSP and display their            ated. As a result, the images turned out to be identical as shown
+error images in 256 gray scales in Fig. 6(a). If OSP and OBSP          in Fig. 5(a)–(c). This further simplifies our comparative anal-
+generate identical results, their absolute difference should be 0      ysis where the OSP can be selected as a representative for com-
+and their corresponding error images should be all black. Ob-          parison in the following experiments. Nevertheless, it should be
+viously, this is not true as we can see in Fig. 6(a), where only       noted that the superior performance of OBSP and SSP to that of
+targets to be classified are shown in the images. This further         OSP in abundance estimation has been demonstrated by com-
+justifies the subtle difference between OSP and OBSP. On the           puter simulations in [35].
+other hand, SSP is quite different from OBSP in that SSP in-              Example 2: This example is designed to demonstrate the dif-
+cludes an additional signature subspace projector       in its clas-   ference between a priori knowledge and a posteriori knowl-
+sifier. As a result, the SSP-generated estimation error given by       edge as used in the algorithms. In the case of a priori knowl-
+(16) is different from (25). In [20], it was shown via ROC (re-        edge, we assume that the B pixels are available. If a posteriori
+ceiver operating characteristic) analysis that SSP greatly im-         knowledge is assumed, the target pixels will be extracted di-
+proved OSP in terms of signal to noise ratio if the additive noise     rectly from an image scene by manual sampling (OSP), or by
+is assumed to be Gaussian. An error theory using ROC analysis          computer (ATDCA) which may include either B or W pixels or
+for a posteriori OSP and OSP is further investigated in [34].          both. If the signatures are not correctly extracted from the data,
+The error images resulting from the absolute difference between        i.e., no B pixels, what is the effect on the detection and classifi-
+the OBSP-generated and SSP-generated images are shown in               cation performance and how robust are OSP and ATDCA? Four
+Fig. 6(b). Unlike Fig. 6(a), which largely shows targets of in-        signature extraction methods were compared, (1) the use of B
+CHANG AND REN: EXPERIMENT-BASED QUANTITATIVE AND COMPARATIVE ANALYSIS OF TARGET DETECTION                                                            1059
+
+
+
+
+                                    (a)                                                                             (b)
+Fig. 14. (a) Abundance-based gray scale images generated by OSP using B pixels, (b) binary images of Fig. 14(a) resulting from WTAMPC, (c) abundance-based
+gray scale images generated by OSP using B and W pixels, and (d) binary images of Fig. 14(c) resulting from WTAMPC.
+
+
+pixels provided by the standardized data set; (2) the use of all              sual inspection. ATDCA deserves more attention here. Unlike
+masking pixels, i.e., both B and W pixels provided by the stan-               OSP which made use of sample pixels for target detection and
+dardized data set; (3) manual sampling by visual inspection as                classification, ATDCA does not require any such a priori in-
+done in previous research [6], [15], [16], [20], [21]; (4) unsu-              formation. It automatically searched for all targets of interest
+pervised ATDCA which requires no human intervention [22].                     and further detected and classified the targets. So, Fig. 8(i)
+Three types of vehicles, V1, V2, V3, and two types of objects,                shows the target detection and classification results generated
+O1, O2, were used for classification where the desired signa-                 by ATDCA based on 15 target signatures it found in the image
+tures were the average values of all target sample pixels of in-              scene. Since ATDCA does not have prior knowledge about ve-
+terest. For instance, to classify V1 (i.e., the vehicles of Type 1),          hicles and objects, it detected all possible targets and then clas-
+the desired signature was obtained by averaging target pixels of              sified them subsequently. For instance, Fig. 8(iii) shows the ob-
+all four vehicles:                  . Similarly, the target pixels of         ject      while Fig. 8(x) shows the vehicles            and the ob-
+     and     were averaged to generate the desired signature for              ject     . Similarly, both Fig. 8(xi) and (vi) show the vehicles
+O1, etc. Fig. 7(a) is the results of using B pixels for OSP, where                and      while Fig. 8(xiii) only shows       . So, Table IV is
+a total of 16 000 pixels in Fig. 2 were used for classification. In           different from Tables I–III. The first column of the table spec-
+order to tally target pixels detected, we need to convert abun-               ifies different types of targets in separate images as indicated
+dance-based mixed pixels to pure target pixels.                               and tabulates the number of detected target pixels and their cor-
+   Table I is a tally of target pixels in Fig. 7(b) resulting from            responding detection rates using WTAMPC. In all the figures,
+WTAMPC where target B pixels were used the sample pixels                      images labeled by (a) are abundance-based images, images la-
+for OSP. Similarly, Table II is a tally of target pixels and their            beled by (b) are binary images thresholded by WTAMPC. As
+detection rates resulting from WTAMPC where target B and W                    shown in these figures, there is no visible difference between
+pixels were used the sample pixels for OSP. Table III is a tally of           using B pixels and manual sampling in abundance-scaled im-
+target pixels and their detection rates resulting from WTAMPC                 ages. However, when we used full masks including B and W
+where the sample target pixels were selected manually by vi-                  pixels in our experiments, the results were very poor and are
+1060                                                      IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 38, NO. 2, MARCH 2000
+
+
+
+not comparable to the results obtained by manual sampling and
+ATDCA. This is because W pixels are target-background mixed
+pixels and their number is much greater than that of B pixels.
+As a consequence, the W pixels dominate target signatures and
+smeared the purity of target signatures. Also shown in this ex-
+ample, ATDCA is comparable to OSP by visually interpreting
+their abundance-based images. This observation demonstrates
+that the unsupervised OSP can do as well as OSP and allows
+us to replace OSP with ATDCA in unknown or blind environ-
+ment where no a priori knowledge is required. This advantage
+is substantial in many real applications because obtaining the
+prior information about the signatures is considered to be very
+difficult or sometimes impossible.
+   One worthy comment is the following. Although the targets
+shown in Fig. 2 are ten different targets, their spectral character-
+istics are not necessarily very distinct. As shown in Fig. 9, the
+spectral signatures of some targets are very similar even though
+the targets themselves are completely distinct. For example, the
+signature of is very close to those of               and the signa-
+ture of is also very close to those of            and . However,
+they belong to completely different vehicle types. But if we clas-
+sify     using its spectral signature, it was extracted along with
+    as shown in the above experimental results, and vice versa.
+Similarly. it is also true for            and . Some studies on
+this phenomenon were reported in [6] and [31]. More detailed
+analysis on the results on Figs. 2 and 7–9 can be found in [31].
+   Example 3: In the previous two examples, comparisons were
+made among abundance estimated-based algorithms for mixed
+pixel classification. The example presented here will compare          Fig. 15. (a) Abundance-based gray scale images generated by the ATDCA and
+these algorithms against popular pure-pixel classification algo-       (b) binary images resulting from WTAMPC.
+rithms widely used in pattern classification as described in Sec-
+tion IV. In order to make the experiments simple, we again used        while images in Figs. 14(c)–(d) and 15(b) are binary images
+the image scene in Fig. 3, which is of size               and has a    thresholded by WTAMPC. Tables V–X tabulate the number
+total of 3600 pixels. In addition to vehicles and the object, we       of detected target pixels and their corresponding detection
+also included signatures of tree, road and grass field in the sig-     rates for ED, MD, LDAED, LDAMD, OSP and ATDCA
+nature matrix . So, a total of 6 classes will be considered for        respectively. It should be noted that the tallies for OSP and
+this example with each class represented by a distinct signature.      ATDCA were calculated after WTAMPC was applied. Their
+   Since each target (including the man-made objects) contains         overall detection and classification rates        and       were
+no more than 16 B pixels whose number is far less than the             also calculated by (49)–(51) and are tabulated in Table XI. The
+number of bands. Supervised second-order minimum distance-             experiments demonstrate several facts.
+based classification algorithms are generally not applicable be-          1) The abundance-based gray scale images in
+cause the ranks of covariance matrices used in (35) and (36)                 Figs. 14(a)–(b) and 15(a) produced by mixed pixel
+will be very small due to a very limited set of training sam-                classification algorithms, OSP and ATDCA are among
+ples. Similarly, it is also true for LDA using MD described by               the best since the gray levels provide significant visual
+(42), referred to as LDAMD. Under this circumstance, we need                 information, which improves the classification results
+to create more samples to augment the training pool. One way                 considerably.
+to do so is to adopt an approach proposed in [36] which uses              2) If the abundance-based gray scale images in
+the second-order statistics to generate additional nonlinear cor-            Figs. 14(a)–(b) and 15(a) are thresholded by the
+related samples from the available samples. These new gen-                   WTAMPC, the resulting images along with tallies shown
+erated samples can improve the classification performance. In                in Figs. 14(c)–(d), 15(b), and Tables IX–X are better than
+order to further simplify experiments, ED and MD were used for               those in Figs. 10 and 11 with tallies given in Tables V–VI
+comparisons because they are representatives of the first-order              (produced by the minimum distance-based classifiers,
+and second-order minimum distance-based classification algo-                 ED and MD), but not as good as those in Figs. 12–13 with
+rithms. We refer for details to [31].                                        tallies given in Tables VII–VIII (produced by LDAED
+   Figs. 10–13 are results generated by ED, MD, LDAED                        and LDAMD). Among these cases, LDA produced the
+(LDA using ED) and LDAMD respectively. The images in                         best results. This can be also seen in Table XI where
+Figs. 14(a)–(b) and 15(a) are abundance-based gray scale                     the overall target detection rate of WTAMPC is right
+images generated by OSP and ATDCA using six signatures                       in between LDA and minimum distance classification.
+CHANG AND REN: EXPERIMENT-BASED QUANTITATIVE AND COMPARATIVE ANALYSIS OF TARGET DETECTION                                          1061
+
+
+
+                                                             TABLE V
+                           TALLIES OF TARGET PIXELS FOR ED-DETECTION USING B PIXELS WITH DETECTION RATES
+
+
+
+
+                                                            TABLE VI
+                           TALLIES OF TARGET PIXELS FOR MD-DETECTION USING B PIXELS WITH DETECTION RATES
+
+
+
+
+                                                           TABLE VII
+                         TALLIES OF TARGET PIXELS FOR LDAED-DETECTION USING B PIXELS WITH DETECTION RATES
+
+
+
+
+                                                           TABLE VIII
+                         TALLIES OF TARGET PIXELS FOR LDAMD-DETECTION USING B PIXELS WITH DETECTION RATES
+
+
+
+
+                                                             TABLE IX
+      TALLIES OF TARGET PIXELS FOR OSP-DETECTION USING B AND W PIXELS AND MANUAL SAMPLING AFTER WTAMPC WITH DETECTION RATES
+
+
+
+
+      It makes sense since LDA is based on the criterion of              pixel classification as demonstrated in Figs. 14(a), (c)
+      class separability. It further showed that the minimum             and 15(a). The visual information generated by abun-
+      distance-based pure pixel classification is among the              dance-based gray scale images offers very useful and
+      worst. This means that without taking advantage of the             valuable knowledge that can significantly help interpret
+      visual information provided by abundance-based gray                classification results.
+      levels, the minimum distance-based classification simply        3) There is no obvious advantage of using the second-order
+      cannot compete against LDA and WTAMPC. These                       statistic-based classifier MD over the first order statistics-
+      results justify a very important conclusion. Pure pixel            based classifier ED, as shown in Tables VII–VIII. This
+      classification is generally not as informative as mixed            is probably due to the fact that there is not much spatial
+1062                                                    IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 38, NO. 2, MARCH 2000
+
+
+
+                                                             TABLE X
+                      TALLIES OF TARGET PIXELS FOR ATDCA USING 6 SIGNATURES AFTER WTAMPC WITH DETECTION RATES
+
+
+
+
+                          TABLE XI                                   ventional pure pixel classification techniques could be readily
+ OVERALL DETECTION AND CLASSIFICATION RATES FOR ED, MD, LDAED,
+                                                                     applied. Although WTAMPC performed better than the min-
+                   LDAMD, OSP AND ATDCA
+                                                                     imum distance-based pure pixel classification against a stan-
+                                                                     dardized data set, it unfortunately did not do as well as the class
+                                                                     separability-based LDA due to the fact that WTAMPC results
+                                                                     in the loss of gray level information about abundance fractions.
+                                                                     Such information, provided by the abundance-based gray scale
+                                                                     images that are generated by mixed pixel classification algo-
+                                                                     rithms, contains very useful visual features which can substan-
+                                                                     tially improve image interpretation of classification results. Pure
+       correlation, that a second-order statistic-based classifier   pixel classification algorithms cannot provide such information.
+       can take advantage, because the pool of training target       Despite our effort to conduct comprehensive and rigorous com-
+       samples is relatively small.                                  parative analysis of various classification algorithms for hyper-
+   4) For the purpose of illustration, all the images produced       spectral imagery, completion is not claimed. In particular, the
+       by pure pixel classification and WTAMPC were binary           WTA-based converter used in this paper for tallying target pixels
+       to show a specific classified target.                         was a simple thresholding technique and may not necessarily
+However, as shown in [31] this is not always the case for pure       be optimal. There may exist an effective MPC which can pro-
+pixel classification. There are in some experiments where sev-       duce better pure pixel classification performance. Many thresh-
+eral targets were detected in a single binary image but could not    olding algorithms are available in the literature [37]. Most of
+be discriminated from one another. For instance, for an unsuper-     them, however, were developed based on pure pixel image pro-
+vised LDAED (i.e., ISODATA(LDAED)), the three targets V1,            cessing and may not be directly applicable to our problem. A
+V2, and Object were detected in a single binary image with de-       further study on this issue may be worth pursuing. Finally, it
+tection rates defined by (44) as high as 100%, 100%, and 95%         should be noted that all the algorithms considered in this paper
+respectively. At the same time, the number of false alarm target     are unconstrained in the sense that no constraints are imposed
+pixels was also very high, e.g., 87 false alarm pixels as opposed    on signature abundances, such as the abundance fractions must
+to 12 B-pixels for V1, 125 false alarm pixels as opposed to          be summed to one or must be nonnegative. Investigation of con-
+3 B-pixels for V2 and 95 false alarm pixels as opposed to 19         strained mixed pixel classification problems is a separate issue
+B-pixels for Object. As a result, the overall classification rate    and has been recently reported in [35], [38].
+among three targets can be as low as 5% while each target de-
+tection rate is very high close to 100%. This demonstrates that                                ACKNOWLEDGMENT
+higher target detection rates do not necessarily result in high
+classification rates. For details, we refer to [31].                   The authors would like to thank Dr. M. L. G. Althouse and
+                                                                     A. Ifarragaerri for proofreading this paper and the anonymous
+                       VII. CONCLUSION                               reviewers for their comments which helped to improve the paper
+                                                                     quality and presentation.
+   Many hyperspectral target detection and image classification
+algorithms have been proposed in the literature. Comparing one
+                                                                                                    REFERENCES
+relative to another has been very challenging due to a lack of
+standardized data. Another difficulty arises from the fact that        [1] R. O. Duda and P. E. Hart, Pattern Classification and Scene Anal-
+                                                                           ysis. New York: Wiley, 1973.
+there are no rigorous criteria to substantiate an algorithm. This      [2] J. G. Moik, Digital Processing off Remotely Sensed
+paper first considered the mixed pixel classification problem              Images. Washington, DC: NASA SP-431, 1980.
+and then reinterpreted mixed pixel classification from a pure          [3] R. A. Schowengerdt, Techniques for Image Processing and Classifica-
+                                                                           tion in Remote Sensing. New York: Academic, 1983.
+pixel classification point of view by imposing some constraints        [4] J. A. Richards, Remote Sensing Digital Image Analysis, 2nd ed. Berlin,
+on the signature abundances. As a result, the classes of classifi-         Germany: Springer-Verlag, 1993.
+cation algorithms to be evaluated in this paper were reduced to        [5] J. R. Jensen, Introductory Digital Image Processing: A Remote Sensing
+                                                                           Perspective, 2nd ed. Englewood Cliffs, NJ: Prentice-Hall, 1996.
+three categories: OSP-based mixed pixel classifiers, minimum           [6] C.-I Chang, T.-L. E. Sun, and M. L. G. Althouse, “An unsupervised
+distance-based pure pixel classifiers and Fisher's LDA. In ad-             interference rejection approach to target detection and classification for
+dition, a winner-take-all based mixed-to-pure pixel converter              hyperspectral imagery,” Opt. Eng., vol. 37, pp. 735–743, Mar. 1998.
+                                                                       [7] C.-I Chang and Q. Du, “Interference and noise adjusted principal com-
+(WTAMPC) was developed to translate a mixed pixel classifica-              ponents analysis,” IEEE Trans. Geosci. Remote Sensing, vol. 37, pp.
+tion problem into a pure pixel classification problem so that con-         2387–2396, Sept. 1999.
+CHANG AND REN: EXPERIMENT-BASED QUANTITATIVE AND COMPARATIVE ANALYSIS OF TARGET DETECTION                                                                          1063
+
+
+
+  [8] S. D. Zenzo, S. D. Degloria, R. Bernstein, and H. C. Kolsky, “Gaussian          [29] T. M. Tu, H. C. Shy, C.-H. Lee, and C.-I Chang, “An oblique subspace
+      maximum likelihood and contextual classification algorithms for multi-               projection to mixed pixel classification in hyperspectral images,” Pat-
+      crop classification,” IEEE Trans. Geosci. Remote Sensing, vol. GE-25,                tern Recognit., vol. 32, pp. 1399–1408, Aug. 1999.
+      pp. 805–814, Nov. 1987.                                                         [30] C. Brumbley and C.-I Chang, “Unsupervised linear unmixing Kalman
+  [9] S. D. Zenzo, R. Bernstein, S. D. Degloria, and H. C. Kolsky, “Gaussian               filtering approach to signature extraction and estimation for remotely
+      maximum likelihood and contextual classification algorithms for multi-               sensed images,” in Int. Symp. Geoscience and Remote Sensing'98,
+      crop classification experiments using thematic mapper and multispectral              Seattle, WA, July 5–10, 1998, pp. 1590–1592.
+      scanner sensor data,” IEEE Trans. Geosci. Remote Sensing, vol. GE-25,           [31] H. Ren, “A Comparative Study of Mixed Pixel Classification versus
+      pp. 815–824, Nov. 1987.                                                              Pure Pixel Classification for Multi/Hyperspectral Imagery,” M.S.
+ [10] B. Kim and D. A. Landgrebe, “Hierarchical classifier design in high-di-              Thesis, Dept. Comp. Sci. Elect. Eng., Univ. Maryland, Baltimore
+      mensional, numerous class cases,” IEEE Trans. Geosci. Remote Sensing,                County, May 1998.
+      vol. 29, pp. 792–800, July 1991.                                                [32] S. Haykin, Neural Networks: Macmillan, 1994.
+ [11] C. Lee and D. A. Landgrebe, “Analyzing high-dimensional multispectral           [33] K. Fukunaga, Statistical Pattern Recognition, 2nd ed. New York: Aca-
+      data,” IEEE Trans. Geosci. Remote Sensing, vol. 31, pp. 792–800, July                demic, 1990.
+      1993.                                                                           [34] C. I Chang, “Least squares error theory for linear mixing problems with
+ [12] B. M. Shahshahani and D. A. Landgrebe, “The effect of unlabeled                      mixed pixel classification for hyperspectral imagery,” Recent Res. Devel.
+      samples in reducing the small sample size problem and mitigating the                 Opt. Eng., vol. 2, pp. 241–268, 1999.
+      Hugh phenomenon,” IEEE Trans. Geosci. Remote Sensing, vol. 32, pp.              [35] D. Heinz and C.-I Chang, “Subpixel spectral detection for remotely
+      1087–1095, Sept. 1994.                                                               sensed images,” , to be published.
+ [13] X. Jia and J. A. Richards, “Efficient maximum likelihood classifica-            [36] H. Ren and C.-I Chang, “A generalized orthogonal subspace projec-
+      tion for imaging spectrometer data sets,” IEEE Trans. Geosci. Remote                 tion approach to unsupervised multispectral image classification,” SPIE
+      Sensing, vol. 32, pp. 274–281, Mar. 1994.                                            Conf. Image and Signal Processing for Remote Sensing IV, vol. 3500,
+ [14] C. Lee and D. A. Landgrebe, “Feature extraction based on decision                    pp. 42–53, Sept. 21–25, 1998.
+      boundaries,” IEEE Trans. Pattern Anal. Machine Intell., vol. 15, no. 4,         [37] P. K. Sahoo, S. Soltani, A. K. C. Wong, and Y. C. Chen, “A survey
+      pp. 388–400, Apr. 1993.                                                              of thresholding techniques,” Comput. Vis., Graph. Image Process.
+ [15] J. C. Harsanyi and C.-I Chang, “Hyperspectral image classification and               (CVGIP), vol. 41, pp. 233–260, 1988.
+      dimensionality reduction: An orthogonal subspace projection,” IEEE              [38] D. Heinz and C.-I Chang, “Fully constrained least squares-based linear
+      Trans. Geosci. Remote Sensing, vol. 32, pp. 779–785, July 1994.                      unmixing,” in Int. Geoscience and Remote Sensing Symp. '99, Hamburg,
+ [16] J. Harsanyi, “Detection and Classification of Subpixel Spectral Signa-               Germany, June 28–July 2, 1999, pp. 1401–1403.
+      tures in Hyperspectral Image Sequences,” Ph.D. Dissertation, Dept.
+      Elect. Eng., Univ. Maryland, Baltimore County, Aug. 1993.
+ [17] DARPA Spectral Exploitation Workshop, The Defense Adavanced Re-
+      search Projects Agency, Annapolis, MD, July 1–2, 1996.
+ [18] C. Brumbley and C.-I Chang, “An unsupervised vector quantiza-                                              Chein-I Chang (S'81–M'87–SM'92) received the
+      tion-based target signature subspace projection approach to classifica-                                    B.S., M.S., and M.A. degrees from Soochow Uni-
+      tion and detection in unknown background,” Pattern Recognit., vol. 32,                                     versity, Taipei, Taiwan, R.O.C., in 1973, the Institute
+      pp. 1161–1174, July 1999.                                                                                  of Mathematics at National Tsing Hua University,
+ [19] C.-I Chang, Q. Du, T. S. Sun, and M. L. G. Althouse, “A joint band                                         Hsinchu, Taiwan, in 1975, and the State University
+      prioritization and band decorrelation approach to band selection for hy-                                   of New York, Stony Brook, in 1977, respectively, all
+      perspectral image classification,” IEEE Trans. Geosci. Remote Sensing,                                     in mathematics, and the M.S. and M.S.E.E. degrees
+      vol. 37, pp. 2631–2641, Nov. 1999.                                                                         from the University of Illinois, Urbana, in 1982.
+ [20] T. M. Tu, C. H. Chen, and C.-I Chang, “A posteriori least squares orthog-                                  He then received the Ph.D. in electrical engineering
+      onal subspace projection approach to desired signature extraction and                                      from the University of Maryland, College Park, in
+      detection,” IEEE Trans. Geosci. Remote Sensing, vol. 35, pp. 127–139,                                      1987.
+      Jan. 1997.                                                                        He was a Visiting Assistant Professor from January 1987 to August 1987, As-
+ [21] C.-I Chang, X. Zhao, M. L. G. Althouse, and J.-J. Pan, “Least squares          sistant Professor from 1987 to 1993, and is currently an Associate Professor, De-
+      subspace projection approach to mixed pixel classification in hyperspec-       partment of Computer Science and Electrical Engineering, University of Mary-
+      tral images,” IEEE Trans. Geosci. Remote Sensing, vol. 36, pp. 898–912,        land, Baltimore County, Baltimore. He was a Visiting Specialist in the Insti-
+      May 1998.                                                                      tute of Information Engineering at the National Cheng Kung University, Tainan,
+ [22] H. Ren and C.-I Chang, “A computer-aided detection and classification          Taiwan. from 1994 to 1995. He is an Editor for the Journal of High Speed Net-
+      method for concealed targets in hyperspectral imagery,” in Int. Symp.          work and the Guest Editor of a special issue on Telemedicine and Applications.
+      Geoscience and Remote Sensing'98, Seattle, WA, July 5–10, 1998, pp.            His research interests include automatic target recognition, multispectral/hyper-
+      1016–1018.                                                                     spectral image processing, medical imaging, information theory and coding,
+ [23] J. J. Settle, “On the relationship between spectral unmixing and sub-          signal detection and estimation, and neural networks.
+      space projection,” IEEE Trans. Geosci. Remote Sensing, vol. 34, pp.               Dr. Chang is a member of SPIE, INNS, Phi Kappa Phi, and Eta Kappa Nu.
+      1045–1046, July 1996.
+ [24] C.-I Chang, “Further results on relationship between spectral unmixing
+      and subspace projection,” IEEE Trans. Geosci. Remote Sensing, vol. 36,
+      pp. 1030–1032, May 1998.
+ [25] J. B. Adams and M. O. Smith, “Spectral mixture modeling: A new anal-                                      Hsuan Ren (S'98) received the B.S. degree in elec-
+      ysis of rock and soil types at the Viking lander 1 suite,” J. Geophys. Res.,                              trical engineering from the National Taiwan Univer-
+      vol. 91, pp. 8098–8112, July 10, 1986.                                                                    sity, Taipei, R.O.C., Taiwan, in 1994, and the M.S.
+ [26] Y. E. Shimabukuro and J. A. Smith, “The least-squares mixing models                                       degree in computer science and electrical engineering
+      to generate fraction images derived from remote sensing multispectral                                     from the University of Maryland Baltimore County,
+      data,” IEEE Trans. Geosci. Remote Sensing, vol. 29, pp. 16–20, Jan.                                       Baltimore (UMBC), in 1998, where he is currently a
+      1991.                                                                                                     Ph.D. candidate.
+ [27] J. W. Boardman, “Inversion of imaging spectrometry data using singular                                       He is currently a research assistant in the Remote
+      value decomposition,” in Proc. IEEE Symp. Geoscience and Remote                                           Sensing, Signal and Image Processing Laboratory,
+      Sensing, 1989, pp. 2069–2072.                                                                             UMBC. His research interests include data com-
+ [28] R. T. Behrens and L. L. Scharf, “Signal processing applications of                                        pression, signal and image processing and pattern
+      oblique projections operators,” IEEE Trans. Signal Processing, vol. 42,        recognition.
+      pp. 1413–1423, June 1994.                                                         Mr. Ren is a Member of Phi Kappa Phi.
+

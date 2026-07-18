@@ -1,0 +1,419 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" >
+<head>
+<title>RASPNet: A Benchmark Dataset for Radar Adaptive Signal Processing Applications
+</title>
+<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+<meta name="google-site-verification" content="5SmuLMXu4E0eUEaoacz3i6IsP6Y7i4v9qXPrBtDlM4Y" />
+
+<link href="/css/sdms_reset.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="/css/layout.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="/css/nav.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="/css/content.css" rel="stylesheet" type="text/css" />
+<link href="/css/tables.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="/css/print.css" rel="stylesheet" type="text/css" media="print" />
+
+<!--[if IE]>
+    <link href="/css/ie-fix.css" rel="stylesheet" type="text/css" media="screen">
+<![endif]-->
+
+</head>
+<body>
+
+<div id="header">
+
+	<a id="sdmslogo" href="index.php" title="SDMS Public Web Site">
+	<img src="/images/sdms_logo.png" width="238" height="75" alt="SDMS Logo" />
+</a>
+<a id="aflogo" href="http://www.airforce.com/" title="USAF Recruiting Site">
+	<img src="/images/af_logo.jpg" width="187" height="60" alt="Air Force Logo" />
+</a>
+<div id="navbar">
+    <ul class="main-nav">
+        <li class="submenu widemenu"><a href="">Available Data</a>
+            <div>
+                <ul>
+                    <li><a href="index.php?collection=3d_challenge" >3D Challenge 2003</a></li>
+                    <li><a href="index.php?collection=adaptsaps" >AdaptSAPS</a></li>
+                    <li><a href="index.php?collection=adts" >ADTS</a></li>
+                    <li><a href="index.php?collection=ccd_challenge" >CCD Challenge Problem</a></li>
+                    <li><a href="index.php?collection=clif2006" >CLIF 2006</a></li>
+                    <li><a href="index.php?collection=clif2007" >CLIF 2007</a></li>
+                    <li><a href="index.php?collection=csuav" >CSUAV</a></li>
+                    <li><a href="index.php?collection=cv_dome" >CV Data Domes</a></li>
+                    <li><a href="index.php?collection=fthood" >Ft. Hood</a></li>
+                    <li><a href="index.php?collection=gotcha" >Gotcha</a></li>
+                    <li><a href="index.php?collection=gtri" >GTRI</a></li>
+                    <li><a href="index.php?collection=greene07" >Greene 07</a></li>
+                    <li><a href="index.php?collection=mami2013" >MAMI 2013</a></li>
+                    <li><a href="index.php?collection=mstar" >MSTAR</a></li>
+                    <li><a href="index.php?collection=raspnet" >RASPNet</a></li>
+                    <li><a href="index.php?collection=gmti" >SAR GMTI Challenge</a></li>
+                    <li><a href="index.php?collection=vhf_change_detection" >VHF Change Detection</a></li>
+                    <li><a href="index.php?collection=video_sample_set_1" >Video Sample Set #1</a></li>
+                    <li><a href="index.php?collection=video_sample_set_2" >Video Sample Set #2</a></li>
+                    <li><a href="index.php?collection=wide_angle_sar" >Wide Angle SAR</a></li>
+                    <li><a href="index.php?collection=wpafb2009" >WPAFB 2009</a></li>
+                </ul>
+            </div>
+        </li>
+        <li class="submenu"><a href="">Software Tools</a>
+            <div>
+                <ul>
+                    <li><a href="index.php?collection=tools" >Tools Overview</a></li>
+                    <li><a href="index.php?collection=tools_adts" >ADTS</a></li>
+                    <li><a href="index.php?collection=tools_ddb" >DDB Jumpstart</a></li>
+                    <li><a href="index.php?collection=tools_mstar" >MSTAR</a></li>
+                    <!-- tools nitf removed on 6/9/2020 due to vulnerability in code -->
+                    <!--<li><a href="index.php?collection=tools_nitf" >NITF</a></li>-->
+                    <li><a href="index.php?collection=tools_phoenix" >Phoenix</a></li>
+                </ul>
+            </div>
+        </li>
+        <li class="submenu"><a>Data Request &amp; Download</a>
+            <div>
+                <ul>
+                    <!--<li><a href="index.php?collection=request" >Request Data</a></li>-->
+                    <li><a href="index.php?collection=registration" >Public Data Downloads</a></li>
+                    <li><a href="index.php?collection=request&page=datastat" >Check Your Order Status</a></li>
+                </ul>
+            </div>
+        </li>
+        <!--
+        <li class="submenu"><a>Data Downloads</a>
+            <div>
+                <ul>
+                    <li><a href="index.php?collection=registration" >Public Data Downloads</a></li>
+                </ul>
+            </div>
+        </li>
+        -->
+        <li class="submenu"><a>Challenge Areas</a>
+            <div>
+                <ul>
+                    <li><a href="index.php?collection=challenge_areas" >Challenge Areas Overview</a></li>
+                </ul>
+            </div>
+        </li>
+        <li id="joinaflink" ><a href="http://www.airforce.com/">Join the Air Force</a></li>
+    </ul>    
+</div>
+
+</div>
+
+<div class="colmask fullpage">
+    <div class="col1">
+        <!-- Column 1 start -->
+		<div id="CollectionName" class="hidden">RASPNet</div>
+<h1>RASPNet: A Benchmark Dataset for Radar Adaptive Signal Processing Applications</h1>
+
+<style type="text/css">
+    a:focus {
+        text-decoration: underline;
+    }
+
+    img.center {
+        display: block;
+        height: auto;
+        margin: 3em auto;
+        max-width: 100%;
+    }
+
+    img.external-link {
+        vertical-align: text-bottom;
+    }
+
+    .col1 ul li ul li {
+        margin: 0 0 0 0;
+    }
+
+    div.radar-scenarios {
+        align-items: stretch;
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    div.radar-scenarios > div {
+        box-sizing: border-box;
+        padding: 0 1em 1em 1em;
+        text-align: center;
+        width: 50%;
+    }
+    div.radar-scenarios img {
+        height: auto;
+        max-width: 100%;
+    }
+
+    div.scenario-samples {
+        align-items: flex-start;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-around;
+    }
+</style>
+
+<p>
+    The RASPNet dataset consists of 100 realistic scenarios compiled over a variety of topographies
+    and land types from across the contiguous United States, designed to reflect a diverse array of
+    real-world environments
+</p>
+
+<p>
+    Within each scenario, RASPNet consists of 10,000 clutter realizations from an airborne radar
+    setting, which can be utilized for radar algorithm development and evaluation.  RASPNet intends
+    to fill a pressing need in the availability of a large-scale, realistic dataset that standardizes
+    the evaluation of adaptive radar processing techniques
+</p>
+
+<img class="center" src="content/raspnet/raspnet-figures.png" alt="RASPNet Figures" />
+
+<p>
+    Each realization consists of I and Q radar data generated synthetically using the high-fidelity,
+    site-specific, physics-based RF Modeling and Simulation tool known as RFVIEW
+</p>
+
+<p>
+    Scenarios ordered by difficulty with respect to baseline scenario
+</p>
+
+<ul>
+    <li>
+        Baseline Scenario<br />
+        Bonneville Salt Flats, Utah (scenario with minimal terrain variability)
+    </li>
+    <li>
+        Scenarios categorized as<br />
+        <strong>basic</strong>, <strong>intermediate</strong>, <strong>advanced</strong>, and
+        <strong>eye-watering</strong>
+    </li>
+</ul>
+
+<p>
+    A complete description of the RASPNet dataset is available here:
+    <a href="https://arxiv.org/abs/2406.09638" target="_blank" rel="noopener noreferrer">
+        Technical Paper <img class="external-link" src="images/icon_external-link_16x16_444444.png" alt="External Link Icon" />
+    </a>
+</p>
+
+<h2>RASPNet CVNN</h2>
+
+<p>
+    The RASPNet Complex-Valued Neural Network (CVNN) benchmark comprises feature-label pairs pertaining to five scenarios from
+    RASPNet. The train and test features for each scenario consist of radar return data matrices, which are divided into real
+    and imaginary components. The labels comprise the ground truth target locations for these data matrices.
+</p>
+
+<p class="downloadLink">
+	Public CVNN data are available for immediate <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_CVNN">DOWNLOAD</a>.
+</p>
+
+<h2>RASPNet EXAMPLES</h2>
+
+<p>
+    The RASPNet EXAMPLES benchmark comprises feature-label pairs pertaining to five scenarios from RASPNet. The features for each
+    scenario consist of heatmap matrices of the NAMF test statistic. The labels comprise the ground truth target locations for
+    these heatmap matrices.
+</p>
+
+<p class="downloadLink">
+	Public data examples are available for immediate <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Examples">DOWNLOAD</a>.
+</p>
+
+<h2>Radar Scenarios</h2>
+
+<div class="radar-scenarios">
+    <div>
+        <img src="content/raspnet/raspnet-basic-scenarios.jpg" alt="RASPNet Basic Scenarios Locations" /><br />
+        <strong>(a)</strong> Basic Scenarios
+    </div>
+    <div>
+        <img src="content/raspnet/raspnet-intermediate-scenarios.jpg" alt="RASPNet Intermediate Scenarios Locations" /><br />
+        <strong>(b)</strong> Intermediate Scenarios
+    </div>
+    <div>
+        <img src="content/raspnet/raspnet-challenging-scenarios.jpg" alt="RASPNet Challenging Scenarios Locations" /><br />
+        <strong>(c)</strong> Challenging Scenarios
+    </div>
+    <div>
+        <img src="content/raspnet/raspnet-eyewatering-scenarios.jpg" alt="RASPNet Eye-watering Scenarios Locations" /><br />
+        <strong>(d)</strong> Eye-watering Scenarios
+    </div>
+</div>
+
+<h2>Scenario Samples (50 clutter realizations only)</h2>
+
+<!--
+<div class="scenario-samples">
+    <div>
+        <h3>Basic Scenarios</h3>
+
+        <p>
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 1</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 2</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 3</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 4</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 5</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 6</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 7</a> (855 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 8</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 9</a> (855 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 10</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 11</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 12</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 13</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 14</a> (858 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 15</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 16</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 17</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 18</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 19</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 20</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 21</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 22</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 23</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 24</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Scenario 25</a> (856 MB)
+        </p>
+    </div>
+    <div>
+        <h3>Intermediate Scenarios</h3>
+
+        <p>
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 26</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 27</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 28</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 29</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 30</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 31</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 32</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 33</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 34</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 35</a> (860 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 36</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 37</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 38</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 39</a> (857 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 40</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 41</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 42</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 43</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 44</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 45</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 46</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 47</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 48</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 49</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Scenario 50</a> (854 MB)
+        </p>
+    </div>
+    <div>
+        <h3>Challenging Scenarios</h3>
+
+        <p>
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 51</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 52</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 53</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 54</a> (857 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 55</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 56</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 57</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 58</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 59</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 60</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 61</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 62</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 63</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 64</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 65</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 66</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 67</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 68</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 69</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 70</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 71</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 72</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 73</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 74</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Scenario 75</a> (853 MB)
+        </p>
+    </div>
+    <div>
+        <h3>Eye-watering Scenarios</h3>
+
+        <p>
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 76</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 77</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 78</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 79</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 80</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 81</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 82</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 83</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 84</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 85</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 86</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 87</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 88</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 89</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 90</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 91</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 92</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 93</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 94</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 95</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 96</a> (854 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 97</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 98</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 99</a> (853 MB)<br />
+            <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Scenario 100</a> (854 MB)
+        </p>
+    </div>
+</div>
+-->
+
+<p class="downloadLink special">
+    Scenario samples are available for immediate download:<br /><br />
+    <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Basic_Scenarios">Basic Scenarios</a> |
+    <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Intermediate_Scenarios">Intermediate Scenarios</a> |
+    <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Challenging_Scenarios">Challenging Scenarios</a> |
+    <a href="./data_download/index.php?r=sdms/public-data-list&section=RASPNet_Public_Data_Eye_Watering_Scenarios">Eye-watering Scenarios</a>
+</p>
+
+<p><strong>
+    To request any of the complete scenarios, please send an email to
+    <a href="mailto:sdms_help@vdl.afrl.af.mil">sdms_help@vdl.afrl.af.mil</a>
+</strong></p>
+
+<p>
+    Include RASPNet and which scenarios you are requesting.
+</p>
+
+<p>
+    The data can be copied to a user-provided hard drive.
+</p>
+
+<p>
+    Data can only be shipped to US addresses.
+</p>
+
+                
+        <!-- Column 1 end -->
+    </div>
+</div>
+<div id="footer">
+	<div id="footercontent">
+    <a href="index.php?collection=sitemap&page=sitemap">Site Map</a> 
+    <a href="mailto:sdms_help@vdl.afrl.af.mil">Contact SDMS</a> 
+</div>
+<div id="footerAppendage">
+    <a href="index.php?collection=notice&page=security">Privacy & Security Notice</a> 
+    <a href="index.php?collection=notice&page=hyperlink">External Link Disclaimer</a>
+    <a href="index.php?collection=notice&page=contact">Contact Us</a>
+    <a href="http://prhome.defense.gov/nofear" title="No Fear Act" target="_new">No Fear Act</a>
+    <a href="http://www.usa.gov/" title="USA.gov" target="_new">USA.gov</a>
+    
+</div>    <div class="publicReviewDate">Current as of 24 July 2025</div>
+</div>
+</body>
+</html>

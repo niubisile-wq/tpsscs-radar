@@ -1,0 +1,1330 @@
+On Target Detection in the Presence of Clutter in
+Joint Communication and Sensing Cellular
+Networks
+Julia Vinogradova⋆, Gábor Fodor⋆⋆‡ ,
+
+arXiv:2404.12133v2 [cs.IT] 24 Apr 2024
+
+⋆
+
+Ericsson Research, Finland, Email: julia.vinogradova@ericsson.com
+⋆⋆
+Ericsson Research, Sweden, E-mail: gabor.fodor@ericsson.com
+‡
+KTH Royal Institute of Technology, Sweden. E-mail: gaborf@kth.se
+
+Abstract—Recent works on joint communication and sensing
+(JCAS) cellular networks have proposed to use time division
+mode (TDM) and concurrent mode (CM), as alternative methods for sharing the resources between communication and
+sensing signals. While the performance of these JCAS schemes
+for object tracking and parameter estimation has been studied
+in previous works, their performance on target detection in
+the presence of clutter has not been analyzed. In this paper,
+we propose a detection scheme for estimating the number of
+targets in JCAS cellular networks that employ TDM or CM
+resource sharing. The proposed detection method allows for
+the presence of clutter and/or temporally correlated noise. This
+scheme is studied with respect to the JCAS trade-off parameters
+that allow to control the time slots in TDM and the power
+resources in CM allocated to sensing and communications.
+The performance of two fundamental transmit beamforming
+schemes, typical for JCAS, is compared in terms of the receiver
+operating characteristics curves. Our results indicate that in
+general the TDM scheme gives a somewhat better detection
+performance compared to the CM scheme, although both
+schemes outperform existing approaches provided that their
+respective trade-off parameters are tuned properly.
+Index Terms—Beamforming, clutter, correlated noise detection, joint communication and sensing, parameter estimation.
+
+I. I NTRODUCTION
+The evolution of cellular networks and their enabling technologies are driven by both the insatiable demands for mobile
+broadband and Internet of Things connectivity services and
+location-aware and sensing applications [1], [2]. Indeed,
+highly reliable location-aware and sensing services provided
+by transport, smart city, automated factory and personalized
+health care applications are expected to become one of the
+attractive new features of emerging 6G networks [3], [4]. Due
+to their integrated communication, localization and sensing
+capabilities, 6G systems are evolving to perceptive mobile
+networks [5], which can be seen as a natural evolution of
+point-to-point dual-function communication and radar systems [6], [7].
+One of the key enabling technologies of perceptive mobile
+networks is joint communication and sensing (JCAS), which
+builds on the key observation that wireless communication
+and radar sensing share many commonalities in terms of
+hardware, signal processing algorithms and system architecture [8]–[12]. Recognizing the large interest in prospective
+
+sensing services provided by the ubiquitous cellular infrastructure, there is an increasing interest in developing energy
+and spectral efficient JCAS protocols and algorithms by both
+the academic and standardization communities, including the
+3rd Generation Partnership Project (3GPP) and the IEEE [2],
+[13], [14].
+Conceptually, there are two distinct approaches to sharing the time-space resources between communication and
+sensing signals in JCAS systems, which can be referred to
+as time division mode (TDM) and concurrent mode (CM),
+capitalizing on widely deployed multiple input multiple output (MIMO) systems and advanced multi-beam solutions [8],
+[15]–[17]. As the name suggests, in TDM, the communication and radar signals are separated in the time domain,
+such that at any one particular time instant, a slot or a
+frame is allocated to either a communication or a radar
+(sensing) signal, and orthogonality between the signals is
+maintained. In contrast, in CM, the communication and
+sensing signals may use the same or overlapping time and
+frequency resources, since either the same signal is used
+for carrying information to the intended receiver and for
+detecting and estimating the characteristics of passive objects,
+or the signals are separated in the spatial or beam domains
+[8], [15]. It is intuitively clear that both modes need to deal
+with their respective inherent trade-offs, which are related
+to the portion of time and the portion of the overall energy
+made available for communication and sensing [17].
+In particular, the recently proposed multibeam technology
+[8], [15], [16] enables to form spatially distinct lobes using
+either hybrid or analog beamforming architectures. In particular multibeam (actually referring to creating multiple lobes
+by analog beamforming) using a single radio frequency (RF)
+chain and multiple transmit antennas was proposed by [15],
+and further optimized by [16]. In contrast, [8] uses hybrid
+beamforming architectures with multiple RF chains to create
+multiple beams for serving communicating user equipments
+(UEs) and transmitting and receiving sensing signals concurrently. In our recent work [17], we compared the performance
+of the TDM and the CM in a bistatic JCAS system in terms of
+the achieved Cramér-Rao Lower Bound (CRLB) for angle of
+arrival (AoA) estimation of passive objects (targets) and the
+achievable signal-to-interference-plus-noise ratio (SINR) at
+
+the served UE. The overall conclusion of these recent works
+on using multibeams, as a key enabler for the CM operation
+of JCAS systems, is that CM may be superior to TDM
+provided that the overall transmit energy is properly divided
+between the communication and sensing beams (lobes) [17].
+Along a closely related research line, it has been pointed
+out by several recent works that for target detection – which
+is necessary for proper parameter estimation and tracking of
+passive objects – distinguishing the desired and unwanted
+radar echoes and suppressing clutter are crucial and highly
+non-trivial steps in JCAS systems and perceptive cellular
+networks [5], [9], [12], [18], [19]. A key difficulty for clutter
+suppression in JCAS systems is that the desired multipath
+and the radar echoes may be caused by the same scatterers
+and reflectors [15]. Therefore, for the purpose of estimating the channel parameters and then subsequently forming
+multibeams for JCAS, it may be necessary to beamform
+towards those scatterers, as it has been pointed out in
+[8]. Consequently, the performance of the TDM and CM
+multibeam schemes in terms of correct target detection and
+false alarm rates may be different, which need to be carefully
+analyzed. However, to the best of our knowledge, the impact
+of clutters on the performance of TDM and CM multibeam
+JCAS systems has not been modelled and analyzed in the
+literature.
+In this paper we propose a detection scheme for estimating
+the number of targets in the presence of clutters in a JCAS
+system that employs either TDM or CM operation. The
+proposed target detection method not only allows for the
+presence of clutters, but also deals with temporally correlated
+noise at the sensing receiver under assumption of the noise
+model introduced in [20] in the context of radar detection.
+The proposed detection test is based on random matrix theory
+(RMT) studied in the context of blind radar detection in the
+presence of white and colored noise models in [20]–[23]. The
+proposed scheme is studied with respect to the JCAS tradeoff parameters allowing to control the power and time resources allocated to sensing and communication respectively.
+The performance of two fundamental transmit beamforming
+schemes, for which sensing and communication beams are
+separated in time (TDM) and in space (CM), respectively
+are compared in terms of the well-known receiver operating
+characteristics (ROC) curves [24].
+We show that the proposed target detection approach
+allows to estimate the number of targets accurately, while
+the existing methods fail as they are typically designed for
+white noise scenarios.
+Notations: The superscripts (·)T and (·)H denote the transpose and Hermitian transpose operations, respectively. The
+notation CN (a, σ 2 ) represents the complex circular Gaussian
+distributions with mean a ∈ C and variance σ 2 ∈ R+ . The
+vector 0n denotes the n-dimensional vector with entries equal
+to zero, and In denotes the identity matrix of dimension n×n.
+
+II. S YSTEM MODEL
+A. System model
+We consider a bi-static scenario with the sensing transmitter (TX) and the sensing receiver (RX) nodes located at
+different base stations (BSs), as illustrated in Figure 1.
+
+Figure 1: System model with a sensing/communication transmitting
+BS, denoted by TX-s/TX-c with transmit beamforming towards K
+targets, a served UE, and a sensing receiver BS, denoted by RX-s,
+which is used to detect the targets.
+
+We assume uniform linear arrays with M and N antenna
+elements at the transmitter and the receiver sensing node,
+respectively, denoted by TX-s and RX-s. We assume that the
+transmitter is used for downlink (DL) communication with a
+UE, and denote this node by TX-c during the communication
+phase. We consider K targets – also referred to as passive
+objects since they are not equipped with wireless transmitter
+or receiver antennas – modeled as single point reflectors with
+angle of departure (AoD) towards the RX-s node, denoted by
+φk for k = 1, . . . , K, while the AoAs at the receiver sensing
+node are denoted by θk for k = 1, . . . , K (see Figure 1).
+In this system, the transmit and receive steering vectors
+are defined by
+iT
+1 h −jπ cos φ
+1, e
+, . . . , e−jπ(M−1) cos φ ∈ CM×1 ,
+aM (φ) , √
+M
+(1)
+and
+iT
+1 h −jπ cos θ
+aN (θ) , √
+1, e
+, . . . , e−jπ(N −1) cos θ ∈ CN ×1 ,
+N
+(2)
+respectively, where φ ∈ [0, 2π] and θ ∈ [0, 2π].
+B. Clutter model
+The non line-of-sight (NLOS) scattered signal components
+in millimeter wave frequencies are usually composed of clusters of points, as it has been shown e.g. in [25]. Each cluster
+presents a set of points with a certain angular spread of the
+incident and scattered signals. Based on this observation, the
+clutter occurring in millimeter wave propagation environment
+can be modeled by a set of such scattered signals.
+Specifically, in this paper we assume that the (overall)
+clutter is composed of L clusters, where cluster l (l =
+
+1, . . . , L) contains Jl clutter points, uniformly distributed
+along a line. The clutter points are, in general, closely located
+on a scatter surface associated with a certain angular spread,
+which depends on the cluster’s location and its physical
+properties. The clutter can be caused from either the same
+transmit antenna array as the one used for target detection
+or another transmit antenna array with a different number
+of antenna elements, as denoted by M ′ in Figure 1. In the
+sequel, for ease of notation, we will assume that all clusters
+of clutters are caused by the same transmit BS signals.
+C. Temporally correlated noise model
+We consider a temporally correlated noise model similar
+to the model presented in [20]. We denote by vn [t] the noise
+at the receiver antenna element n = 0, . . . , N − 1 at time
+instant t = 0, . . . , Ts − 1, where Ts is the total number
+of sensing time slots. The auto-correlation function of the
+stochastic process vn [t], for i = 1 − Ts , . . . , Ts − 1 is defined
+as
+r(i) , E {vn [t]vn [t + i]∗ } ∀t; ∀n.
+(3)
+The covariance matrix of vn = [vn [0], . . . , vn [Ts ]]T ∈
+C
+is given by
+
+Σ , E vn vnH
+
+
+r(0)
+r(1)
+...
+r(Ts − 1)
+
+
+..
+..
+..
+
+ r(−1)
+.
+.
+.
+ ∈ CTs ×Ts ,
+
+=
+
+..
+..
+..
+
+.
+.
+r(1) 
+.
+r(1 − Ts ) . . . r(−1)
+r(0)
+(4)
+Ts ×1
+
+where Σ is a Toeplitz matrix.
+D. Sensing transmission model
+In general, each transmission path component corresponding to a target or a clutter point, is associated with a given
+delay/range and a Doppler shift. In this paper, we do not
+include the Doppler and delay terms in the system model.
+Indeed, as the main focus of this paper is detection of
+the targets, including these terms results in unnecessarily
+additional model complexity which is not useful for analysing
+the proposed detection test at this initial step.
+The received signal model at the sensing node at time slot
+t is given by
+y [t] =
+
+K
+X
+
+νk aN (θk )aH
+M (φk )x[t]
+
+k=1
+
++
+
+Jl
+L X
+X
+
+l=1 jl =1
+
+e x[t] + v [t] ∈ CN ×1 ,
+νel,jl aN (θel,jl )aH
+M (φl,jl )e
+
+(5)
+
+where νk ∈ C denotes the path loss corresponding to the k-th
+target for k = 1, . . . , K, aN (θk ) and aM (φk ) are the steering
+vectors corresponding to the target AoD and AoA φk and θk ,
+respectively, and s [t] ∼ CN (0, 1) denotes the transmitted
+symbol at time instant t, which is assumed to be the same
+
+symbol transmitted over all the M transmit antennas. The
+vector x[t] = Ps wM [t] s [t] ∈ CM×1 represents the beamfomed transmitted signal vector with wM [t] ∈ CM×1 denoting the transmit precoding weight vector towards the sensing
+direction φs at time instant t, and Ps denotes the sensing
+transmission power. The precoding design for different transmission schemes will be studied in Section III. The vectors
+aN (θel,jl ) and aH
+M (φ̃l,jl ) denote respectively the receive and
+transmit steering vectors corresponding to the jl -th clutter
+point from the l-th cluster with AoA θ̃l,jl and AoD φel,jl , for
+e[t] ∈ CM×1
+l = 1, . . . , L and jl = 1, . . . , Jl . The vector x
+(with complex Gaussian entries of variance Pcl ) represents
+the transmit signal vector by a transmit antenna array causing
+the clutter. Finally, v[t] = [v0 [t], . . . , vN −1 [t]]T ∈ CN ×1
+stands for the received noise vector at time instant t.
+E. Communication transmission model
+In this paper, we consider a simple single user MIMO
+channel for the communication path and assume that the UE
+is scheduled at a slot t ∈ {0, 1, . . . , Tc − 1} to receive the
+DL transmission, where Tc is the number of communication
+time-slots.
+Consequently, the received signal at the UE under line-ofsight (LOS) assumption of the communication link is
+yUE [t] = aH
+M (θUE )wUE [t] s [t] + zUE [t] ∈ C,
+
+(6)
+
+where θUE  ∈ [0, 2π] is the AoA of the UE, zUE [t] ∼
+2
+is the white Gaussian noise and wUE [t] ∈
+CN 0, σUE
+M×1
+C
+is the transmit precoding vector towards the UE.
+It should be noted that similar steering vector-based models for sensing in Equation (5) and for communication in
+Equation (6) have already been proposed in the literature [8].
+We call slot t a communication slot if the UE is scheduled
+to receive a DL transmission in that slot. As we will see in
+the sequel, both schemes may use multiple communication
+slots out of the T slots.
+F. Trade-off parameters
+In this paper, in order to study the trade-off between sensing and communication, we consider two main parameters
+α ∈ [0, 1] and δ ∈ [0, 1] allowing to control the amount of
+resources in the time and power domains, respectively. The
+total number of time symbols that can be allocated for both
+sensing and communication is assumed to be equal to T . The
+total number of sensing symbols is denoted by Ts and the
+number of communication slots is denoted by Tc . The total
+power allocated to sensing and communication is assumed to
+be equal to P , the sensing power is denoted by Ps and the
+communication power is denoted by Pc .
+The TDM and CM resource sharing schemes and the usage
+of their associated trade-off parameters are discussed further
+in Section III. Both trade-off parameters are considered
+for the studied beamforming schemes in the performance
+analysis in Section V.
+
+III. T RANSMIT PRECODING FOR TARGET DETECTION
+We consider two transmission modes allowing to perform
+sensing and communication jointly. The first mode is the CM,
+for which the sensing and communication are performed simultaneously and separated spatially. The second mode is the
+TDM, for which sensing and communication are separated in
+time, while the overall resource sharing is designed jointly.
+
+T = Ts = Tc slots. The total power allocated to sensing
+and communication is equal to P . The power allocated to
+sensing of all the K targets is denoted by Ps = δP and
+Pc = (1 − δ)P is the power allocated to communication
+with δ ∈ [0, . . . , 1] and P = Ps + Pc . Each target’s direction
+k is steered during Ts,k = ⌊T /K⌋ time slots. Note that the
+per target power is equal to Ps /K = δP/K.
+
+A. Concurrent mode
+In the CM transmission scheme, the transmitter employs
+a generalized version of the multibeam scheme [15], [17]
+adapted for sensing of multiple targets by scanning simultaneously a target at the direction k, for k = 1, . . . , K, and
+forming a communication beam in the direction of the connected UE during all T time slots. The AoD towards the UE
+is denoted by φUE , which is used to form the communicationspecific transmit beam in the DL. The sensing transmit angles Figure 2: Space-time resource sharing for CM beamforming
+towards are denoted by φs,k , for k = 1, . . . , K, and are used scheme. Note that each target’s direction is sensed during ⌊T /K⌋
+to form the sensing-specific transmit beams towards the K slots.
+targets. Each target direction is sensed during Ts,k = ⌊T /K⌋
+time slots, and Cs,k denotes the set of sensing slot indices
+Figure 3 depicts the space-time resource sharing for the
+used to sense in the direction of the target k. The transmitting proposed TDM beamforming scheme. As indicated, the numBS forms the transmit precoding vector in the direction of ber of slots used for sensing is fixed to Ts = ⌊αT ⌋ slots and
+the target k, (k = 1, . . . , K), and the UE, expressed as:
+the number of slots allocated for communication transmission
+r
+to the UE is equal to Tc = T − ⌊αT ⌋. The total number of
+√
+δ
+wCM [t] ,
+aM (φs,k ) + 1 − δ aM (φUE ) ∈ CM×1 t ∈ Cs,k ,slots is denoted by T = Ts + Tc and each target’s direction
+K
+(7) k is steered during ⌊Ts /K⌋ time slots.
+where aM (·) is the transmit steering vector defined in
+Equation (1), t ∈ Cs,k , and δ ∈ [0, 1] is a parameter
+defined Section II-F allowing to control the amount of power
+resources allocated for sensing.
+
+No communication in these slots
+
+Communication beam towards UE
+
+Target 1
+
+No sensing in these slots
+
+beam
+Sensing
+Target
+
+B. Time-division mode
+We recall that α ∈ [0, 1] is a parameter allowing to control
+the amount of resources in the time. In the TDM scheme,
+sensing and communication are performed into two separated
+time phases. During the sensing phase which lasts for Ts =
+⌊αT ⌋ slots, the transmitter scans consecutively the direction
+of the target k during Ts,k time slots, which is a subset of
+Ts slots, for k = 1, . . . , K. During the communication phase
+lasting for Tc = T − ⌊αT ⌋ slots, the transmitter transmits
+DL signals to the connected UE. Hence, the TDM transmit
+precoding vector at time t is given by
+(
+√1 aM (φs,k ), t ∈ Cs,k
+K
+,
+(8)
+wTDM [t] ,
+aM (φUE ),
+t ∈ Cc
+where recall that Cs,k is the set of sensing slot indices at the
+direction of the target k, while Cc is the set of communication
+slot indices at the direction of the served UE.
+C. Resource sharing in proposed beamforming schemes
+Figure 2 depicts the space-time resource sharing for the
+proposed CM beamforming scheme between sensing (in
+green) and communication (in pale red). The total number
+of slots used for sensing and communication is equal to
+
+Communication
+
+No sensing in these slots
+
+beams
+
+Communication phase
+
+Sensing phase
+
+slots
+
+slots
+
+Figure 3: Space-time resource sharing for the TDM beamforming
+scheme. Each target’s direction is sensed during ⌊Ts /K⌋ slots.
+
+Note that the parameter α limits the number of sensing
+slots and sets the communication slots available for data
+transmission to the UE in the TDM scheme. On the other
+hand, the parameter δ limits the energy fed into the K sensing
+beams and the communication beam for the CM scheme.
+IV. TARGET DETECTION TEST
+A. Signal model
+The channel corresponding to the K targets in Equation (5), can be written in the matrix form as
+H=
+
+K
+X
+
+νk aN (θk )aH
+M (φk )
+
+k=1
+
+N ×M
+= AN (θ)DAH
+M (φ) ∈ C
+
+(9)
+
+with
+AN (θ) = [aN (θ1 ), . . . , aN (θK )] ∈ CN ×K
+
+AM (φ) = [aM (φ1 ), . . . , aM (φK )] ∈ CM×K
+D(ν) = diag {ν1 , . . . , νK } ∈ CK×K ,
+
+where θ = [θ1 , . . . , θK ]T ∈ CK×1 is a vector containing
+the target AoAs, φ = [φ1 , . . . , φK ]T ∈ CK×1 is a vector
+containing the target AoDs, and ν = [ν1 , . . . , νK ]T ∈ CK×1
+contains the target path losses modeled as complex Gaussian
+variables of variance σν2k .
+Similarly, the channel corresponding to the clutter is
+written as
+Hcl =
+
+Jl
+L X
+X
+
+l=1 jl =1
+
+with
+
+e
+νel,jl aN (θel,jl )aH
+M (φl,jl )
+
+(10)
+
+Btar , HX
+e
+Bcl , Hcl X,
+
+(14)
+
+1
+YYH ∈ CN ×N .
+Ts
+
+(15)
+
+e = [aN (θe1 ), . . . , aN (θeK )] ∈ CN ×Kcl
+AN (θ)
+cl
+e
+e
+e
+AM (φ) = [aM (φ1 ), . . . , aM (φK )] ∈ CM×Kcl
+cl
+
+D(e
+ν ) = diag {e
+ν1 , . . . , νeKcl } ∈ CKcl ×Kcl ,
+P
+where Kcl = L
+l=1 Jl is the total number of clutter points,
+θe = [θe1 , . . . , θeKcl ]T ∈ CKcl ×1 is a vector containing the
+e = [φe1 , . . . , φeK ]T ∈ CKcl ×1 is a vector conclutter AoAs, φ
+cl
+taining the clutter AoDs, and νe = [e
+ν1 , . . . , νeKcl ]T ∈ CKcl ×1
+contains the clutter path losses modeled as complex Gaussian
+variables of variance assumed to take different values for
+different clusters and all equal for the clutter points from a
+given cluster σνe2l , with l = 1, . . . , L.
+Concatenating the received noise vector over the observation window of size Ts , the noise matrix is given by
+V = [v[0], . . . , v[Ts − 1]] ∈ CN ×Ts which, due to its
+temporal correlation property, can be equivalently written as
+a product of two matrices [20]:
+(11)
+
+where Z = [z[0], . . . , z[Ts − 1]] ∈ CN ×Ts is the white noise
+matrix with complex Gaussian i.i.d. entries of variance σ 2
+and Σ1/2 is a square root of the noise covariance matrix
+Σ ∈ CN ×N defined in Equation (4).
+We concatenate Ts independent observations of the received signal defined by the model in Equation (5) and obtain
+the received observation matrix Y = [y[0], . . . , y[Ts − 1]] ∈
+CN ×Ts . The corresponding received signal model can be
+written in the matrix form, using Equations (9), (10) and
+(11), as
+e + V,
+(12)
+Y = HX + Hcl X
+
+where X = [x[0], . . . , x[Ts − 1]] ∈ CM×Ts is the transmitted
+signal matrix containing concatenated beamformed transmitted signal vectors towards the K targets (with transmit
+beamforming vectors as defined in Equations (7) and (8))
+e = [e
+e[Ts −
+over all the sensing time slots and X
+x[0], . . . , x
+M×Ts
+is the matrix of transmitted signals contributing
+1]] ∈ C
+
+(13)
+
+where Btar represents the target-related part of the received
+signal and Bcl corresponds to the clutter part.
+To proceed, we define the sample covariance matrix [26]
+based on the Ts observations of the received signal which
+can be written using (12) as
+RTs ,
+
+e
+e N ×M
+= AN (θ)D(e
+ν )AH
+M (φ)C
+
+V = ZΣ1/2 ∈ CN ×Ts ,
+
+e are assumed to be unitary
+to the clutter. Both X and X
+matrices.
+We notice that the received signal matrix defined in Equation (12) is written as a sum of three matrices corresponding
+to the targets, the clutter, and the noise. Hence, we define the
+following matrices:
+
+The main result of this paper is based on the usage of the
+eigenvalues of the matrix RTs . In general, as Y is composed
+from matrices Btar , Bcl , and V, which all contain random
+variables, the RMT tools can be used in order to characterize
+the limit spectrum of RTs . We discuss the assumptions on
+the system parameters in the following section that will allow
+us to apply the results from RMT to our system model in
+Equation (12).
+B. Fixed-rank perturbation models
+The emergence of the massive MIMO technology [27]
+makes usage of larger antenna arrays as compared to the
+previous generation wireless systems. Hence, the size of the
+received signal vector used for signal processing methods
+applied at the receiver side is getting increasingly large. In
+classical wireless systems the size of the received signal
+vector is small as compared to the number of its available
+time samples. In massive MIMO, it is realistic to assume that
+the size of the transmitted or received signal by a BS antenna
+array is of the same order of magnitude as the number of
+available time samples. The number of targets is assumed to
+be small compared to the number of receiver antennas.
+Hence, we assume in the following that M , N , and Ts are
+large and of the same order of magnitude. K is assumed to
+be fixed as M , N , Ts grow large. We assume the absolute
+summability of the noise covariance coefficients
+PTs −1 defined in
+Equation (3) resulting in a bounded sum i=0
+|r(i)| ≤ C
+where C is a positive fixed constant as N, Ts → ∞. These
+assumptions are resumed into the following:
+Assumption 1. As N → ∞, Ts → ∞, N/Ts → c > 0.
+Assumption 2. As N → ∞, M → ∞, M/N → c̄ > 0.
+Assumption 3. K is fixed as N, T → ∞.
+PN −1
+Assumption 4.
+i=0 |r(i)| ≤ C, C > 0 as N, Ts → ∞.
+
+Under the above assumptions, the matrix form system
+model given by Equation (12) corresponds to the fixed rank
+perturbation model in RMT [28], [29]. It should be noted
+that the assumption “large” is useful for applying the RMT
+
+results to our system model. In practice, as we will see in
+the simulation analysis, M , N , and Ts take realistic values
+corresponding to typical system parameters in the currently
+deployed wireless communication systems.
+1) Clutter-free case: In order to understand the main idea,
+we consider first the clutter-free case for which the received
+model, written as Btar + V, corresponds to a sum of two
+random matrices, with Btar defined by Equation (13). The
+random matrix corresponding to the temporally correlated
+noise V = ZΣ1/2 is of full rank equal to min(N, Ts ) with
+probability one. Under Assumptions 1 and 4, it is known
+that the spectrum of its sample covariance matrix T1s VVH
+converges to a compactly supported probability measure with
+probability one [30], [31]. This means that the eigenvalues
+of T1s VVH form one “bulk” of eigenvalues with probability
+one.
+The random matrix corresponding to the targets Btar is of
+fixed rank equal to K with probability one. It was shown
+in [30] that the model Btar + V corresponds to the fixed
+rank perturbation models in RMT and the spectrum of the
+sample covariance matrix T1s (Btar + V)(Btar + V)H , still
+converges to a compactly supported probability measure,
+with up to K outliers that might “detach” of the main
+“bulk” of eigenvalues, depending on the system parameters,
+the Signal-to-noise ratio (SNR), the pathgains, and the noise
+correlation properties [30], [20]. Hence, the number of such
+outliers corresponds to the number of targets that can be
+detected.
+2) Clutter-plus-noise case: The total number of clutter
+clusters L and the number of clutter points Jl within each
+cluster depend on the system parameters and the propagation
+environment. When L and Jl can be considered small as
+compared to the number of receiver antennas, the targets
+and the clutter form a subspace of dimension K + Kcl
+with probability one, small as compared to the number of
+receiver antennas N . The total number of outliers in this case
+corresponds to the number of detectable targets in addition
+to the total number of single point clutters. However, small
+number of clutter points is not a realistic assumption in
+general in millimeter wave systems where the clutter tends
+to be composed of several clusters with a high number of
+scatter points.
+We assume in the following that Jl is of the same order
+of magnitude as N , for l = 1, . . . , L. In this case, the matrix
+corresponding to the clutter Bcl , defined in Equation (14), is
+of full rank equal to min(N, Ts , Kcl ) with probability one.
+We assume that the spectrum of the clutter sample covariance
+matrix T1s Bcl BH
+cl converges to a spectral measure with a
+compact support composed of up to L intervals, with L fixed
+as N, Ts → ∞. Using the results from [32], [31], intuitively,
+the spectrum of the clutter-plus-noise covariance matrix
+1
+H
+converges to a limit distribution
+Ts (Bcl + V)(Bcl + V)
+function with a support composed of compact intervals. The
+sample eigenvalues forms up to L + 1 “bulks” of eigenvalues
+corresponding to the clutter-plus-noise part, from which up
+to L “bulks” are due to the clutter. This observation leads to
+
+a conjecture that we consider as an assumption in this work.
+The assumption of large Jl corresponds to a more realistic
+propagation scenario. Therefore, we summarize the discussed
+observations into two additional assumptions:
+Assumption 5. As Jl → ∞, N → ∞, Jl /N → c̃l > 0, for
+l = 1, . . . , L.
+Assumption 6. As N → ∞, L is fixed and the spectral
+measure of T1s Bcl BH
+cl converges to a probability measure with
+a compact support composed from up to L intervals.
+We finally define the sensing Signal-to-clutter-plus-noise
+ratio (SCNR) defined as
+SCNR ,
+
+Ps
+σ 2 + Pmax, cl
+
+(16)
+
+where Pmax, cl is largest observed power due to the clutter
+Pmax, cl and Ps is the sensing transmitted power.
+C. Hypothesis testing
+We consider the following binary hypothesis test
+
+Bcl + V
+H0
+Y=
+Btar + Bcl + V H1
+
+for which under hypothesis H0 no target is present and
+under hypothesis H1 K targets are present. As it was
+observed in [20] for an transmitting object to be detected, its
+corresponding transmit power needs to satisfy the so-called
+detectability limit condition. Similarly, in the case of passive
+object detection, the TX-s transmit power has to be larger
+than a limit value, denoted by Plim , which depends on the
+system dimension parameters, maximum power due to the
+clutter, the noise variance, and the value of the maximum
+of the correlation coefficients defined in Equation (3) if the
+noise presents temporal correlations.
+Ratio-based detection test: Let Assumptions 1-6 hold. Let
+λ1 > . . . > λN be the eigenvalues of RTs ordered in a
+decreasing order. Let Kmax < N be the upperbound on the
+number of targets. We assume that Ps > Plim . The estimate
+of the number of targets is given by
+b = arg maxn=1,...,Kmax λn > 1 + ε
+K
+λn+1
+
+(17)
+
+where ε is a threshold depending on the probability of false
+alarm which is the probability of detecting a target when only
+clutter-plus-noise is present.
+The detection test given by Equation (17), based on
+the ratio of consecutive ordered eigenvalues of the sample
+covariance matrix RTs , is similar to the one proposed in
+[20] in which a clutter free scenario is considered in the
+presence of a temporally correlated noise. It was shown in
+[33] that the largest eigenvalue of the sample covariance
+matrix of the correlated noise converges to the Tracy–Widom
+[34] distribution as dimensions grow large. Hence, it is
+possible, in clutter-free case, to calculate the explicit value
+of the threshold ε for a given probability of false alarm. The
+presence of the clutter further complicates the model and
+
+therefore we propose to use an empirical threshold which
+will depend on a given a probability of false alarm.
+V. S IMULATION RESULTS
+In this section, we present simulation results for target
+detection using the proposed transmit beamforming schemes.
+We assume that the number of transmit (sensing and communication) antennas is equal to M = 8, the number of sensing
+receiver antennas is N = 16 (unless it is explicitly mentioned
+in the figure description or the label), the total number of
+sensing and communication slots is T = 64. We analyse the
+results in terms ROC curves, for which correct detection rates
+versus false alarm rates are plotted. The correct detection rate
+corresponds to correctly detecting a target under hypothesis
+H1 (K targets are present). The false alarm corresponds to
+the probability of detecting a target under hypothesis H0
+(no target is present). In the plots representing the correct
+detection rates, the detection threshold is set to a value, for
+which the probability of false alarm is equal to 0.01. The
+detection test presented in Equation (17) is used.
+We consider first a scenario with a single target in the
+presence of a white noise without a clutter. We assume
+a beamforming scheme, for which all the power and time
+slots are allocated fully for sensing, for which both proposed
+beamforming schemes in Section III are equivalent. In Figure 4, the ROC curves are plotted for different number of
+sensing receiver antennas RX-s N for SNR = −6 dB. N is
+considered to be equal to the number of sensing time slots,
+meaning that N = Ts = T . We can observe that even for
+relatively small and realistic values of N , the detection of
+the target is successful, with a better performance for higher
+values. In Figure 5, the correct detection rates versus SNR
+(dB) are compared for the transmission without any transmit
+beamforming applied (in black) and with a beamforming
+pointing in the direction of the target with a given angular
+error in degrees. We observe that the detection performance,
+as expected, is better with a transmit beamforming under
+condition that the beamforming error does not exceed some
+limit which is equal to 8 degrees for this scenario (the
+corresponding curve in magenta).
+We compare now the proposed beamforming schemes,
+denoted by TDM and CM as introduced in Section III in
+the presence of a white noise without a clutter. As discussed
+in Section III, we consider the JCAS trade-off parameters
+α and δ allowing to set the resource sharing in time and
+power, respectively, between communication and sensing. In
+Figure 6, we compare the detection rates of the proposed
+beamforming schemes versus SNR (dB) for different number
+of targets. We assume in this figure that α = δ = 0.5,
+meaning that half of the time, the resources are used for
+sensing for the TDM scheme and half of the power resources
+is used for sensing for the CM scheme. We observe that, in
+general, the TDM scheme outperforms the CM beamforming,
+in particular for higher number of targets. In Figure 7, the
+ROC curves for the two schemes are plotted for different
+values of trade-off parameters for SNR = −6 dB and K = 1.
+It shows that a higher fraction of allocated resources to
+
+sensing leads to smaller differences in performance between
+the two schemes. For a lower amount of resources available
+for sensing, the performance of the TDM scheme is better
+than that of the CM scheme.
+We now assume the clutter-free scenario with temporally
+correlated noise following an autoregressive process of order 1 with the correlation parameter γ. In Figure 8, the correct
+detection rates versus SNR (dB) are compared for different
+values of the noise correlation parameter with K = 1.
+The proposed ratio-based detector provided in Equation (17)
+is compared to the existing Minimum Description Length
+(MDL) [35] and Akaike Information Criterion (AIC) [36],
+[37] source number estimation methods. In Figure 8, we
+observe that for the white noise case, the AIC yields the
+best results. However, for the correlated noise case, especially
+with higher correlation parameter, the MDL and AIC fail
+to correctly detect the target and the proposed ratio test
+scheme is still able to achieve correct detection rates. This
+demonstrates that using the ratio test is particularly useful in
+highly correlated noise scenarios.
+We consider now a presence of a clutter composed from
+two distinct clusters with equal power such that the total
+power is equal to the noise variance. The number of points
+for each cluster is equal to J1 = J2 = 32 with AoD and
+AoA spaced with 2 degrees for each single scatter point
+and the clutter clusters’ AoD and AoA are not overlapping.
+In Figure 9, we compare the TDM to the CM schemes for
+different detection test methods for K = 1 and α = δ = 0.5.
+Again, the proposed ratio test is able to correctly detect the
+target while the MDL and AIC fail. The TDM still gives
+better performance as compared to the CM. In Figure 10, the
+presence of the number of clutter clusters is analysed for one
+cluster having the total clutter power Pcl,1 = σ 2 and for two
+clusters, each with power equal to a half of the noise variance
+with Pcl,1 = Pcl,2 = 0.5σ 2 . The equivalent beamforming
+scheme is assumed for which α = δ = 1. We observe that in
+this scenario, the presence of a strong single clutter degrades
+the performance more as compared to the presence of two
+weaker clusters, especially when the number of cluster points
+gets larger. However, we note that for smaller number of
+clutter points, the false alarm rate becomes larger. This is
+due to the fact that for smaller number of clutter points, the
+Assumption 5 does not hold as the clutter matrix Bcl becomes
+of a fixed rank and the clutter points are detected (wrongly
+associated to targets) more often under hypothesis H0 .
+VI. C ONCLUSIONS
+We proposed a detection scheme that allows to estimate
+correctly the number of targets using JCAS frameworkspecific beamforming schemes, especially focusing on beamforming schemes designed for the previously proposed TDM
+and CM bistatic JCAS modes. The proposed method was
+analyzed in the presence of a temporally correlated noise
+and, eventually, a clutter composed by a number of clusters
+presenting different angular spreads. The proposed scheme
+estimates correctly the number of targets whereas the existing
+schemes, such as the MDL and AIC fail, especially in the
+
+1
+0.9
+0.8
+
+Correct detection rate
+
+presence of a strong clutter and a heavily correlated noise.
+We showed that in general, the TDM scheme gives better
+detection performance compared to the CM scheme.
+The angular and delay spread phenomenon resulting from
+the presence of clutter clusters is a crucial problem for
+target position estimation. Therefore, as a future work, the
+estimation of the angular and delay spread needs to be
+addressed to accurately estimate the targets’ positions.
+
+0.6
+0.5
+0.4
+0.3
+
+1
+
+0.2
+
+0.9
+
+0.1
+
+0.8
+
+Correct detection rate
+
+0.7
+
+TDM, K=1
+CM, K=1
+TDM, K=2
+CM, K=2
+TDM, K=3
+CM, K=3
+
+0
+-15
+
+-10
+
+-5
+
+0.7
+
+0
+
+0.6
+
+10
+
+Figure 6: Detection rates for the two proposed beamforming
+schemes for white noise without clutter versus SNR (dB) for
+different number of targets.
+
+0.5
+0.4
+0.3
+0.2
+
+1
+
+N=T=8
+N=T=16
+N=T=32
+N=T=64
+
+0.1
+
+0.9
+
+0
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+0.8
+
+1
+
+False alarm rate
+
+Figure 4: ROC detection curves for different number of sensing receiver antennas for white noise without clutter and SNR = −6 dB.
+The number of sensing receiver antennas is considered equal to the
+number of sensing slots.
+
+Correct detection rate
+
+0
+
+0.7
+0.6
+0.5
+0.4
+
+TDM, alpha=1
+CM, delta=1
+TDM, alpha=0.75
+CM, delta=0.75
+TDM, alpha=0.5
+CM, delta=0.5
+TDM, alpha=0.25
+CM, delta=0.25
+
+0.3
+0.2
+0.1
+
+1
+
+0
+
+0.9
+
+0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1
+
+False alarm rate
+
+0.8
+
+Correct detection rate
+
+5
+
+SNR (dB)
+
+Figure 7: ROC detection curves for different trade-off parameters
+and the proposed beamforming schemes for white noise without
+clutter and SNR = −6 dB.
+
+0.7
+0.6
+0.5
+0.4
+Without transmit precoding
+Precoding without error
+Precoding with error 2 degrees
+Precoding with error 4 degrees
+Precoding with error 6 degrees
+Precoding with error 8 degrees
+Precoding with error 10 degrees
+
+0.3
+0.2
+0.1
+0
+-15
+
+-10
+
+-5
+
+0
+
+5
+
+10
+
+SNR (dB)
+
+Figure 5: Detection rates versus SNR (dB) without and with
+transmit beamforming for different transmit beamforming angular
+errors.
+
+R EFERENCES
+[1] P. Hammarberg, J. Vinogradova, G. Fodor, R. Shreevastav, S. Dwivedi,
+and F. Gunnarsson, “Architecture, protocols, and algorithms for
+location-aware services in beyond 5G networks,” IEEE Communications Standards Magazine, vol. 6, no. 4, pp. 88–95, 2022.
+[2] A. Behravan, R. Baldemair, S. Parkvall, E. Dahlman, V. Yajnanarayana,
+H. Björkegren, and D. Shrestha, “Introducing sensing into future
+wireless communication systems,” in 2022 2nd IEEE International
+Symposium on Joint Communications & Sensing (JC&S), 2022, pp.
+1–5.
+
+[3] A. Behravan, V. Yajnanarayana, M. F. Keskin, H. Chen, D. Shrestha,
+T. E. Abrudan, T. Svensson, K. Schindhelm, A. Wolfgang, S. Lindberg,
+and H. Wymeersch, “Positioning and sensing in 6G: Gaps, challenges,
+and opportunities,” IEEE Vehicular Technology Magazine, vol. 18,
+no. 1, pp. 40–48, 2023.
+[4] X. Wang, J. Mei, S. Cui, C.-X. Wang, and X. S. Shen, “Realizing 6G:
+The operational goals, enabling technologies of future networks, and
+value-oriented intelligent multi-dimensional multiple access,” IEEE
+Network, vol. 37, no. 1, pp. 10–17, 2023.
+[5] A. Zhang, M. L. Rahman, X. Huang, Y. J. Guo, S. Chen, and R. W.
+Heath, “Perceptive mobile networks: Cellular networks with radio
+vision via joint communication and radar sensing,” IEEE Vehicular
+Technology Magazine, vol. 16, no. 2, pp. 20–30, 2021.
+[6] B. Li, A. P. Petropulu, and W. Trappe, “Optimum co-design for
+spectrum sharing between matrix completion based MIMO radars
+and a MIMO communication system,” IEEE Transactions on Signal
+Processing, vol. 64, no. 17, pp. 4562–4575, 2016.
+[7] B. Paul, A. R. Chiriyath, and D. W. Bliss, “Survey of RF communications and sensing convergence research,” IEEE Access, vol. 5, pp.
+252–270, 2017.
+[8] F. Liu, C. Masouros, A. P. Petropulu, H. Griffiths, and L. Hanzo, “Joint
+Radar and Communication Design: Applications, State-of-the-Art, and
+the Road Ahead,” IEEE Transactions on Communications, vol. 68,
+no. 6, pp. 3834–3862, 2020.
+[9] J. A. Zhang, F. Liu, C. Masouros, R. W. Heath, Z. Feng, L. Zheng, and
+
+1
+0.9
+
+0.8
+
+0.8
+
+0.7
+
+0.7
+
+0.6
+
+Ratio test, gamma=0
+MDL, gamma=0
+AIC, gamma=0
+Ratio test, gamma=0.2
+MDL, gamma=0.2
+AIC, gamma=0.2
+Ratio test, gamma=0.4
+MDL, gamma=0.4
+AIC, gamma=0.4
+Ratio test, gamma=0.6
+MDL, gamma=0.6
+AIC, gamma=0.6
+
+0.5
+0.4
+0.3
+0.2
+0.1
+0
+-20
+
+Correct detection rate
+
+Correct detection rate
+
+1
+0.9
+
+0.6
+0.5
+2
+
+J1=32, one cluster with Pcl,1 =
+
+0.4
+
+2
+
+J1=J2=32, two clusters with Pc ,1 =Pcl,2 =0.5
+
+0.3
+
+J1=16, one cluster with Pcl,1 =
+
+0.2
+
+J1=J2=16, two clusters with Pc ,1 =Pcl,2 =0 5
+J1=8, one cluster with Pcl,1 =
+
+0.1
+
+2
+2
+
+2
+
+J1=J2=8, two clusters with Pcl,1 =Pcl,2 =0.5
+
+2
+
+0
+-15
+
+-10
+
+-5
+
+0
+
+5
+
+10
+
+0
+
+0.2
+
+0.4
+
+0.6
+
+0.8
+
+1
+
+SNR (dB)
+
+False alarm rate
+
+Figure 8: Correct detection rates for different correlation noise
+parameters versus SNR (dB) for different detection methods.
+
+Figure 10: ROC detection curves for different number of clutter
+clusters and clutter points for SCNR = −5 dB.
+
+1
+0.9
+
+Correct detection rate
+
+0.8
+0.7
+
+Ratio test, TDM
+Ratio test, CM
+MDL, TDM
+MDL, CM
+AIC, TDM
+AIC, CM
+
+0.6
+0.5
+0.4
+0.3
+0.2
+0.1
+0
+-15
+
+-10
+
+-5
+
+0
+
+5
+
+10
+
+15
+
+SCNR (dB)
+
+Figure 9: Correct detection rates for the proposed beamforming
+schemes versus SCNR (dB) for different detection methods in
+clutter presence.
+
+A. Petropulu, “An overview of signal processing techniques for joint
+communication and radar sensing,” IEEE Journal of Selected Topics
+in Signal Processing, vol. 15, no. 6, pp. 1295–1315, 2021.
+[10] B. Liu, J. Liu, and N. Kato, “Optimal beamformer design for millimeter
+wave dual-functional radar-communication based V2X systems,” IEEE
+Journal on Selected Areas in Communications, vol. 40, no. 10, pp.
+2980–2993, 2022.
+[11] F. Liu, Y. Cui, C. Masouros, J. Xu, T. X. Han, Y. C. Eldar, and
+S. Buzzi, “Integrated sensing and communications: Toward dualfunctional wireless networks for 6G and beyond,” IEEE Journal on
+Selected Areas in Communications, vol. 40, no. 6, pp. 1728–1767,
+2022.
+[12] J. A. Zhang, M. L. Rahman, K. Wu, X. Huang, Y. J. Guo, S. Chen, and
+J. Yuan, “Enabling joint communication and radar sensing in mobile
+networks—a survey,” IEEE Communications Surveys and Tutorials,
+vol. 24, no. 1, pp. 306–345, 2022.
+[13] “3GPP S1-214242 New SID on study on integrated sensing and
+communication, 3GPP System Architecture Group SA1,” Nov. 2021.
+[14] C. Wu, B. Wang, O. C. Au, and K. J. R. Liu, “Wi-Fi can do more:
+Toward ubiquitous wireless sensing,” IEEE Communications Standards
+Magazine, pp. 42–49, 2022.
+[15] J. A. Zhang, X. Huang, Y. J. Guo, J. Yuan, and R. W. Heath,
+“Multibeam for joint communication and radar sensing using steerable
+analog antenna arrays,” IEEE Transactions on Vehicular Technology,
+vol. 68, no. 1, pp. 671–685, 2019.
+[16] C. B. Barneto, S. D. Liyanaarachchi, T. Riihonen, L. Anttila, and
+
+M. Valkama, “Multibeam design for joint communication and sensing
+in 5G new radio networks,” in ICC 2020 - 2020 IEEE International
+Conference on Communications (ICC), 2020, pp. 1–6.
+[17] M. U. Baig, J. Vinogradova, G. Fodor, and C. Mollen, “Joint communication and sensing beamforming for passive object localization,”
+in WSA and SCC 2023; 26th International ITG Workshop on Smart
+Antennas and 13th Conference on Systems, Communications, and
+Coding, 2023, pp. 1–6.
+[18] M. Malanowski, M. Zywek, M. Płotka, and K. Kulpa, “Passive
+bistatic radar detection performance prediction considering antenna
+patterns and propagation effects,” IEEE Transactions on Geoscience
+and Remote Sensing, vol. 60, pp. 1–16, 2022.
+[19] A. Ksiezyk, M. Plotka, K. Abratkiewicz, R. Maksymiuk, J. Wszolek,
+P. Samczynski, and T. P. Zielinski, “Opportunities and limitations
+in radar sensing based on 5G broadband cellular networks,” IEEE
+Aerospace and Electronic Systems Magazine, pp. 1–14, 2023.
+[20] J. Vinogradova, R. Couillet, and W. Hachem, “Statistical inference in
+large antenna arrays under unknown noise pattern,” IEEE Transactions
+on Signal Processing, vol. 61, no. 22, pp. 5633–5645, 2013.
+[21] L. S. Cardoso, M. Debbah, P. Bianchi, and J. Najim, “Cooperative
+spectrum sensing using random matrix theory,” in 2008 3rd International Symposium on Wireless Pervasive Computing, 2008, pp. 334–
+338.
+[22] P. Bianchi, M. Debbah, M. Maida, and J. Najim, “Performance of
+statistical tests for single-source detection using random matrix theory,”
+IEEE Transactions on Information Theory, vol. 57, no. 4, pp. 2400–
+2419, 2011.
+[23] B. Nadler, F. Penna, and R. Garello, “Performance of eigenvalue-based
+signal detectors with known and unknown noise level,” in 2011 IEEE
+International Conference on Communications (ICC), 2011, pp. 1–5.
+[24] S. H. Dokhanchi, A. N. Barreto, and G. P. Fettweis, “Performance
+analysis of zero-padded sequences for joint communications and
+sensing,” IEEE Transactions on Signal Processing, pp. 1–16, 2023.
+[25] F. Wen, J. Kulmer, K. Witrisal, and H. Wymeersch, “5G positioning
+and mapping with diffuse multipath,” IEEE Transactions on Wireless
+Communications, vol. 20, no. 2, pp. 1164–1174, 2021.
+[26] R. Couillet and M. Debbah, Random Matrix Methods for Wireless
+Communications. Cambridge University Press, Nov. 2011.
+[27] H. Asplund, J. Karlsson, and F. K. et al., Advanced Antenna Systems
+for 5G Network Deployments: Bridging the Gap Between Theory and
+Practice, H. Asplund, Ed. Academic Press, 2020.
+[28] J. Baik and J. W. Silverstein, “Eigenvalues of large sample covariance matrices of spiked population models,” Journal of Multivariate
+Analysis, vol. 97, no. 6, pp. 1382–1408, 2006.
+[29] W. Hachem, P. Loubaton, X. Mestre, J. Najim, and P. Vallet, “A subspace estimator for fixed rank perturbations of large random matrices,”
+Journal of Multivariate Analysis, vol. 114, pp. 427–447, 2013.
+[30] F. Chapon, R. Couillet, W. Hachem, and X. Mestre, “The outliers
+among the singular values of large rectangular random matrices
+with additive fixed rank deformation,” Markov Processes and Related
+Fields, vol. 20, no. 2, pp. 183–228, 2014.
+
+[31] V. A. Marčenko and L. A. Pastur, “Distribution of eigenvalues for some
+sets of random matrices,” Mathematics of the USSR-Sbornik, vol. 1,
+no. 4, pp. 457–483, 1967.
+[32] R. B. Dozier and J. W. Silverstein, “Analysis of the limiting spectral
+distribution of large dimensional information-plus-noise type matrices,” Journal of Multivariate Analysis, vol. 98, no. 6, pp. 1099––1122,
+2007.
+[33] J. Baik, G. B. Arous, and S. Péché, “Phase transition of the largest
+eigenvalue for nonnull complex sample covariance matrices,” The
+Annals of Probability, vol. 33, no. 5, pp. 1643 – 1697, 2005.
+
+[34] C. A. Tracy and H. Widom, “On orthogonal and symplectic matrix
+ensembles,” Communications in Mathematical Physics, vol. 177, no. 3,
+pp. 727–754, apr 1996.
+[35] J. Rissanen, “Modeling by shortest data description,” Automatica,
+vol. 14, no. 5, pp. 465–471, 1978.
+[36] M. Wax and T. Kailath, “Detection of signals by information theoretic criteria,” IEEE Transactions on Acoustics, Speech, and Signal
+Processing, vol. 33, no. 2, pp. 387–392, 1985.
+[37] H. Akaike, “A new look at the statistical model identification,” IEEE
+Transactions on Automatic Control, vol. 19, no. 6, pp. 716–723, 1974.
+
+

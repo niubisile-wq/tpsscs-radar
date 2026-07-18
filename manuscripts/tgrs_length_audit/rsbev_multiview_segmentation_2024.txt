@@ -1,0 +1,964 @@
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                                                                                      1
+
+
+
+
+ RSBEV: Multi-view Collaborative Segmentation of
+ 3D Remote Sensing Scenes with Bird’s-Eye-View
+                 Representation
+             Baihong Lin, Zhengxia Zou, Senior Member, IEEE and Zhenwei Shi? , Senior Member, IEEE,
+
+
+
+   Abstract—Perception of 3D remote sensing scenes plays a
+crucial role in accurately recognizing and locating ground objects,
+as it enables a deeper understanding of complex environments
+by capturing scene geometry, object relationships, and occlusion
+patterns. Inspired by the powerful multi-sensor fusion capabilities
+in autonomous driving, we explore a new task in this paper: given
+a set of multi-view images of a 3D remote sensing scene, we aim                                             (a)
+to obtain bird’s-eye view (BEV) scene information under the
+common view area in the world coordinate system. In this work,
+we focus on the task of semantic segmentation to demonstrate
+the feasibility of our approach and introduce a BEV modeling
+technique tailored for remote sensing scenes, which facilitates the
+projection of 3D scene details from multiple perspective views
+onto a bird’s-eye view. We then utilize a dual-encoder structure                                            (b)
+based on the Vision Transformer (VIT) architecture to extract
+relevant spatial information using self-attention mechanisms.
+Within the decoder, we employ a Feature Pyramid Network
+(FPN) to integrate BEV patch encoding with spatial feature
+residuals, enabling fine-grained segmentation results at the orig-
+inal input resolution. Furthermore, we curated the LEVIR-
+MDS multi-drone segmentation dataset, comprising scenes from
+10 community-level areas across 3 continents, totaling 243k                                                 (c)
+images and their corresponding annotated BEV semantic maps,
+amounting to approximately 500GB. This dataset serves as a                    Fig. 1: Visual comparison between existing drone semantic
+robust benchmark to assess the effectiveness and generalization               segmentation framework and our proposed framework. (a)
+capability of our proposed method. To our best knowledge, this is             Captured from a side-view perspective and annotated using
+the first semantic segmentation dataset designed specifically for
+                                                                              pixel-to-pixel labeling [1]. (b) Captured from a top-view
+collaborative multi-drone applications. We further show that our
+method achieves a 12% improvement in mIoU, reaching 69.73%,                   perspective and annotated using pixel-to-pixel labeling [2]. (c)
+compared to a pure convolutional network model.                               Our proposed framework, which learns scene 3D information
+   Index Terms—Multi-view collaborative segmentation, remote
+                                                                              from multiple side-view perspectives and performs semantic
+sensing, Bird’s-Eye-View (BEV) representation, semantic segmen-               segmentation on BEV at absolute scale.
+tation
+
+                                                                              satellite imaging, including flexible path planning and fine-
+                         I. I NTRODUCTION
+                                                                              grained perception, most existing remote sensing approaches
+
+M      ULTI-VIEW stereoscopic perception is vital in remote
+       sensing tasks for applications such as disaster assess-
+ment [2, 3], resource monitoring [4, 5], and land surveying [6].
+                                                                              rely on pixel-based segmentation, overlooking the richness of
+                                                                              multi-view and 3D information [7].
+                                                                                 With the advancement of convolutional neural networks
+While drone-based remote sensing provides advantages over                     (CNNs), the performance of semantic segmentation has sig-
+  The work was supported by the National Key Research and Development         nificantly improved. Existing drone-based remote sensing se-
+Program of China under Grant 2022ZD0160401, the National Natural Science      mantic segmentation can be categorized into two types based
+Foundation of China under Grant 62125102 and 62471014, the Beijing Natural    on the input perspective: semantic segmentation for side-view
+Science Foundation under Grant JL23005, and the Fundamental Research
+Funds for the Central Universities. (Corresponding author: Zhenwei Shi (e-    perspectives [1, 8] and semantic segmentation for top-view
+mail: shizhenwei@buaa.edu.cn))                                                perspectives [2, 3, 9]. Side-view perspectives encompass more
+  Baihong Lin and Zhenwei Shi are with the Image Processing Center, School    spatial information and perception coverage. However, they
+of Astronautics, Beihang University, and with the State Key Laboratory of
+Virtual Reality Technology and Systems, Beihang University, Beijing 100191,   face challenges such as object occlusion at different heights,
+China, and also with Shanghai Artificial Intelligence Laboratory, Shanghai    requiring semantic segmentation in a pixel-to-pixel space after
+200232, China. Zhengxia Zou is with Department of Guidance, Navigation        perspective transformation, making it difficult to map to world
+and Control, School of Astronautics, Beihang University, Beijing 100191,
+China, and also with Shanghai Artificial Intelligence Laboratory, Shanghai    coordinates. Top-view perspectives largely resolve occlusion
+200232, China.                                                                issues and allow direct target localization in world coordi-
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                                                                           2
+
+
+
+nates. However, their perception range is fixed, with a single      irrelevant spatial information using self-attention mechanisms.
+viewpoint that limits capturing spatial scene information.          Finally, in the decoder, we design a Feature Pyramid Network
+    In recent years, within the realm of autonomous driving         (FPN) [23] to connect BEV patch encoding with spatial feature
+(e.g., Tesla [10]), pertinent methods have adeptly integrated       residuals, enabling the acquisition of finely segmented bird’s-
+multi side-view sensor data by creating a Bird’s Eye View           eye view images at the input resolution.
+(BEV) representation. This method involves projecting and              The contributions of our work can be summarized as
+integrating information captured by side-view sensors around        follows:
+the vehicle into a top-down view. The process facilitates a          1) We propose a multi-view joint perception framework de-
+comprehensive depiction of surrounding scenes in the world              signed for 3D remote sensing scenes. Given a set of multi-
+coordinate system, providing an absolute scale and leveraging           view images, our aim is to accurately derive BEV scene
+3D information perceived from side-view perspectives.                   information within the shared viewing area of the world
+    To project side-view information into BEV perspective,              coordinate system. Our method stands out by leveraging
+methods can be categorized into two approaches. Some meth-              complex 3D scene data and drone collaboration, ensuring
+ods directly map side-view features to BEV space, such                  precise perception of the environment and we utilize the
+as [11–14], by extracting 2D image features from side views,            task of semantic segmentation to validate the efficacy of
+predicting depth distribution, and then projecting and inte-            our framework.
+grating them into BEV space. Others like [15, 16] use depth          2) A Novel Algorithm (RSBEV): We propose the RSBEV
+estimation to predict side-view depth maps and extract features         method to achieve multi-view collaborative semantic seg-
+in 3D space. These methods share a common goal of recover-              mentation. Initially, we project 3D scene information
+ing depth information lost in the 2D imaging process of side            from multiple perspectives into BEV space using BEV
+views and associating it with BEV space. Alternatively, some            modeling. Additionally, we design a dual Encoder struc-
+methods utilize camera models for inverse perspective map-              ture based on the Vision Transformer (VIT) architecture,
+ping directly in BEV space. For example, [17] first utilized this       utilizing self-attention mechanisms to extract relevant
+method in 3D object detection, assuming targets lie on a plane          spatial information. In the decoder phase, we employ a
+in 3D space and querying point-by-point for corresponding               Feature Pyramid Network (FPN) to connect BEV patch
+features from various viewpoints. Furthermore, [18, 19] built           encoding with spatial feature residuals, enabling finely
+mappings between BEV space points and side-view images                  segmented bird’s-eye view results at the input resolution.
+based on a variational encoder-decoder and MLP architecture,            These innovative algorithmic designs enable our method
+while [20, 21] utilized transformers to directly construct BEV          to effectively address multi-view collaborative scene seg-
+queries and employ cross-attention mechanisms to search for             mentation tasks with drones.
+corresponding features in perspective images.                        3) A New Dataset (LEVIR-MDS): We curate a comprehen-
+    However, these methods build on assumptions made for                sive multi-view collaborative segmentation dataset, which
+autonomous driving tasks, where the objective is limited to             includes scenes from 10 community-level areas across
+perceiving the immediate surroundings of a vehicle. This                three continents, featuring a total of 243k images and
+allows for treating the ground as a nearly flat plane to fa-            their corresponding annotated bird’s-eye view (BEV) se-
+cilitate straightforward projections between perspective views          mantic maps, totaling approximately 500GB. This dataset
+and the bird’s-eye view. In drone scenarios, by contrast,               provides essential experimental resources and serves as a
+the task generally involves a much broader scope of scene               significant benchmark in the drone remote sensing field.
+perception, rendering the simplistic flat plane assumption              It not only validates the effectiveness of our proposed
+impractical. Moreover, unlike in autonomous driving, the                RSBEV method but also fosters extensive research and
+extensive freedom in drone trajectories and the multiscale              development in this domain.
+nature of scenes demand a specialized BEV-based framework
+                                                                    The rest of the paper is organized as follows. Section II
+designed for drone applications. Therefore, we introduce a
+                                                                    reviews related work in BEV representation and semantic
+robust network framework, RSBEV, tailored for multi-view
+                                                                    segmentation. Section III details our proposed method. Section
+collaborative segmentation. Accompanying this framework,
+                                                                    IV presents the details of LEVIR-MDS. Section V provides
+we present a substantial dataset named LEVIR-MDS, which
+                                                                    experimental results demonstrating the effectiveness and ratio-
+spans 10 community-level scenes across three continents, en-
+                                                                    nale of our method. Finally, we conclude in Section VI.
+compassing 243k images with corresponding annotated BEV
+semantic maps, totaling approximately 500GB.
+    In this paper, we apply Inverse Perspective Mapping (IPM)                           II. R ELATED W ORK
+within BEV framework to comprehensively extract all relevant
+2D data and employ self-attention mechanisms to meticulously        A. Vision-centric BEV Representation
+filter and ascertain the accurate 3D information. Initially,          Vision-centric BEV representation, with its capacity to
+we model the ground height under a normal distribution              seamlessly integrate 3D information at a real-world scale,
+assumption using a multi-plane approach and extract BEV             has increasingly captured the attention of both industry and
+representation of the scene through weighted pooling. Sub-          academia [24]. The earliest works in this area date back
+sequently, we propose a dual Encoder structure based on             over 30 years, introducing methods that project side-view
+the Vision Transformer (VIT) [22] architecture to filter out        perspectives onto BEV under rigid plane assumptions [25].
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                                                                         3
+
+
+
+
+Fig. 2: An overview of our method. We take multi-view images as input. In the BEV Feature Builder, multi-view feature is
+projected onto a multi-plane grid within the world coordinates, followed by a weighted pooling to obtain the BEV feature map.
+Subsequently, in the Spatial Feature Encoder, the BEV feature map is used to learn spatial and category-related information.
+Finally, the FPN-based Decoder predicts the Segmentation map in BEV space.
+
+
+With advancements in deep learning, several methods [7, 26–      lizing a variational encoder-decoder and MLP architecture
+28] have utilized BEV representation to transform features       to extract semantic information in 3D space directly from
+from 2D perspective pixel coordinates to 3D world coordinates    monocular images.Building on this approach, [19, 21] in-
+in a bird’s-eye view.                                            tegrate features from multiple perspective views into BEV
+   To mitigate severe deformation and occlusion issues during    space, aggregating spatial information from various viewpoints
+rigid transformation processes, some methods have introduced     on the BEV feature map. While these methods effectively
+Generative Adversarial Network (GAN) [29] to compensate          mitigate errors in BEV modeling of non-flat terrain such
+for errors in projection. For instance, BriighGAN [30] takes     as mountains or buildings, they may encounter overfitting
+three views as inputs: perspective view, homography view,        issues due to the network’s requirement to fit additional scene-
+and bird’s-eye view. It employs multiple sub-models based        specific geometric details. Notably, HFT [33] devised a hybrid
+on a multi-GAN architecture to address significant viewpoint     model that combines geometric transformation features with
+differences and severe deformations between perspective views    camera parameters and learnable features, surpassing previous
+and bird’s-eye view. MonoLayout [31] predicts BEV layouts,       methods in performance.However, further enhancements are
+leveraging adversarial feature learning to hallucinate scene     necessary to optimize performance when integrating multi-
+details for occluded image regions. This approach tackles the    view information [24].
+challenge of estimating layouts beyond visible information and
+compensates for 3D information loss due to projection.              The advent of Vision Transformer (VIT) [22] has brought
+                                                                 remarkable advancements in applying transformer-based mod-
+   However, these direct transformation methods still suffer     els to computer vision tasks. Certain transformer-based ap-
+from incomplete projections due to occlusions and errors         proaches have surpassed MLP-based methods and consistently
+caused by the planar assumption. To address these funda-         demonstrate strong performance in multi-view fusion scenar-
+mental issues, [11, 12, 15, 16] leverage depth prediction        ios. In the field of autonomous driving, [20, 21, 34] leveraging
+or the probability distribution of depths from 2D side-view      cross-attention mechanisms effectively retrieve image features
+images to determine the position of feature vectors in the       from perspective views to map onto the BEV. In such methods,
+BEV space. Nonetheless, directly predicting missing depth        the primary trade-off lies in the use of sparse queries [35–37],
+information increases model complexity and hinders conver-       which sacrifices spatial geometric structure awareness, while
+gence. Alternatively, CaDNN [32] incorporates supervision        dense queries [20, 38] require exceedingly high computational
+using depth information obtained directly from lidar during      complexity.
+depth estimation, leading to a more precise transformation
+from perspective view to BEV.                                        In this article, addressing the characteristics of drone in
+   Meanwhile, some methods continue to pursue accu-              large-scale scene perception. By employing inverse perspective
+rate transformation processes exclusively through visual         mapping combined with a VIT-based architecture [22], we
+cues.VED [18] employs learnable parameters to implicitly         filter out inaccurately projected spatial information, achieving
+express the mapping from perspective view to BEV, uti-           a balance between computational complexity and accuracy.
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                                                                                 4
+
+
+
+B. Semantic Segmentation Using Encoder-Decoder Architec-           into U-Net [42], resulting in improved segmentation accuracy
+ture                                                               for small-scale objects.
+
+   The encoder-decoder architecture framework is widely em-                            III. P ROPOSED M ETHOD
+ployed in pixel-level segmentation tasks. In this framework,
+                                                                      The overall process of our RSBEV method is illustrated in
+the encoder typically reduces the spatial scale of the input
+                                                                   the flowchart shown in Fig. 2. This method comprises three
+image and maps semantic information from the spatial domain
+                                                                   main components: 1) BEV Feature Builder, which projects
+to high-dimensional feature vectors. Meanwhile, the decoder
+                                                                   features from input side-view perspectives to obtain Bird’s Eye
+performs upsampling to map these feature vectors back to
+                                                                   View (BEV) representations. 2) Spatial Feature Encoder,
+category information. FPN [23] was first introduced using
+                                                                   which filters out irrelevant spatial information from the BEV
+the VGG network as its encoder, where the original fully
+                                                                   representations and models the correlation between features
+connected layers were replaced with a decoder capable of
+                                                                   and categories. 3) FPN-based Decoder, which decodes the
+restoring resolution. To ensure multiscale spatial information,
+                                                                   output features by integrating multi-scale information to obtain
+feature maps of different scales from the encoder were directly
+                                                                   category prediction results.
+fused with corresponding layers of the decoder, preserving
+spatial features at various resolutions. Subsequently, more
+convolutional network architectures such as ResNet [39], HR-       A. BEV Feature Builder
+Net [40], and ResNeSt [41] have also been used as encoder.            In this subsection, we efficiently projects image features
+However, due to pooling operations in encoder and continuous       from multiple perspectives into BEV space. First, we ex-
+upsampling in decoder, it remains challenging to learn high-       tract features from multi-perspective images using a shared
+frequency details in images. U-Net [42] and its subsequent         backbone network. Subsequently, these features are explicitly
+variants [43–46] introduced several shortcuts in the encoder-      projected onto a multi-plane grid in the world coordinates
+decoder structure, further preserving multiscale information,      using the camera models. This process allows us to obtain
+and found wide applications in image segmentation in med-          the BEV feature map through weighted pooling.
+ical and remote sensing domains [47]. A similar U-shaped              We first process multi-view images I 2 RN ⇥3⇥H⇥W and
+network structure was adopted in [47], incorporating decon-        utilize their corresponding camera parameters M 2 RN ⇥4⇥4
+volution layers in the decoder to extract roads in drone remote    with a ResNet-like [39] network (NET) to extract image
+sensing scenes. Additionally, SegNet [48] systematically de-       features. To effectively integrate spatial information, a depth
+codes encoder features layer by layer, preserving indices in       coordinate map Z 2 RN ⇥1⇥H⇥W , derived from M, is intro-
+max pooling to consider contextual information and maintain        duced. This map, representing the depth for each viewpoint,
+overall object-level consistency during segmentation. More         quantifies the distance from the observed scene to the world
+recent research, Spatial-Spectral Masked Auto-encoder (MAE)        coordinate plane at z = 0. It is concatenated with the extracted
+[49], extends the encoder-decoder paradigm by focusing on          features, and a convolutional operation is applied to generate
+masked image modeling, where certain portions of the input         a per-pixel mask. This mask assesses the relative importance
+are masked, and the model is trained to reconstruct those          of image features at specific locations. The feature extraction
+hidden parts. This approach enhances the model’s ability to        process can be formalized as:
+capture spatial and spectral relationships, which is particu-
+                                                                                             F2D = Net(I)                            (1)
+larly valuable in remote sensing tasks [50]. MAE’s masked
+reconstruction strategy leverages the rich spatial-spectral in-                    mask = conv(concat(F2D , Z))                      (2)
+formation in remote sensing data, contributing to improved
+scene classification and feature extraction.                                      Fmask2D = F2D        sigmoid(mask)                 (3)
+                                                                                         N ⇥feature h⇥feature w⇥C
+   The exceptional global modeling capabilities of Trans-          Where F2D 2 R                                        denotes the image
+former [51] have been extended to encoder-decoder-based            features directly obtained from the feature extraction network,
+image segmentation frameworks in research. For example,            and Fmask2D 2 RN ⇥feature h⇥feature w⇥C represents the image
+SETR [52] follows the paradigm of VIT [22] in the encoder,         features weighted by the viewpoint-specific masks, where C
+splitting the image into patches and leveraging transformers to    is the dimension of the image features.
+learn global information. The output tokens are then reassem-         It is noteworthy that a significant challenge arises due to
+bled into feature maps and processed with upsampling and           the unavailability of ground truth elevation values at arbitrary
+convolution in the decoder. On the other hand, Segmenter [53]      points within the scene. Directly projecting features onto the
+is built entirely on transformer-based encoder-decoder struc-      BEV plane from ground level often results in inaccurate
+tures.In decoding process, the authors replace convolutional ar-   feature representations. To address this issue, we model the
+chitecture with transformer that includes a category token, and    ground height distribution within the scene as a Gaussian
+ultimately compute the similarity between output tokens and        distribution N (µ, ), where µ represents the average scene
+category tokens using dot products. Segformer [54] employs         height zworld , and we set               = 1.0. Specifically, we dis-
+lightweight self-attention mechanisms and hierarchical feature     cretize the height into a series of bins, dividing the space
+maps in encoder, while leveraging MLP structures in decoder        into 2L 1 parallel planes, equally spaced with elevations:
+to effectively reduce computational complexity. More recently,     z = {z1 , z2 , . . . , zL , . . . , z2L 2 , z2L 1 }, where zL = µ. In
+methods such as [55] have embedded Swin Transformer [56]           our experiments, we set L = 4 with a height spacing of
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                                                                                 5
+
+
+
+5 meters, resulting in a total of 7 planes. For each height                Algorithm 1 BEV Feature Building Process. The symbols
+zi , a grid-shaped BEV map is created. Using the camera                    used in this pseudocode follow the same naming conventions
+projection model, we search for 2D image features that can                 as in the previous formulas.
+be projected from each grid point onto the BEV plane. For                  Input: Multi-view images I, Camera parameters M
+a given BEV grid with coordinate (x, y, z), the projection                 Input: BEV grid dimensions (bev h, bev w, L)
+process is mathematically described as follows:                            Output: Final BEV feature map B
+                                                                            1: Step 1: Extract multi-view features.
+                     p = Mtrans (M, x, y, z)                         (4)    2: mask      conv(concat(Net(I), Z))
+                                                                            3: // Z: Depth map computed from M
+Where p 2 RN ⇥2 includes feature pixel coordinates of all
+cameras that can be projected from the coordinates (x, y, z).               4: Fmask2D    Net(I) sigmoid(mask)
+                                                                            5:
+Further, we filter out points within the coordinate range of each
+                                                                            6: Step 2: For each grid point in the BEV map, calculate
+camera’s feature map, along with their corresponding features:
+                                                                                 projected feature.
+                                                                            7: for each grid point (x, y, z) in BEV grid do
+  pvalid = {pi 2 p | check bounds(pi , Hfeature , Wfeature )} (5)           8:   p      Mtrans (M, x, y, z)
+                 F3D [x, y, z] = Fmask2D (pvalid )                   (6)    9:   pvalid      check_bounds(p, Fmask2D .shape())
+                                                                           10:   if pvalid 6= ; then
+The function check bounds verifies if the coordinates pi fall              11:      F3D (x, y, z)     Fmask2D (pvalid )
+within the feature map dimensions [0, Hfeature ) ⇥ [0, Wfeature ).         12:   else
+After filtering, pvalid 2 Rnhit ⇥2 contains only those coordinates         13:      F3D (x, y, z)     0
+that meet this criteria, where nhit 2 [0, N ) denotes the count of         14:   end if
+viewpoints that can project their features within this coordinate          15: end for
+range by the grid point. If nhit = 0, then F3D [x, y, z] is a              16:
+zero vector. Otherwise, F3D [x, y, z] 2 Rnhit ⇥C represents the            17: Step 3: Feature fusion and weighted pooling.
+projected feature set corresponding to this BEV grid.                      18: for each grid point (x, y, z) in BEV grid do
+   In the above process, the transformation Mtrans (M, x, y, z)            19:   if nhit > 0 then
+adheres to the pinhole camera model, where the 3D point (x, y,                                  1
+                                                                                                      Pnhit
+                                                                           20:      F[x, y, z] nhit i=1 F3D [x, y, z][i]
+z) in the world coordinate system is projected onto a 2D pixel             21:   else
+plane through the intrinsic and extrinsic camera parameters                22:      F[x, y, z] 0
+incorporated within the matrix M. The projection mechanism                 23:   end if
+is defined by the following equation:                                      24: end for
+                                           0 1                             25: B     WeightedPooling(F, Gaussian weights)
+                   0 1
+                      u          ✓       ◆ x                               26: return    B
+                                           B C
+                   @v A = K R t B y C                          (7)
+                                   0 1 @z A
+                      1
+                                             1
+                                                                           B. Spatial Feature Encoder
+   In this equation, (u, v) 2 RN ⇥2 corresponds to the previ-
+ously defined p, K signifies the cameras’ intrinsic matrix, R                 We observe that the BEV feature map B obtained through
+the rotation matrix, and t the translation vector. These compo-            pooling contains overlapping features from different eleva-
+nents collectively compose the cameras’ extrinsic matrix. The              tions. Consequently, directly applying convolutional architec-
+complete matrix M is thus formulated as the product of K                   tures for feature encoding and decoding would struggle to
+and the concatenated extrinsic matrix R t .                                capture effective contextual information due to the presence
+   Once we have obtained the complete BEV multi-plane                      of excessive invalid information in the BEV feature map.
+features F3D (x, y, z) 2 Rnhit ⇥C , we compute the averaged                Subsequent experiments also validate the presence of severe
+features for each grid point in the BEV map as follows:                    overfitting under such conditions. To address this issue, we
+                 ( P                                                       propose a transformer-based architecture inspired by VIT [22],
+                          nhit
+                    1
+                               F3D [x, y, z][i] if nhit > 0
+    F[x, y, z] = nhit i=1                                   (8)            which enables global modeling of spatial information through
+                   0                            if nhit = 0                self-attention mechanisms. The entire process is divided into
+Where F 2 Rbev h⇥bev w⇥(2L 1)⇥C represents the BEV map                     two encoders, Encoder1 and Encoder2, utilizing self-attention
+across different layers, providing a comprehensive representa-             modules with identical structures. Furthermore, considering
+tion of the scene at various heights.                                      that the pixel-wise operations during the projection of image
+   Finally, we employ weighted pooling to aggregate F accord-              features may negate the regularization effect induced by data
+ing to the discrete Gaussian distribution probabilities, yielding          augmentation in subsequent encoders, we incorporate addi-
+the final BEV feature map B 2 Rbev h⇥bev w⇥C :                             tional data augmentation on the BEV feature map B following
+                                                                           the approach proposed in BEVDet [13], involving operations
+               X1
+              2L
+                     1            (zi     zL ) 2                           such as rotation, cropping, resizing, and flipping.
+        B=           p exp                         · F[:, :, i, :]   (9)
+                      2⇡                2 2                                   In Encoder1, we divide the BEV map into a series of 8 ⇥ 8
+              i=0
+                                                                           patches, which are flattened and fed into a linear layer to
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                                                                              6
+
+
+
+
+                                                                    Fig. 4: Decoder Network Architecture Diagram. This diagram
+Fig. 3: Network architecture of the Spatial Feature Encoder.        illustrates how the feature sequence processed by the encoder
+In Encoder1, the network receives patch embedding with              is rearranged into a 2D feature map and subsequently re-
+positional embedding and utilizes self-attention mechanisms         fined through three upsampling modules to produce the final
+to filter out irrelevant spatial information in the input. Subse-   segmentation results. During the upsampling process, feature
+quently, the output is concatenated with class embedding and        maps of various resolutions are fused with the downsampled
+fed into Encoder2 to learn the dependencies between features        BEV feature map to enhance segmentation performance.
+and class information.
+                                                                    fuse multi-scale information. By employing both upscaling UP
+                                                                    modules and downscaling DOWN modules, we fuse the BEV
+obtain BEV feature tokens. These tokens, along with positional      map before the Spatial Feature Encoder with the feature maps
+embeddings, are then input to Encoder1, comprising N1 self-         concatenated with BEV patch encodings, enabling multi-scale
+attention modules aimed at filtering out irrelevant spatial         fusion. This ultimately yields category segmentation results in
+information. The output dimensions remain the same as the           the BEV space at the original scale. The process is illustrated
+input BEV patch encoding. Subsequently, these encodings are         in Fig. 4.
+combined with category embeddings and fed into Encoder2,
+which consists of N2 self-attention modules designed to learn
+                                                                    D. Loss Function
+the dependencies between BEV feature encoding and category
+information. Finally, Encoder2 outputs the BEV patch encod-            Our loss function consists of three components: weighted
+ing corresponding to each patch.                                    cross-entropy loss Lce , dice loss [57] Ldice , and inter-class
+   As shown in Fig. 3, the same self-attention operation is         diversity loss Lcls . Assuming C is the number of classes, N
+utilized in different encoders. Q, K, V denote query, key and       is the number of samples, yij denotes the ground truth label (0
+value, and input tokens (Q, K, V ) are linearly projected using     or 1) of sample i belonging to class j, and pij is the probability
+embedding tokens or encoding tokens T, represented as:              predicted by the model that sample i belongs to class j.
+                                                                       Lce can be represented as follows:
+          Q = TWq ,        K = TWk ,     V = TWv ,          (10)                              N    C
+                                                                                          1 XX
+where W , W , W are the learnable parameters of the
+          q     k      v                                                          Lce =             wj · yij · log(pij )         (12)
+                                                                                          N i=1 j=1
+linear projection layer. In Encoder1, they have dimensions
+HW/82 ⇥d, and in Encoder2, their dimensions are (HW/82 +            Where wj is the weight assigned to class j, which is set
+num cls) ⇥ d. Moreover, num cls represents the number of            inversely proportional to the pixel count of each class to further
+classes, and d denotes the feature dimension of the tokens.         balance the class distribution in the samples.
+After obtaining Q, K, andV, one attention head can be                  Ldice can be represented as follows:
+expressed as:                                                                                   C        PN
+                                                                                             1 X 2 · i=1 pij · yij
+                                                                               Ldice = 1            P            PN               (13)
+                                      QKT                                                   C j=1 N
+          SelfAttn(Q, K, V) = Softmax( p )V                 (11)                                      i=1 pij +    i=1 yij
+                                        d
+                                                                      Lcls can be represented as follows:
+                                                                                           XC  C
+                                                                                               X
+                                                                                       1                       ui      ui
+C. FPN-based Decoder                                                     Lcls =                                                  (14)
+                                                                                    C(C 1) i=1                kuj k   kuj k
+   Although our encoder contains intermediate features with                                        j=1,j6=i
+
+precise spatial relations, the network struggles to capture         Where ui and uj are both class encoding output by the
+information about small-scale objects. This is because each         encoder. Minimizing this ensures that features from different
+encoding vector at the output of the Spatial Feature Encoder        classes have distinct separability in the feature space, thereby
+describes only the category information within each patch.          enhancing the ability to distinguish between different classes.
+Directly upsampling and computing the inner product with            The final loss function can be represented as:
+the class encoding, as done in [53], results in the loss of
+                                                                                       L = Lce + Ldice + Lcls                    (15)
+small-scale information at this stage. To address this issue,
+we introduce FPN [23] into the segmentation output head to          The weight of the Lcls , denoted by , is set to 0.1 in this case.
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                                                                                           7
+
+
+
+E. Network Details                                                             drone domain and dataset formats prevalent in the autonomous
+                                                                               driving domain, and proposed a comprehensive dataset named
+TABLE I: Detailed configuration of our shared backbone.                        LEVIR-MDS, specifically designed for multi-view collabora-
+Here, Conv-DOWN represents a convolutional layer followed                      tive segmentation.
+by batch normalization, rectified linear unit (ReLU), and max                     This dataset leverages real-world 3D scenes generated
+pooling; Conv-UP represents a convolutional layer followed                     from Google Earth Studio [63], comprising 10 extensive
+by ReLU and upsampling layer.                                                  community-level scenes across 3 continents. Each scene is
+      Layer                Config        Input Dim   Output Dim   Resolution   captured from four unique drone viewpoints, resulting in
+      Layer0
+      Layer1
+                         Conv-Down
+                        Resnet.layer1
+                                              3
+                                              64
+                                                          64
+                                                         256
+                                                                     1/4
+                                                                     1/4
+                                                                               a comprehensive collection of 5800 frames per viewpoint.
+      Layer2            Resnet.layer2        256         512         1/8       These frames have been rigorously annotated to categorize
+      Layer3            Resnet.layer3        512        1024        1/16
+      Layer4            Resnet.layer4       1024        2048        1/32       six distinct features: building, road, vegetation, water, boat,
+   Conv FPN1
+   Conv FPN2
+                       Conv-UP+Layer4
+                       Conv-UP+Layer3
+                                            2048
+                                            1024
+                                                        1024
+                                                         512
+                                                                    1/16
+                                                                     1/8
+                                                                               and other, demonstrating the substantial effort involved in
+   Conv FPN3           Conv-UP+Layer2        512         256         1/4       dataset preparation. Representative images from the dataset
+   Conv FPN4           Conv-UP+Layer1        256          64         1/2
+   Conv mask             Concat-Conv        64+1           1         1/2       are presented in Fig. 5, while the corresponding annotated
+  Scalar product   Conv mask Conv FPN4     64&1           64         1/2       bird’s-eye view images are illustrated in Fig. 6.
+                                                                                  Our LEVIR-MDS offers a robust foundation for advancing
+                                                                               research in multi-view collaborative segmentation, bridging
+   1) BEV Feature Builder: As shown in Table I, we employ
+                                                                               the existing gaps in the current drone segmentation datasets.
+a ResNet-50-like [39] backbone network to extract image
+                                                                               By leveraging the high-resolution and detailed nature of the
+features. The average pooling and fully connected layers are
+                                                                               simulated 3D scenes, researchers can develop and validate new
+removed and replaced with an upsampling network structured
+                                                                               algorithms and methodologies aimed at enhancing segmenta-
+as a FPN [23], with corresponding feature maps being skip
+                                                                               tion accuracy and efficiency in multi-drone systems.
+connected. The output image feature size is half of the input
+image size, with feature channels set to C = 64.                               A. Trajectory Setup
+   The BEV feature map B was set to have dimensions 512 ⇥
+                                                                                  For each scene measuring approximately 4km ⇥ 4km, the
+512⇥64, corresponding to a spatial resolution of 0.8 m⇥0.8 m,
+                                                                               area is typically divided into 3 rows and 5 columns, and
+effectively covering a perception range of 409.6 m ⇥ 409.6 m.
+                                                                               scanned along a serpentine trajectory through these subregions
+In the multi-plane projection part of the BEV Feature Builder,
+                                                                               as illustrated in Fig. 7. During the scanning process, the
+we set L = 4 with a height spacing of 5 meters, resulting in
+                                                                               camera centers of the four trajectory cameras in each frame
+a total of 7 planes, and the perception of information within
+                                                                               converge on the same point, with the cameras facing forward,
+a 30-meter height range.
+                                                                               backward, leftward, and rightward, respectively. In our dataset,
+   2) Transformer Encoder: We divide the input image into
+                                                                               the BEV center position for each frame is determined by a
+a series of 8 ⇥ 8 patches, and then project each patch into a
+                                                                               meticulously designed set of trajectories, ensuring that the
+256-dimensional feature vector using a linear transformation
+                                                                               central position is as much as possible within the common
+(with an 8⇥8 convolutional kernel and a stride of 8). After in-
+                                                                               view area of the four viewpoints.
+corporating positional embedding, these feature vectors serve
+                                                                                  Scanning is performed along the row direction with a 500-
+as the input to the transformer. Additionally, in TabVII, we
+                                                                               frame interval between two adjacent rows (3 rows in total) and
+obtain models with different parameter counts by modifying
+                                                                               along the column direction with a 200-frame interval between
+the settings in the encoder. For instance, in RSBEV-base, we
+                                                                               two adjacent columns (5 columns in total), all at a frame rate of
+set the number of layers in both Encoder1 and Encoder2 to 6,
+                                                                               24 fps. These speeds were chosen to balance between detailed
+the number of attention heads to 4, and the dimension of the
+                                                                               temporal resolution and practical data collection rates. This
+Feed Forward layer to 512.
+                                                                               results in a sequence of 4 ⇥ 5800 temporal images for each
+   3) Segmentation Head: We reorganize the patch encodings
+                                                                               scene, where each image measures 1600 ⇥ 900 pixels. The
+outputted by the encoder into a shape of H8 ⇥ W       8 ⇥ 256.                 horizontal field of view (HFOV) for each image is 20°.
+Then, leveraging the FPN [23] structure depicted in Fig. 4,
+                                                                                  The height and tilt angle of the drones vary within specific
+we progressively fuse BEV features with patch encodings at
+                                                                               ranges to simulate realistic flight conditions. Specifically, the
+different scales. Finally, employing a 1 ⇥ 1 convolution, we
+                                                                               height ranges from 100 meters to 500 meters, and the tilt angle
+predict categories at the original scale of the BEV feature map.
+                                                                               varies between 25 degrees and 50 degrees to capture different
+                                                                               perspectives and enhance the dataset’s diversity.
+                             IV. DATASET
+   Multi-view drone datasets have made significant progress                    B. Data Pairing
+in the field of object tracking [58, 59], yet there are still                     For scene i, we only annotate to obtain the BEV ground
+substantial gaps in the segmentation domain. In the realm                      truth map Maski . In frame t, the visible area of the ground
+of autonomous driving, several large-scale datasets such as                    truth map P t in this scene is defined as:
+nuScenes [60], KITTI [61], and the Waymo Open Dataset
+                                                                                              0                                            1
+(WOD) [62] have been established, providing a wealth of data                            N
+                                                                                        [           [
+for various tasks. To validate the effectiveness of RSBEV, we                    Pt =         @             p = (u, v) Mtrans (p) 2 grid(In )A (16)
+drew inspiration from both dataset creation methods in the                              n=1       p2Maski
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                                                                            8
+
+
+
+
+                                 Fig. 5: Sample images of the first four scenes from the dataset
+
+
+                                                                      1) Directory Structure:
+                                                                      • sample: Stores keyframe images from different side-view
+                                                                        perspectives in JPEG format. Each keyframe represents
+                                                                        significant moments in each trajectory and is stored with
+                                                                        a corresponding timestamp.
+                                                                      • sweep: Contains time-series sequences of images cap-
+                                                                        tured between keyframes from different side-view per-
+                                                                        spectives, also in JPEG format, providing a continuous
+                                                                        view of each trajectory.
+                                                                      • mask: Contains the ground truth images for each scene,
+                                                                        annotated with six categories. The annotated ground
+                                                                        truth images are stored in PNG format, along with the
+                                                                        corresponding camera parameter information.
+                                                                      • data meta.json: Contains a dictionary that records the
+Fig. 6: Annotated BEV map of the first four scenes from the             paths of images and corresponding camera parameters
+dataset                                                                 for all trajectories in each scene. The dictionary structure
+                                                                        allows easy access to the dataset’s metadata.
+   where N represents the number of cameras, p = (u, v)               2) Statistical Properties: Key statistical properties of the
+denotes the pixel coordinates in Maski , grid(In ) denotes the      dataset include:
+tensor of pixel coordinates in the n-th viewpoint, and Mtrans (·)     • Scenes Information:The dataset comprises a total of 10
+denotes the projection from BEV to side view transformation             scenes sourced from three different continents. Specific
+using the pinhole camera model.                                         details about each scene, including coordinates, area,
+   Thus, we obtain the data pairs of the side-view images Iti           average height, number of frames, and main categories,
+and the corresponding ground truth mask maskti = Maski (P t )           are provided in Tab.II.
+in the BEV space, as illustrated in Fig. 1(c).                        • Number of Images: Each scene contains a sequence of
+                                                                        4⇥5, 800 to 4⇥8, 500 frames captured from four distinct
+C. Dataset Format                                                       drone viewpoints, culminating in a total of 242,800
+  The dataset structure is inspired by the nuScenes [60]                images.
+dataset. It organizes data in directories named “sam-                 • Image Resolution: Each image has a resolution of 1600⇥
+ple”, “sweep”, and “mask”, with metadata stored in                      900 pixels.
+“data meta.json”.                                                     • Categories: The ground truth annotations include six
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                                                                                  9
+
+
+
+
+Fig. 7: Trajectories of the first four scenes and forward-looking images at different times. The leftmost images show the
+camera trajectories (white curves) from a forward-looking perspective for four scenes. White dots indicate the key points
+selected during the trajectory design, with camera poses for the remaining frames obtained using cubic spline interpolation for
+a smooth trajectory. The orange, green, and red dots represent the camera’s position at three specific moments, corresponding
+to the images shown in the right three columns.
+
+                                           TABLE II: Detailed information of each scene
+           Scene     latitude&longitude   Area (km2 )   Avg Height (m)    Frames     Main Categories                 Region
+          Scene 1      47.62, -122.34         11            205.69         5800        Building, Ship          Washington, USA
+          Scene 2       40.79, -73.96         12            238.31         5800     Vegetation, Building        New York, USA
+          Scene 3       34.67, 135.40         14            297.13         5800     Vegetation, Building          Tokyo, Japan
+          Scene 4       35.65, 139.83         18            396.75         5800       Vegetation, Ship          Yokohama, Japan
+          Scene 5       35.45, 139.96         10            170.13         5800          Building               Yokohama, Japan
+          Scene 6       40.79, -74.12         14            244.24         5800      Vegetation, Water          New York, USA
+          Scene 7       40.80, -73.49         16            235.01         5800       Building, Roads           New York, USA
+          Scene 8       40.79, -74.01         15            245.62         5800      Vegetation, Water           Brooklyn, USA
+          Scene 9         47.46, 8.58          8            112.28         8500     Vegetation, Building      Zurich, Switzerland
+          Scene 10    47.630, -122.346        10            265.09         5800        Road, Others        British Columbia, Canada
+
+
+
+    categories: building, road, vegetation, water, boat, and             Our network is deployed under the PyTorch framework. We
+    other. The distribution of these categories across the               utilize a single NVIDIA GeForce RTX 4090 24-GB GPU. We
+    dataset is illustrated in Fig. 8.                                    employ the Adam optimizer with a learning rate of 5e-4 and a
+  • Altitude Distribution: Each scene’s four trajectories are            weight decay of 1e-8. The learning rate scheduler is configured
+    meticulously designed with a specific altitude distribu-             to decay by 0.99 after each epoch. A batch size of 1 is utilized,
+    tion, ensuring a consistent shared viewing area among                and the maximum number of epochs is set to 100.
+    different drone perspectives throughout their motion. This              2) Evaluation Metrics: We employ IoU to assess the clas-
+    design also facilitates the occurrence of image occlusions           sification performance of each category and use the average
+    among various viewpoints. Altitude curves in the first               F1 score to evaluate the overall segmentation effectiveness of
+    scene are illustrated in Fig. 9.                                     the network.
+                                                                            The IoU for each category i is calculated using the formula:
+                      V. E XPERIMENT                                                                     T Pi
+                                                                                            IoUi =                               (17)
+A. Experimental Setup                                                                            T Pi + F Pi + F Ni
+  1) Implementation Details: We perform training on 8                    Where T Pi epresents the true positives, F Pi represents the
+scenes, validation on 1 scene, and testing on a separate scene.          false positives, and F Ni represents the false negatives for
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                                                                          10
+
+
+
+                                                                  the BEV space, allowing for more accurate scene understand-
+                                                                  ing. In our experiments, we adapted LSS by replacing the
+                                                                  input perspective with the drone’s viewpoint and modified the
+                                                                  output head to match the multi-class segmentation structure
+                                                                  used in our method.
+                                                                    In our CNN-based model, the ViT [22] structure used in the
+                                                                  spatial encoder-decoder of our original network was replaced
+                                                                  with a convolutional architecture, while keeping the rest of
+                                                                  the pipeline intact, to validate the applicability of our dataset
+                                                                  across different model architectures.
+                                                                    The results of the comparison between Cam2BEV, LSS, our
+                                                                  convolutional network, and our proposed method are shown in
+                                                                  Table III. As demonstrated by the table, the results not only
+                                                                  highlight the effectiveness of our method but also demonstrate
+                                                                  the robustness of our dataset in evaluating different approaches
+                                                                  across various methods.
+
+
+                                                                  C. Visualization
+                                                                     We visualize the classification results on the test set, as
+                                                                  shown in Fig. 10. In Fig. 10(a), it can be observed that
+                                                                  even with occlusion and non-uniform scales among input
+                                                                  views, the output can still achieve accurate bird’s-eye-view
+                                                                  segmentation results at the given resolution. For example,
+                                                                  the image depicts partially obscured houses and a swimming
+   Fig. 8: Pixel count distribution of annotated categories
+                                                                  pool due to tree cover. In contrast, the CNN architecture
+                                                                  model without the transformer encoder fails to extract effective
+                                                                  spatial information, leading to significant overfitting issues.
+category i.
+                                                                  Consequently, crucial occlusion details such as the swimming
+  The average F1 score is calculated using the formula:
+                                                                  pool are often lost in the side view. In Fig. 10(b), rural roads
+                         C
+                   1 X 2 · Precisioni · Recalli                   and some small buildings are well predicted by the model.
+           F1avg =                                        (18)    These are capabilities not possessed by existing methods in
+                   C i=1 Precisioni + Recalli
+                                                                  the field of autonomous driving. However, in Fig. 10(c), the
+Where Precisioni is given by T PTi +F
+                                   Pi                             segmentation performance of our model for densely distributed
+                                      Pi and Recalli is given
+      T Pi
+by T Pi +F Ni .                                                   small boats still needs improvement.
+
+
+B. Comparative Experiments                                        D. Ablation Study
+   To further strengthen the evidence supporting the effective-      To validate the effectiveness of the three proposed modules
+ness of our proposed method and the newly introduced dataset,     in our network, we conducted ablation experiments using
+LEVIR-MDS, we conducted comparative experiments using             a pure convolutional network as the baseline, in which the
+two representative camera-based methods: Cam2BEV [64] and         BEV multi-plane projection and spatial encoder-decoder com-
+LSS [11]. We also designed a purely convolutional network         ponents were directly removed, and the output head was
+for comparison with our method.                                   simplified by eliminating the FPN method. Additionally, we
+   Cam2BEV [64] addresses the challenge of estimating             developed several variants of the model by incrementally
+distances in monocular camera images by transforming the          adding different components (Model-v1 to Model-v5) to assess
+camera perspective into a corrected BEV image. It uses the        their contributions. The results are shown in TableIV.
+uNetXST model to generate a 360° BEV image from multiple             When the multi-plane projection and weighted pooling
+vehicle-mounted cameras, making predictions for occluded          modules were removed, the network only demonstrated cer-
+areas and generalizing well to real-world data using synthetic    tain perception capabilities for large-area features such as
+training data, outperforming traditional IPM. In our experi-      vegetation and water bodies, while its perception capabilities
+ments, we retained the core architecture of the uNetXST model     for buildings and roads significantly decreased. This indicates
+used in Cam2BEV but adapted the input perspective to the          that our BEV modeling strategy effectively projects spatial
+drone’s viewpoint.                                                information, enhancing the perception capabilities for height-
+   LSS [11] explicitly predicts the depth distribution from       sensitive areas (Building) and space-sensitive areas (Road).
+monocular images and uses this information to construct           Incorporating FPN into the decoder resulted in improved
+precise 3D features, enabling better performance in BEV tasks.    performance for categories such as buildings and boats, but
+The model predicts a depth-aware feature map that aligns with     a slight decrease in performance for road categories, which
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                                                                         11
+
+
+
+
+                                  Fig. 9: Altitude curves for the four tracks in the first scene
+
+TABLE III: Comparison of performance between Cam2BEV, LSS, our convolutional network, and our proposed method. The
+mIoU and F1 scores are the average values across six classes, including “other” category.
+                 Method          IoU vegetation   IoU building    IoU road   IoU ship   IoU water   mIoU"     F1"
+                 Cam2BEV [64]        0.5338          0.4105        0.5023     0.7368     0.6847     0.6135   0.4886
+                 LSS [11]            0.3514          0.4793        0.5102     0.7639     0.5770     0.5518   0.3932
+                 CNN                 0.4327          0.4279        0.4413     0.6114     0.7082     0.5736   0.4025
+                 Ours                0.5931          0.6536        0.5077     0.8324     0.8362     0.6973   0.5910
+
+
+
+we attribute to a trade-off in small-scale target detection and     are unavailable, thereby recording the changes in segmentation
+information complexity.                                             performance (such as mIoU and F1 scores). This process helps
+   Additionally, we found that adding the class differentiation     us understand the segmentation performance and stability of
+loss function Lcls to the loss function improved detection          the network under different numbers of viewpoints.
+performance, indicating that this measure helps amplify dif-
+ferences in features between different categories. Experimental
+results are presented in TableV.                                       To further improve the robustness of the network, we intro-
+                                                                    duced a random camera dropout strategy during the training
+                                                                    process. In each training batch, we randomly closed one
+E. Model Robustness Evaluation                                      viewpoint or kept the original input to enhance the network’s
+   In this study, we conducted a series of experiments to           adaptability to different combinations of viewpoints. Subse-
+evaluate the impact of different numbers of camera views            quently, we employed the same testing method to evaluate
+on the performance of multi-view collaborative segmentation         the effect of this strategy and verified the improvement in
+tasks. First, we trained the network using data from four view-     network stability by comparing the experimental results. The
+points to ensure that the network could fully learn multi-view      experimental results, as shown in TableVI, indicate that the
+information under optimal conditions. Then, during the testing      network performance gradually improves with an increasing
+phase, we performed experiments using 3 or 4 viewpoints as          number of viewpoints. Moreover, by randomly closing some
+the baseline and randomly reduced one viewpoint to simulate         viewpoints during training, the network demonstrated stronger
+scenarios where some drones are occluded or some cameras            robustness and stability when facing viewpoint loss.
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                                                                      12
+
+
+
+
+      (a)
+
+
+
+
+      (b)
+
+
+
+
+      (c)
+
+
+
+
+      (d)
+                   Input Views                 CNN-based Model                  Ours                 Ground Truth
+
+                Fig. 10: Visualization of segmentation results between our model and the CNN-based model
+
+
+F. Efficiency and Effectiveness                                                        VI. C ONCLUSION
+                                                                    In summary, our work presents RSBEV, a novel ap-
+                                                                 proach for multi-view collaborative semantic segmentation
+   Based on the current model, we obtained four models           using bird’s-eye-view (BEV) representation. Leveraging multi-
+with different parameter sizes by modifying the dimensions       view side-view images under BEV space supervision, our
+of feature vectors in different modules and the number of        framework improves scene understanding by utilizing 3D
+layers in the Transformer. For comparative experiments, we       scene information and drone collaborative capabilities. Key
+also used a pure convolutional architecture with 46 million      contributions include a new task framework that outperforms
+parameters. Additionally, we tested different models using the   traditional methods, a novel algorithm with BEV modeling and
+same computational resources, and Table 4 presents their pa-     self-attention mechanisms, and a new dataset for validation.
+rameter counts, floating-point operations per second (FLOPs),    Experiments showed the robustness and adaptability of our
+mean IoU (mIoU), and F1 scores.                                  model, highlighting the importance of multi-plane projection,
+                                                                 weighted pooling, and transformer encoder. Evaluation of
+   We found that our models outperformed the pure convolu-       model robustness, including varying the number of viewpoints
+tional network with the same parameter count (42 million) and    and implementing a random camera dropout strategy, demon-
+that performance improved with an increase in the number of      strated the network’s stability under suboptimal conditions.
+Transformer layers.                                                 This work marks a significant step towards advancing drone-
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                                                                                            13
+
+
+
+                     TABLE IV: Ablation studies of different technical components of the proposed method.
+   Name      MPP&Pooling          Encoder1   Encoder2      FPN   IoU vegetation   IoU building    IoU road    IoU ship    IoU water     mIoU"      F1 "
+  Base              %               %             %        %        0.4175           0.5086        0.3914      0.4110       0.6283      0.4826    0.3475
+ Model-v1           %               !             !        !        0.5848           0.4614        0.4482      0.8279       0.8001      0.6293    0.5028
+ Model-v2           !               !             %        %        0.4472           0.5839        0.4974      0.3782       0.7658      0.5974    0.4213
+ Model-v3           !               %             !        %        0.4381           0.6042        0.4907      0.3044       0.7623      0.6010    0.4918
+ Model-v4           !               !             !        %        0.5914           0.6169        0.5149      0.5239       0.7739      0.6851    0.5887
+ Model-v5           !               %             %        !        0.4420           0.6002        0.3426      0.6817       0.6785      0.6003    0.4876
+  Ours              !               !             !        !        0.5931           0.6536        0.5077      0.8324       0.8014      0.6973    0.5910
+
+
+
+TABLE V: Ablation studies of loss functions configurations.                  [14] Y. Li, Z. Ge, G. Yu, J. Yang, Z. Wang, Y. Shi, J. Sun, and
+              Lce       Ldice     Lcls    mIoU          F1                        Z. Li, “Bevdepth: Acquisition of reliable depth for multi-view
+              !          %         %     0.6738       0.5860                      3d object detection,” 2022.
+                                                                             [15] Y. Wang, W.-L. Chao, D. Garg, B. Hariharan, M. Campbell, and
+              !          %         !     0.6804       0.6284
+                                                                                  K. Q. Weinberger, “Pseudo-lidar from visual depth estimation:
+              !          !         %     0.6841       0.6403
+                                                                                  Bridging the gap in 3d object detection for autonomous driving,”
+              !          !         !     0.6973       0.5910
+                                                                                  2020.
+                                                                             [16] Y. You, Y. Wang, W.-L. Chao, D. Garg, G. Pleiss, B. Hariharan,
+                                                                                  M. Campbell, and K. Q. Weinberger, “Pseudo-lidar++: Accurate
+                                                                                  depth for 3d object detection in autonomous driving,” 2020.
+based semantic segmentation and holds promise for applica-                   [17] T. Roddick, A. Kendall, and R. Cipolla, “Orthographic feature
+tions across various real-world scenarios.                                        transform for monocular 3d object detection,” 2018.
+                                                                             [18] C.     Lu,    M.     J.   G.     van      de     Molengraft,    and
+                                R EFERENCES                                       G. Dubbelman, “Monocular semantic occupancy grid
+ [1] Y. Lyu, G. Vosselman, G. Xia, A. Yilmaz, and M. Y. Yang,                     mapping with convolutional variational encoder–decoder
+     “Uavid: A semantic segmentation dataset for uav imagery,”                    networks,” IEEE Robotics and Automation Letters, vol. 4,
+     2020.                                                                        no. 2, p. 445–452, Apr. 2019. [Online]. Available:
+ [2] M. Rahnemoonfar, T. Chowdhury, A. Sarkar, D. Varshney,                       http://dx.doi.org/10.1109/LRA.2019.2891028
+     M. Yari, and R. Murphy, “Floodnet: A high resolution aerial             [19] B. Pan, J. Sun, H. Y. T. Leung, A. Andonian, and
+     imagery dataset for post flood scene understanding,” 2020.                   B. Zhou, “Cross-view semantic segmentation for sensing
+ [3] M. Rahnemoonfar, T. Chowdhury, and R. Murphy, “Rescuenet:                    surroundings,” IEEE Robotics and Automation Letters, vol. 5,
+     A high resolution uav semantic segmentation dataset for                      no. 3, p. 4867–4873, Jul. 2020. [Online]. Available: http:
+     natural disaster damage assessment,” Scientific Data, vol. 10,               //dx.doi.org/10.1109/LRA.2020.3004325
+     no. 1, Dec. 2023. [Online]. Available: http://dx.doi.org/10.            [20] Z. Li, W. Wang, H. Li, E. Xie, C. Sima, T. Lu, Q. Yu, and
+     1038/s41597-023-02799-4                                                      J. Dai, “Bevformer: Learning bird’s-eye-view representation
+ [4] Q. Wang, Z. Yuan, Q. Du, and X. Li, “Getnet: A general end-to-               from multi-camera images via spatiotemporal transformers,”
+     end 2-d cnn framework for hyperspectral image change detec-                  2022.
+     tion,” IEEE Transactions on Geoscience and Remote Sensing,              [21] S. Gong, X. Ye, X. Tan, J. Wang, E. Ding, Y. Zhou, and X. Bai,
+     vol. 57, no. 1, pp. 3–13, 2019.                                              “Gitnet: Geometric prior-based transformation for birds-eye-
+ [5] X. Zhang, J. Jin, Z. Lan, C. Li, M. Fan, Y. Wang, X. Yu,                     view segmentation,” 2022.
+     and Y. Zhang, “Icenet: A semantic segmentation deep network             [22] A. Dosovitskiy, L. Beyer, A. Kolesnikov, D. Weissenborn,
+     for river ice by fusing positional and channel-wise attentive                X. Zhai, T. Unterthiner, M. Dehghani, M. Minderer, G. Heigold,
+     features,” Remote Sensing, vol. 12, no. 2, p. 221, 2020.                     S. Gelly, J. Uszkoreit, and N. Houlsby, “An image is worth
+ [6] N. Zang, Y. Cao, Y. Wang, B. Huang, L. Zhang, and P. T.                      16x16 words: Transformers for image recognition at scale,”
+     Mathiopoulos, “Land-use mapping for high-spatial resolution                  2021.
+     remote sensing image via deep learning: A review,” IEEE                 [23] J. Long, E. Shelhamer, and T. Darrell, “Fully convolutional
+     Journal of Selected Topics in Applied Earth Observations and                 networks for semantic segmentation,” 2015.
+     Remote Sensing, vol. 14, pp. 5372–5391, 2021.                           [24] Y. Ma, T. Wang, X. Bai, H. Yang, Y. Hou, Y. Wang, Y. Qiao,
+ [7] A. Palazzi, G. Borghi, D. Abati, S. Calderara, and R. Cucchiara,             R. Yang, D. Manocha, and X. Zhu, “Vision-centric bev percep-
+     “Learning to map vehicles into bird’s eye view,” 2017.                       tion: A survey,” 2023.
+ [8] N. Jiang, K. Wang, X. Peng, X. Yu, Q. Wang, J. Xing, G. Li,             [25] H. A. Mallot, H. H. Bülthoff, J. J. Little, and S. Bohrer, “Inverse
+     J. Zhao, G. Guo, and Z. Han, “Anti-uav: A large multi-modal                  perspective mapping simplifies optical flow computation
+     benchmark for uav tracking,” 2021.                                           and obstacle detection,” Biological Cybernetics, vol. 64,
+ [9] M. R. Heffels and J. Vanschoren, “Aerial imagery pixel-level                 no. 3, pp. 177–185, 1991. [Online]. Available: https:
+     segmentation,” 2020.                                                         //doi.org/10.1007/BF00201978
+[10] “Tesla     AI     Day,”     https://www.youtube.com/watch?v=            [26] A. Abbas and A. Zisserman, “A geometric approach to obtain
+     j0z4FweCy4M, 2021.                                                           a bird’s eye view from an image,” 2020.
+[11] J. Philion and S. Fidler, “Lift, splat, shoot: Encoding images          [27] Y. Kim and D. Kum, “Deep learning based vehicle position and
+     from arbitrary camera rigs by implicitly unprojecting to 3d,”                orientation estimation via inverse perspective mapping image,”
+     2020.                                                                        in 2019 IEEE Intelligent Vehicles Symposium (IV), 2019, pp.
+[12] C. Reading, A. Harakeh, J. Chae, and S. L. Waslander, “Cat-                  317–323.
+     egorical depth distribution network for monocular 3d object             [28] Y. Hou, L. Zheng, and S. Gould, “Multiview detection with
+     detection,” 2021.                                                            feature perspective transformation,” 2021.
+[13] J. Huang, G. Huang, Z. Zhu, Y. Ye, and D. Du, “Bevdet:                  [29] I. J. Goodfellow, J. Pouget-Abadie, M. Mirza, B. Xu, D. Warde-
+     High-performance multi-camera 3d object detection in bird-eye-               Farley, S. Ozair, A. Courville, and Y. Bengio, “Generative
+     view,” 2022.                                                                 adversarial networks,” 2014.
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                                                                                          14
+
+
+
+      TABLE VI: Performance metrics under different training and testing camera counts and random dropout strategy.
+                              Training Cameras    Testing Cameras    Random Dropout Strategy      mIoU         F1
+                                      4                   4                   %                   0.6973     0.5910
+                                      4                   3                   %                   0.5942     0.5016
+                                      4                   3                   !                   0.6533     0.5627
+                                      3                   3                   %                   0.6801     0.5840
+                                      3                   2                   %                   0.5707     0.4735
+                                      3                   2                   !                   0.6191     0.5203
+
+                            TABLE VII: Performance and Computational Analysis of Different Models.
+         Name           Backbone    Num head     Transformer Layer       BEV dim    Encoder dim    Params (M)         GFLOPs   mIoU      F1
+      RSBEV-T          ResNet-18         4               3                  32          32             17             108.3    0.4898   0.3103
+      RSBEV-S          ResNet-50         4               3                  32          64             42             167.5    0.6783   0.5629
+     RSBEV-B           ResNet-50         4               6                  64         256             60             184.2    0.6973   0.5910
+      RSBEV-L          ResNet-50         8               12                256         1024            124            203.4    0.7105   0.5923
+   CNN-based model     ResNet-50         /                /                64            /             46             116.0    0.5736   0.3425
+
+
+
+[30] S. gil Lee, W. Ping, B. Ginsburg, B. Catanzaro, and S. Yoon,          [46] D. Jha, M. A. Riegler, D. Johansen, P. Halvorsen, and H. D.
+     “Bigvgan: A universal neural vocoder with large-scale training,”           Johansen, “Doubleu-net: A deep convolutional neural network
+     2023.                                                                      for medical image segmentation,” 2020.
+[31] K. Mani, S. Daga, S. Garg, N. S. Shankar, K. M. Jatavallabhula,       [47] R. Kestur, S. Farooq, R. Abdal, E. Mehraj, O. Narasipura,
+     and K. M. Krishna, “Monolayout: Amodal scene layout from a                 and M. Mudigere, “Ufcn: a fully convolutional neural
+     single image,” 2020.                                                       network for road extraction in rgb imagery acquired by
+[32] C. Reading, A. Harakeh, J. Chae, and S. L. Waslander, “Cat-                remote sensing from an unmanned aerial vehicle,” Journal of
+     egorical depth distribution network for monocular 3d object                Applied Remote Sensing, vol. 12, 2018. [Online]. Available:
+     detection,” 2021.                                                          https://api.semanticscholar.org/CorpusID:126186006
+[33] J. Zou, J. Xiao, Z. Zhu, J. Huang, G. Huang, D. Du, and               [48] V. Badrinarayanan, A. Kendall, and R. Cipolla, “Segnet: A deep
+     X. Wang, “Hft: Lifting perspective representations via hybrid              convolutional encoder-decoder architecture for image segmen-
+     feature transformation,” 2022.                                             tation,” 2016.
+[34] L. Chen, C. Sima, Y. Li, Z. Zheng, J. Xu, X. Geng, H. Li, C. He,      [49] K. He, X. Chen, S. Xie, Y. Li, P. Dollár, and R. Girshick,
+     J. Shi, Y. Qiao, and J. Yan, “Persformer: 3d lane detection via            “Masked autoencoders are scalable vision learners,” 2021.
+     perspective transformer and the openlane benchmark,” 2022.                 [Online]. Available: https://arxiv.org/abs/2111.06377
+[35] Y. Wang, V. Guizilini, T. Zhang, Y. Wang, H. Zhao, and                [50] D. Ibañez, R. Fernandez-Beltran, F. Pla, and N. Yokoya,
+     J. Solomon, “Detr3d: 3d object detection from multi-view                   “Masked auto-encoding spectral–spatial transformer for hyper-
+     images via 3d-to-2d queries,” 2021.                                        spectral image classification,” IEEE Transactions on Geoscience
+[36] Y. Liu, T. Wang, X. Zhang, and J. Sun, “Petr: Position embed-              and Remote Sensing, vol. 60, pp. 1–14, 2022.
+     ding transformation for multi-view 3d object detection,” 2022.        [51] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N.
+[37] Y. Liu, J. Yan, F. Jia, S. Li, A. Gao, T. Wang, X. Zhang, and              Gomez, L. Kaiser, and I. Polosukhin, “Attention is all you need,”
+     J. Sun, “Petrv2: A unified framework for 3d perception from                2023.
+     multi-camera images,” 2022.                                           [52] S. Zheng, J. Lu, H. Zhao, X. Zhu, Z. Luo, Y. Wang, Y. Fu,
+[38] L. Peng, Z. Chen, Z. Fu, P. Liang, and E. Cheng, “Bevseg-                  J. Feng, T. Xiang, P. H. S. Torr, and L. Zhang, “Rethinking
+     former: Bird’s eye view semantic segmentation from arbitrary               semantic segmentation from a sequence-to-sequence perspective
+     camera rigs,” 2022.                                                        with transformers,” 2021.
+[39] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning          [53] R. Strudel, R. Garcia, I. Laptev, and C. Schmid, “Segmenter:
+     for image recognition,” 2015.                                              Transformer for semantic segmentation,” 2021.
+[40] J. Wang, K. Sun, T. Cheng, B. Jiang, C. Deng, Y. Zhao, D. Liu,        [54] E. Xie, W. Wang, Z. Yu, A. Anandkumar, J. M. Alvarez, and
+     Y. Mu, M. Tan, X. Wang, W. Liu, and B. Xiao, “Deep high-                   P. Luo, “Segformer: Simple and efficient design for semantic
+     resolution representation learning for visual recognition,” 2020.          segmentation with transformers,” 2021.
+[41] H. Zhang, C. Wu, Z. Zhang, Y. Zhu, H. Lin, Z. Zhang, Y. Sun,          [55] X. He, Y. Zhou, J. Zhao, D. Zhang, R. Yao, and Y. Xue, “Swin
+     T. He, J. Mueller, R. Manmatha, M. Li, and A. Smola, “Resnest:             transformer embedding unet for remote sensing image semantic
+     Split-attention networks,” 2020.                                           segmentation,” IEEE Transactions on Geoscience and Remote
+[42] O. Ronneberger, P. Fischer, and T. Brox, “U-net: Convolutional             Sensing, vol. 60, pp. 1–15, 2022.
+     networks for biomedical image segmentation,” 2015.                    [56] Z. Liu, Y. Lin, Y. Cao, H. Hu, Y. Wei, Z. Zhang, S. Lin,
+[43] V. Iglovikov and A. Shvets, “Ternausnet: U-net with vgg11                  and B. Guo, “Swin transformer: Hierarchical vision transformer
+     encoder pre-trained on imagenet for image segmentation,” 2018.             using shifted windows,” 2021.
+[44] F. I. Diakogiannis, F. Waldner, P. Caccetta, and                      [57] F. Milletari, N. Navab, and S.-A. Ahmadi, “V-net: Fully convo-
+     C. Wu, “Resunet-a: A deep learning framework                               lutional neural networks for volumetric medical image segmen-
+     for semantic segmentation of remotely sensed data,”                        tation,” 2016.
+     ISPRS Journal of Photogrammetry and Remote Sensing,                   [58] Z. Liu, Y. Shang, T. Li, G. Chen, Y. Wang, Q. Hu, and P. Zhu,
+     vol. 162, p. 94–114, Apr. 2020. [Online]. Available:                       “Robust multi-drone multi-target tracking to resolve target
+     http://dx.doi.org/10.1016/j.isprsjprs.2020.01.013                          occlusion: A benchmark,” IEEE Transactions on Multimedia,
+[45] F. Jia, W. H. Wong, and T. Zeng, “Ddunet: Dense dense u-net                vol. 25, pp. 1462–1476, 2023.
+     with applications in image denoising,” in 2021 IEEE/CVF Inter-        [59] P. Zhu, J. Zheng, D. Du, L. Wen, Y. Sun, and Q. Hu, “Multi-
+     national Conference on Computer Vision Workshops (ICCVW),                  drone-based single object tracking with agent sharing network,”
+     2021, pp. 354–364.                                                         IEEE Transactions on Circuits and Systems for Video Technol-
+IEEE TRANSACTION ON GEOSCIENCE AND REMOTE SENSING, 2024                            15
+
+
+
+     ogy, vol. 31, no. 10, pp. 4058–4070, 2021.
+[60] H. Caesar, V. Bankiti, A. H. Lang, S. Vora, V. E. Liong, Q. Xu,
+     A. Krishnan, Y. Pan, G. Baldan, and O. Beijbom, “nuscenes: A
+     multimodal dataset for autonomous driving,” 2020.
+[61] A. Geiger, P. Lenz, and R. Urtasun, “Are we ready for au-
+     tonomous driving? the kitti vision benchmark suite,” in 2012
+     IEEE Conference on Computer Vision and Pattern Recognition,
+     2012, pp. 3354–3361.
+[62] P. Sun, H. Kretzschmar, X. Dotiwalla, A. Chouard, V. Patnaik,
+     P. Tsui, J. Guo, Y. Zhou, Y. Chai, B. Caine, V. Vasude-
+     van, W. Han, J. Ngiam, H. Zhao, A. Timofeev, S. Ettinger,
+     M. Krivokon, A. Gao, A. Joshi, S. Zhao, S. Cheng, Y. Zhang,
+     J. Shlens, Z. Chen, and D. Anguelov, “Scalability in perception
+     for autonomous driving: Waymo open dataset,” 2020.
+[63] “Google earth studio,” https://www.google.com/earth/studio/.
+[64] L. Reiher, B. Lampe, and L. Eckstein, “A sim2real deep learn-
+     ing approach for the transformation of images from multiple
+     vehicle-mounted cameras to a semantically segmented image in
+     bird’s eye view,” in 2020 IEEE 23rd International Conference
+     on Intelligent Transportation Systems (ITSC). IEEE, 2020, pp.
+     1–7.
+
+
+
+
+                          Baihong Lin received the B.S. degree from the Im-
+                          age Processing Center, School of Astronautics, Bei-
+                          hang University, Beijing, China, in 2024, where he
+                          is currently pursuing the Ph.D. degree. His research
+                          interests include computer vision, image processing,
+                          and deep learning.
+
+
+
+
+                          Zhengxia Zou (Senior Member, IEEE) received his
+                          B.S. degree and his Ph.D. degree from the Image
+                          Processing Center, School of Astronautics, Beihang
+                          University in 2013 and 2018, respectively. He is
+                          currently a Professor at the School of Astronautics,
+                          Beihang University. During 2018-2021, he was a
+                          postdoc research fellow at the University of Michi-
+                          gan, Ann Arbor. His research interests include com-
+                          puter vision and related problems in remote sensing
+                          and autonomous driving. He has published more
+                          than 20 peer-reviewed papers in toptier journals and
+conferences, including TPAMI, TIP, TGRS, CVPR, ICCV, AAAI. His research
+has been featured in more than 30 global tech media outlets and adopted
+by multiple application platforms with over 50 million users worldwide. His
+personal website is https://zhengxiazou.github.io/.
+
+
+
+
+                           Zhenwei Shi (Senior Member, IEEE) is currently
+                           a Professor and the Dean of the Image Processing
+                           Center, School of Astronautics, Beihang University,
+                           Beijing, China. He has authored or co-authored
+                           over 200 scientific articles in refereed journals and
+                           proceedings. His research interests include remote
+                           sensing image processing and analysis, computer
+                           vision, pattern recognition, and machine learning.
+                           Prof. Shi serves as an Editor for IEEE Transac-
+                           tions on Geoscience and Remote Sensing, Pattern
+                           Recognition, ISPRS Journal of Photogrammetry and
+Remote Sensing, Infrared Physics and Technology, etc. His personal website
+is http://levir.buaa.edu.cn/.
+

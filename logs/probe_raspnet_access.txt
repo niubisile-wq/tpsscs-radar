@@ -1,0 +1,7 @@
+﻿RASPNet access probe
+Timestamp: 2026-07-15 16:53:41
+URL: https://www.sdms.afrl.af.mil/index.php?collection=raspnet
+CurlExitCode: 0
+HttpCode: 200
+FinalUrl: https://www.sdms.afrl.af.mil/index.php?collection=raspnet
+Status: PROBED

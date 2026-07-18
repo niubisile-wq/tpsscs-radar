@@ -1,0 +1,9 @@
+﻿AISTAP sample inventory
+Root: C:\Users\刘子轩\Desktop\第三批3
+Sample root: C:\Users\刘子轩\Desktop\第三批3\data\downloads\aistap_sim\sampledata\sampledata
+Files: 3
+
+Rows:
+- simMed | cpi=2 | channels=6 | range=64 | doppler=1024
+- simNoiseOnly | cpi=2 | channels=6 | range=64 | doppler=1024
+- simWind | cpi=2 | channels=6 | range=64 | doppler=1024

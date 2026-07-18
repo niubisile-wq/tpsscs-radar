@@ -1,0 +1,62 @@
+{
+  "methods": [
+    "raw",
+    "low_rank_residual_k30",
+    "tpsscs_finished_detector"
+  ],
+  "target_bearing_items": 210,
+  "calibration_modes": [
+    "cross_asset_target_free",
+    "same_asset_target_free"
+  ],
+  "positive_delta_modes": [
+    "cross_asset_target_free",
+    "same_asset_target_free"
+  ],
+  "pfa_calibrated_modes": [],
+  "passed_modes": [],
+  "mode_summary": [
+    {
+      "calibration_mode": "cross_asset_target_free",
+      "asset_level_comparisons": 14,
+      "combined_comparisons": 7,
+      "asset_level_wins_vs_raw": 14,
+      "asset_level_wins_vs_lowrank": 14,
+      "combined_wins_vs_raw": 7,
+      "combined_wins_vs_lowrank": 7,
+      "min_combined_delta_vs_raw": 0.24148200715806412,
+      "min_combined_delta_vs_lowrank": 0.0518754627353456,
+      "all_tpsscs_pfa_calibrated": false,
+      "ci_lower_bounds_positive_vs_raw": true,
+      "ci_lower_bounds_positive_vs_lowrank": true
+    },
+    {
+      "calibration_mode": "same_asset_target_free",
+      "asset_level_comparisons": 14,
+      "combined_comparisons": 7,
+      "asset_level_wins_vs_raw": 14,
+      "asset_level_wins_vs_lowrank": 14,
+      "combined_wins_vs_raw": 7,
+      "combined_wins_vs_lowrank": 7,
+      "min_combined_delta_vs_raw": 0.24308176713833407,
+      "min_combined_delta_vs_lowrank": 0.051196432772959155,
+      "all_tpsscs_pfa_calibrated": false,
+      "ci_lower_bounds_positive_vs_raw": true,
+      "ci_lower_bounds_positive_vs_lowrank": true
+    }
+  ],
+  "date": "20260717",
+  "state": "results\\aistap_sample\\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt",
+  "pfa_tolerance": 1.05,
+  "bootstrap_replicates": 2000,
+  "calibration_counts": {
+    "simMed_test.mat": {
+      "target_free_frames": 23,
+      "target_bearing_frames": 105
+    },
+    "simWind_test.mat": {
+      "target_free_frames": 23,
+      "target_bearing_frames": 105
+    }
+  }
+}

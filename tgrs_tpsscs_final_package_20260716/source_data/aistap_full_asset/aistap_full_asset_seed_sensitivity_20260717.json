@@ -1,0 +1,132 @@
+{
+  "payload": {
+    "target_method": "tpsscs_finished_detector",
+    "lowrank_method": "low_rank_residual_k30",
+    "seeds": [
+      7,
+      11,
+      23
+    ],
+    "assets": [
+      "simMed_test.mat",
+      "simWind_test.mat"
+    ],
+    "combined_target_bearing_items_per_seed": 210,
+    "pfa_points": 7,
+    "seed_count": 3,
+    "seeds_passed": 3,
+    "all_seeds_passed": true,
+    "total_combined_wins_vs_raw": 21,
+    "total_combined_wins_vs_lowrank": 21,
+    "total_combined_comparisons": 21,
+    "total_asset_level_wins_vs_raw": 42,
+    "total_asset_level_wins_vs_lowrank": 42,
+    "total_asset_level_comparisons": 42,
+    "worst_combined_delta_vs_raw": 0.10325198033282317,
+    "worst_combined_delta_vs_lowrank": 0.025234634747831275,
+    "max_target_pd_seed_range": 0.007900360812355345,
+    "all_pfa_calibrated": true
+  },
+  "seed_summary": [
+    {
+      "seed": 7,
+      "combined_items": 210,
+      "combined_wins_vs_raw": 7,
+      "combined_wins_vs_lowrank": 7,
+      "combined_pfa_points": 7,
+      "asset_level_wins_vs_raw": 14,
+      "asset_level_wins_vs_lowrank": 14,
+      "asset_level_comparisons": 14,
+      "min_delta_vs_raw": 0.10458096223315756,
+      "min_delta_vs_lowrank": 0.02898507256190297,
+      "all_pfa_calibrated": true,
+      "passed": true
+    },
+    {
+      "seed": 11,
+      "combined_items": 210,
+      "combined_wins_vs_raw": 7,
+      "combined_wins_vs_lowrank": 7,
+      "combined_pfa_points": 7,
+      "asset_level_wins_vs_raw": 14,
+      "asset_level_wins_vs_lowrank": 14,
+      "asset_level_comparisons": 14,
+      "min_delta_vs_raw": 0.10325198033282317,
+      "min_delta_vs_lowrank": 0.03292516797840783,
+      "all_pfa_calibrated": true,
+      "passed": true
+    },
+    {
+      "seed": 23,
+      "combined_items": 210,
+      "combined_wins_vs_raw": 7,
+      "combined_wins_vs_lowrank": 7,
+      "combined_pfa_points": 7,
+      "asset_level_wins_vs_raw": 14,
+      "asset_level_wins_vs_lowrank": 14,
+      "asset_level_comparisons": 14,
+      "min_delta_vs_raw": 0.10791346715512266,
+      "min_delta_vs_lowrank": 0.025234634747831275,
+      "all_pfa_calibrated": true,
+      "passed": true
+    }
+  ],
+  "stability_by_pfa": [
+    {
+      "pfa": 1e-05,
+      "target_pd_min": 0.18320307113445108,
+      "target_pd_max": 0.18786455795675058,
+      "target_pd_range": 0.004661486822299499,
+      "delta_vs_raw_min": 0.10325198033282317,
+      "delta_vs_lowrank_min": 0.08174237056145131
+    },
+    {
+      "pfa": 3e-05,
+      "target_pd_min": 0.23582166376780267,
+      "target_pd_max": 0.23871521215304023,
+      "target_pd_range": 0.00289354838523756,
+      "delta_vs_raw_min": 0.11480940579359329,
+      "delta_vs_lowrank_min": 0.07876762064069348
+    },
+    {
+      "pfa": 0.0001,
+      "target_pd_min": 0.36818669979187413,
+      "target_pd_max": 0.37236847344846385,
+      "target_pd_range": 0.004181773656589727,
+      "delta_vs_raw_min": 0.1632525217029672,
+      "delta_vs_lowrank_min": 0.06561562998427178
+    },
+    {
+      "pfa": 0.0003,
+      "target_pd_min": 0.5259111738527719,
+      "target_pd_max": 0.5312340834036158,
+      "target_pd_range": 0.005322909550843913,
+      "delta_vs_raw_min": 0.24501424493741525,
+      "delta_vs_lowrank_min": 0.05369775085312517
+    },
+    {
+      "pfa": 0.001,
+      "target_pd_min": 0.7009987281901641,
+      "target_pd_max": 0.7083346854544508,
+      "target_pd_range": 0.007335957264286708,
+      "delta_vs_raw_min": 0.3239233901310829,
+      "delta_vs_lowrank_min": 0.04175822317506572
+    },
+    {
+      "pfa": 0.003,
+      "target_pd_min": 0.8104420656962736,
+      "target_pd_max": 0.818342426508629,
+      "target_pd_range": 0.007900360812355345,
+      "delta_vs_raw_min": 0.3239794654023166,
+      "delta_vs_lowrank_min": 0.03266725394829606
+    },
+    {
+      "pfa": 0.01,
+      "target_pd_min": 0.8640398197772722,
+      "target_pd_max": 0.8717303530078487,
+      "target_pd_range": 0.007690533230576557,
+      "delta_vs_raw_min": 0.20896738852028696,
+      "delta_vs_lowrank_min": 0.025234634747831275
+    }
+  ]
+}

@@ -1,0 +1,905 @@
+PETITJEAN et al.: SATELLITE IMAGE TIME SERIES ANALYSIS UNDER TIME WARPING   1
+
+
+  123
+2                                                                IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING – DOI:10.1109/TGRS.2011.2179050
+
+
+
+
+                        Satellite Image Time Series Analysis
+                                 under Time Warping
+                                            François Petitjean, Jordi Inglada and Pierre Gançarski
+
+
+
+
+   Abstract—Satellite Image Time Series are becoming increas-                               b) Irregular sampling: When only several images per
+ingly available and will continue to do so in the coming years                        year are available over a given site, the constraints on the
+thanks to the launch of space missions which aim at providing a                       stability of temporal sampling frequency can be weakened.
+coverage of the Earth every few days with high spatial resolution.
+In the case of optical imagery, it will be possible to produce                        For instance, if one image per season is available, a jitter
+land use and cover change maps with detailed nomenclatures.                           of a few weeks on the sampling period will have a very
+However, due to meteorological phenomena, such as clouds, these                       low impact on the results. However, when several images
+time series will become irregular in terms of temporal sampling                       per month are available – and therefore required for new
+and one will need to compare time series with different lengths. In                   applications – classical multi-temporal methods will suffer
+this paper we present an approach to image time series analysis
+which is able to deal with irregularly sampled series and which                       from low regularity of the sampling at the scale of days.
+also allows the comparison of pairs of time series where each                         Therefore, only methods that deal with irregular temporal
+element of the pair has a different number of samples. We present                     sampling will be able to fully exploit the available acquisitions.
+the Dynamic Time Warping from a theoretical point of view and                               c) Pseudo-periodic phenomena: Many phenomena of
+illustrate its capabilities with two applications to real time series.                interest – vegetation cycles, for instance – have a periodic
+                                                                                      behavior which can be slightly modulated by weather artifacts.
+  Index Terms—Dynamic Time Warping, Satellite Image Time                              These modulations result in distortions of canonical temporal
+Series, Classification, Clustering, Remote Sensing.                                   profiles of, say NDVI or other physical variables. This kind
+                                                                                      of phenomena are the dual of the irregular sampling issue
+                                                                                      presented above: it is not the sensor, but the observed objects
+                            I. I NTRODUCTION
+                                                                                      that have an irregular temporal behavior. Therefore, methods
+     ATELLITE Image Time Series (SITS, for short) are a                               that have some kind of invariance to temporal stretching or
+S    precious resource for Earth monitoring. Current time se-
+ries have either high temporal resolution (S POT-V EGETATION,
+                                                                                      dilation are of major interest.
+                                                                                         A quick review of the available literature on SITS analysis
+M ODIS) or high spatial resolution (L ANDSAT). In the coming                          (Section II-A) shows a lack of existing methods responding to
+years, both high temporal and high spatial resolution SITS are                        the three issues stated above.
+going to be widely available thanks to the ESA’s S ENTINEL                               In this paper we present the Dynamic Time Warping (DTW)
+program. Nowadays, satellites as the Taiwanese F ORMOSAT-2                            similarity measure [1], [2] and use it on real SITS in order
+are already providing similar data, but with a limited coverage                       to show how the above-mentioned problems can be dealt
+of the Earth’s surface and with only four spectral bands.                             with. Although we focus our examples on optical SITS, the
+   In order to efficiently use the huge amounts of data that                          methods presented here can also be applied to SAR images.
+will be produced by, for instance, S ENTINEL -2 (global cover                         Since DTW is sensitive to spiky noise, SAR images should
+every five days with 10 m to 60 m resolution and 13 spectral                          be appropriately filtered to reduce speckle noise before using
+bands), new methods for SITS analysis have to be developed.                           them in the framework presented here.
+Indeed, the following issues will have to be addressed:                                  We previously made DTW applicable to data mining in [3].
+      a) Reference data: In the case where a global land-cover                        In the current contribution, we show how DTW can be
+has to be updated every few days or weeks, one can not assume                         useful for specific problems raised by SITS and present some
+that reference data – ground truth, training samples – are going                      specific adaptations of the algorithm needed to deal with Earth
+to be available. In order to cope with this lack of data, methods                     observation data.
+able to operate in an unsupervised way or using reference data                           The paper is organized as follows: In Section II we start by
+from, say, previous years, are needed.                                                presenting an overview of the state of the art, first focusing
+                                                                                      on the main SITS analysis methods and then focusing on the
+   F. Petitjean and P. Gançarski are with the Image Sciences, Computer               comparison of temporal radiometric behaviors and associated
+Sciences and Remote Sensing Laboratory (LSIIT), Pole API, BP 10413,                   constraints. Section III presents the Dynamic Time Warping
+67412 Illkirch Cedex, France (e-mail: fpetitjean@unistra.fr).                         similarity measure in detail. Section IV details the choices
+   J. Inglada is with CNES/CESBIO, UMR 5126, 31401 Toulouse Cedex 9,
+France (e-mail: jordi.inglada@cesbio.cnes.fr).                                        and adaptations that were made for the application of DTW
+   © 2012 IEEE. Personal use of this material is permitted. Permission from           to remote sensing. Section V describes the data sets used in our
+IEEE must be obtained for all other users, including reprinting/republishing          experiments. Several interesting results of the use of DTW for
+this material for advertising or promotional purposes, creating new collective
+works for resale or redistribution to servers or lists, or reuse of any copyrighted   SITS analysis are presented in Section VI. Finally we conclude
+components of this work in other works.                                               and present some future works in Section VII.
+PETITJEAN et al.: SATELLITE IMAGE TIME SERIES ANALYSIS UNDER TIME WARPING                                                                      3
+
+
+
+                    II. S TATE OF THE ART                               1) Time as an identifier: The time dimension is here used
+                                                                     as an attribute identifier. Consequently, each sensed image
+   This state of the art is divided into two parts. Subsec-          is used as an additional attribute. Intuitively, this use of the
+tion II-A presents the main kinds of methods for SITS analysis       time dimension usually consists of concatenating the different
+and then justify the choice made in this paper: focusing on          images into one single image with many attributes. This
+measures for the comparison of temporal profiles. Subsec-            category includes:
+tion II-B presents several measures for time series (temporal              a) Data linear transformation: This kind of methods is
+profiles) comparison and makes a critical analysis of the            mainly based on the theory of statistics. It includes meth-
+presented measures in order to introduce the Dynamic Time            ods that consist of statistically transforming the data with,
+Warping similarity measure, on which we focus in this paper,         for example, Principal Component Analysis (PCA) or with
+in the next section.                                                 Maximum Auto-correlation Factor (MAF) (see [6] for an
+                                                                     application of these two methods). These methods are simple
+                                                                     to use and generally give interesting results. However, even if
+A. Satellite Image Time Series analysis
+                                                                     a few attempts have been made to compose these methods in
+   Notations: Throughout this section, let t1 , · · · , tn respec-   order to use the time dimension in some way, (see [7] for an
+tively denote image 1, · · · , image n. Let “<” denote the strict    example of a hierarchical combination of these methods), the
+total order (induced by the time) on the images. Let f be a          ordering induced by the temporal dimension cannot be taken
+binary function (of arity two) taking two images as parameters       into account, especially when dealing with a SITS.
+and returning one image. The f function is used to illustrate              b) Classification: This kind of methods consists of ap-
+the behavior of bi-temporal dedicated methods.                       plying a classification algorithm on the concatenated image1 .
+   Typology: Beyond the way the methods work by them-                Several attempts have been made using the K- MEANS algo-
+selves, they can be classified depending on the way they use         rithm or with the Expectation Maximization algorithm [8].
+the time dimension of the data. For example, given a SITS,           However, as the data is somehow untemporalized before being
+the use of the time structure of the data is very different from     processed, no temporally structured result can be obtained.
+image differencing to frequency analysis. The first one only               c) Change detection methods based on classification
+uses the ordering induced by the time on couples of images           comparison: These methods consist of independently classi-
+while the second one uses the whole ordering of the series.          fying every image and combining and/or fusing them in order
+The aim of this typology is to describe the different levels of      to produce a single classification. These methods have the
+the time structuring. We voluntarily do not separate bi-date and     advantage of being applicable to two or more images and do
+multi-date methods (associated to the analysis of abrupt/long-       not require comparable radiometric levels between the images.
+term changes), since this article aims at defining a descriptor      For example, no relative radiometric normalization (RRN) is
+of time series, which could be used for both abrupt changes          required. Examples of applications to two images [9], to four
+and long-term changes analysis.                                      images [10], or even to 16 images [11] are given in the
+   The type of data we are considering in this work, i.e., SITS,     literature. However, the time dimension is not really taken
+is highly structured, both spatially and temporally. The spatial     into account since modifying the order of the images has no
+structure of the data is generally used as the basis for the         effect on the result.
+comparison between different values: the coordinates (x, y) of          As a conclusion on these methods, although they exploit
+pixels in the images identify each sensed area through time.         the whole data, they are not able to identify specific temporal
+   Where the data structuring usually differs, is in the use of      behaviors. This kind of methods is, in essence, unable to ex-
+the temporal information, i.e., in the use of the sensing time or    tract and/or characterize temporal behaviors. Admittedly, some
+of the sequencing. Depending on the method used, the weight          change areas can be isolated from others by these methods, but
+of the temporal dimension can be very different and can occur        only because these areas have a different frequency of events;
+at different levels.                                                 shuffling the attributes will have no effect on the results. In
+We bring out three main uses of the time dimension:                  this way, although these methods are simple to use and are
+ 1) Time as identifier: time is only used to identify the            obviously tolerant to irregular sampling, they are not able to
+    information, i.e., there is no ordering between the images       make a consistent temporal analysis of SITS.
+    of the series;                                                      2) Pairwise time ordering: At a higher level of temporal
+ 2) Pairwise time ordering: time is used to structure the            structuring, some methods (originally bi-temporal ones) use
+    images, pairwise;                                                the temporal information as a partial ordering, i.e., as several
+ 3) Time ordering the sequence: time is used to structure the        “previous/next” orders:
+    image series.                                                                         t1 < t2 , · · · , tn−1 < tn                        (1)
+This state of the art will detail each one of these three
+                                                                     This use of the time dimension usually consists of using the
+categories. Each category will be first presented in a general
+                                                                     temporal information between couples of images, i.e., pair-
+way, then methods belonging to it will be presented and finally,
+                                                                     wise. In this way, this kind of methods was initially devoted
+the category will be analyzed in the light of presented methods.
+For a detailed survey of these methods, the reader should refer         1 The Euclidean distance is used here to compare the time series. We will
+to [4], [5].                                                         return to this point in Section II-B4
+4                                                   IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING – DOI:10.1109/TGRS.2011.2179050
+
+
+
+to bi-temporal analysis but was extended to multi-temporal            generalized2 to the series as:
+analysis by composition of these methods. These methods
+usually require comparable values between the images. They                         (t1 < t2 ) ∧ (t2 < t3 ) ∧ · · · ∧ (tn−1 < tn )   (3)
+include:                                                                     ⇔               t1 < t2 < · · · < tn−1 < tn            (4)
+      a) Difference/ratio/combination: This type of methods           This additional constraint enables the mining of structured
+consists of combining the values of the image at time t and           information and the analysis of evolution behaviors from the
+those at time (t − 1) in order reveal the intrinsic temporal          image series. It includes:
+structure of the data. The combination operator can be as                   a) Frequent pattern mining: This method extracts fre-
+simple as a subtraction [12]–[14], a division [15], [16], or          quent sub-sequences of radiometric evolutions. It has the
+more sophisticated [17], [18]. The resulting combined image           advantage of being robust to noise and extracting meaningful
+is then usually thresholded or classified, in order to map (and       patterns, but it generates thousands of patterns which are
+sometimes characterize) the change areas. These methods are           difficult to filter in order to understand changes that occurred
+however too simple to understand the specificity of the time          over an area. Moreover, a discretization step is required in
+dimension and are only applicable to two images at the same           order to reduce the size of the search space. This step can be
+time. Thus, in order to handle SITS, these methods have to            critical because the mining step highly depends on it. Several
+be applied several times (e.g., twelve images combined in one         studies have been published [27]–[29].
+in [19]), which leads to hardly understandable results.                     b) Frequency analysis: This type of methods uses a
+     b) Change Vector Analysis: This method is designed for           Fourier or a wavelet decomposition of the radiometric time
+and limited to bi-temporal analysis. It consists of building a        series [30]–[32]. These methods can handle time series and
+vector from two multi-band values (one before and one after           are robust. However, they require a regular sampling of the
+the change) in a multi-dimensional space. The study of both           time series and relatively time series.
+the norm and the angle of this vector gives an information
+on the type of the change and of its intensity. Many studies             All of these methods are using the ordering of the sequence.
+use this method to map and characterize change areas (e.g.,           Then, frequency based methods add a constraint on the tem-
+[20]–[22]).                                                           poral sampling: data must be regularly sensed, i.e., the time
+                                                                      between two acquisitions must be constant over the image time
+     c) Linear Regression: This method considers that the             series. Remote sensing makes this constraint difficult to keep,
+pixel value at time t is linearly correlated to the pixel value       since the acquisitions depend on several factors (operational,
+at time (t − 1). The parameters of the regression (e.g., the          meteorological, etc.). Thus, releasing the constraint on the
+residual) are studied to map and characterize the change. Many        regular sampling, i.e., having the same time between two
+works are using this method [23]–[25], but it was shown that          successive images throughout the series, the use of the total
+results are generally not better than image differencing [26].        order on the sensed values appears to be consistent for the
+                                                                      analysis of evolution behaviors of each sensed area over the
+   Using this pairwise ordering makes it possible to extract a        satellite image time series.
+temporal information from pairs of images. However, these                Conclusion: The above discussion highlights that there is a
+methods are per se designed to handle pairs of images. In this        need for global analysis methods, in which each radiometric
+way, in order to handle SITS, they have to be applied several         evolution would be analyzed and compared to others. In
+times (usually in a tournament scheme) such as:                       this paper, we propose to compare/classify these evolution
+                                                                      behaviors/trends. Therefore, we consider each pixel value of
+               f (f (img1, img2) , f (img3, img4))                    the SITS as an element of a sequence describing the evolution
+                                                               (2)    of a sensed area. The next section describes different similarity
+          or   f (f (f (img1, img2) , img3) , img4)
+                                                                      measures that makes it possible to exploit the temporal struc-
+This principle has however a major drawback: when applying            turing of SITS, in order to compare radiometric evolutions.
+the method on (t1 , t2 ) and then on (t3 , t4 ), in order to handle
+a SITS of length four, the ordering between t2 and t3 is not          B. Comparing temporal profiles
+directly used. In addition, the composition of these methods
+                                                                         All methods used for time series analysis actually include
+in order to analyze SITS proves to be risky, since the results
+                                                                      a comparison of the data by using distances. Whatever the
+depend on the properties of the methods (e.g., associativity,
+                                                                      method is used, the core of the process generally consists
+reflexivity), and are thus sensitive to ordering schemes. Glob-
+                                                                      of comparing data in order to estimate a (dis)similarity. The
+ally, the combination of these bi-temporal dedicated methods,
+                                                                      distance tool provides an estimation of this similarity. It is a
+appears more as an ad hoc technique than as a method able
+                                                                      critical tool, on which the results of analysis methods heavily
+to handle whole SITS.
+                                                                      rely. When the data is temporal, the choice of the distance
+   3) Time ordering the sequence: Then, at a higher level of          is crucial since it completely defines the way of tackling the
+time structuring, some methods are using the whole ordering           temporality of the data. In this way, two sequences should
+induced by the temporal information and are studying the              be close if they represent similar evolution behaviors. Thus,
+evolution of an area (x, y) throughout the image series. The
+structuring is here, even more important since the order is             2 This order is a total order on the set of the images.
+PETITJEAN et al.: SATELLITE IMAGE TIME SERIES ANALYSIS UNDER TIME WARPING                                                                 5
+
+
+
+a distance could be appropriate in order to compare speech                  4) Longest Common Sub-Sequence: (LCSS) was first in-
+signals, but not for remote sensing, and conversely.                     troduced to find the longest common sub-sequence between
+   This subsection presents different similarity measures for            two strings. This method was extended in [36] to a similarity
+sequences (i.e., temporal profiles of radiometric values). As we         measure between two numerical sequences. This measure has
+focus on the comparison of temporal profiles of evolution, this          two main shortcomings. Firstly, it requires the definition of
+state of the art should be read in the light of several objectives       the meaning of “common” between values in order to count
+for the analysis of SITS:                                                the length of the longest sub-sequence. Secondly, this method
+   • using all of the available sensed values;                           aims at finding a sub-sequence and it thus forgets sensed
+   • being applicable to numerical values;                               values. Even if this property could be interesting in order to
+   • being able to apprehend temporal behaviors (e.g., shifts,           skip cloudy values, several meaningful sensed values could be
+      distortions);                                                      skipped, leading to a meaningless result.
+   • being applicable to irregularly sensed image series (irreg-            Critical analysis:
+      ular temporal sampling);                                                a) From the application point of view: Even if there
+   • being parameter-free;                                               is a need for a comparison method of temporal profiles of
+   • yielding results which can be easily interpreted.                   evolution, most of the methods presented above are not well
+   Notations: Let A = ha1 , . . . , aT i and B = hb1 , . . . , bT i be   suited to remote sensing. The Euclidean distance does not take
+two sequences, and let δ be a distance between two elements              into account the temporality of the data and is therefore not
+(or coordinates) of sequences (usually the L1 distance of the            relevant to the analysis of time series whatever the applica-
+L2 distance).                                                            tion is. Measures based on compression are computationally
+   1) Euclidean distance: This distance is commonly accepted             expensive, which make them unusable in remote sensing.
+as the simplest distance between sequences. The distance                 Moreover, their results are difficult to interpret, and are hardly
+between A and B is defined by:                                           applicable to short time series. On the other hand, methods
+                       p                                                 based on the edit distance are more interesting since they
+          D(A, B) = δ(a1 , b1 )2 + · · · + δ(aT , bT )2            (5)   exploit the temporality of the data, and capture temporal
+This distance does not correspond to the common understand-              behaviors. However, the Levenshtein distance is intended for
+ing of what a sequence really is, and cannot capture flexible            symbolic sequences and requires a similarity matrix defined
+similarities. For example, X = ha, b, a, ai and Y = ha, a, b, ai         by an expert, which prevents its application to remote sensing.
+are different according to this distance even though they                LCSS permits to find common sub-sequences. Two problems
+represent similar evolution behaviors.                                   are raised for its application to remote sensing. Firstly, the
+   2) Compression-Based Dissimilarity Measure: This is a                 definition of “common” should be established. Secondly, and
+measure introduced in [33], based on the theory of the                   this problem is more objectionable, this distance is calculated
+Kolmogorov complexity [34]. The authors suggest to use                   on a subset of the data (sub-sequences), reducing its relevance
+this principle to define a new similarity measure based on               since the whole data set is not used.
+compression as:                                                               b) From the theoretical point of view: This article is
+                                                                         focused on the analysis of a whole SITS with distance-based
+                            | compress(A.B) |                            methods. Most distance-based analysis methods require to
+      D(A, B) =                                                   (6)
+                     | compress(A) | + | compress(B) |                   be able to compute an average consistently to the distance
+with A.B be the concatenation of A and B, and with                       used (e.g., K- MEANS). Among all presented similarity mea-
+| compress(. . . ) | be the size of the compressed file. This            sures, only the Euclidean distance has an associated averaging
+measure is, however, strongly dependent on the compression               method. This point further limits the applicability of other
+algorithm chosen. Furthermore, results can be difficult to               measures to remote sensing and more generally to the study
+interpret, since the compression algorithm works as a black              of temporal data.
+box. Finally, this technique is designed for relatively long
+sequences, without which the compression algorithm will be                                III. DYNAMIC T IME WARPING
+underused.                                                                  This section presents the Dynamic Time Warping similarity
+   3) Levenshtein distance: The Levenshtein distance (or edit            measure, which makes it possible to analyze the temporal
+distance) [35] formalizes the notion of distance between two             nature of the whole data set (without skipping any values).
+symbol strings, by focusing on transforming (or editing) one             For remote sensing, we will see that DTW can exploit the
+string into the other by a series of edit operations on individual       temporal distortions and compare shifted or distorted evolution
+symbols. The allowed edit operations are insertion, deletion             profiles and whose time sampling is irregular, thanks to the
+and replacement of a symbol. It has the advantage of under-              optimal alignment of radiometric profiles. Furthermore, DTW
+standing that ha, b, ai is close to ha, a, b, ai with a difference       is parameter free, which makes it match the several objectives
+of an insertion or a deletion of one ’a’. This distance is, in           given in the previous section.
+this way, able to handle temporal data. However, it presents                Dynamic Time Warping (DTW) is based on the Levenshtein
+two main drawbacks: firstly, it is not applicable to numerical           distance and was introduced in [1], [2], with applications to
+values and secondly, it requires the definition of the costs for         speech recognition. DTW is able to find the optimal global3
+the insertion/deletion of symbols, and for the transformation
+of each symbol to another one.                                             3 Any of the values of the two sequences can be skipped.
+6                                                             IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING – DOI:10.1109/TGRS.2011.2179050
+
+
+
+
+                                                                                                                                                                         D(AT , BT )
+                                                                                                                                                                    D(AT −1 , BT −1 )
+                                                                                                        D(AT , BT −1 )
+
+
+
+
+                                                                                                                                                                                                                                D(AT −1 , BT )
+                                                                                                        D(AT −1 , BT −2 )
+
+
+
+
+                                                                                                                            D(AT −1 , BT −1 )
+
+
+
+
+                                                                                                                                                D(AT −1 , BT −2 )
+
+
+
+
+                                                                                                                                                                    D(AT −2 , BT −2 )
+
+
+
+
+                                                                                                                                                                                        D(AT −2 , BT −1 )
+
+
+
+
+                                                                                                                                                                                                            D(AT −1 , BT −1 )
+
+
+
+
+                                                                                                                                                                                                                                D(AT −2 , BT −1 )
+                                                                                       D(AT , BT −2 )
+
+
+
+
+                                                                                                                                                                                                                                                    D(AT −2 , BT )
+                                                                     t            Fig. 2. Call tree of the function detailed in Equation 7. Three groups are
+                                                                                  highlighted and represent the same calls. This is a memoization example.
+Fig. 1. Two 1D sequences aligned with Dynamic Time Warping. Coordinates
+of the top and bottom sequences have been respectively computed by cos(t)
+and cos(t + α). For visualization purposes, the top sequence is drawn                                                                              TABLE I
+vertically shifted.                                                                                                                             DTW ALGORITHM
+
+                                                                                  Require: A = ha1 , . . . , aS i
+                                                                                  Require: B = hb1 , . . . , bT i
+alignment between two sequences and is probably the most                          Let δ be a distance between coordinates of sequences
+commonly used measure to quantify the dissimilarity between                       Let m[S, T ] be a cost matrix
+sequences [37]–[41]. It also provides an overall real number                        m[1, 1] ← δ(a1 , b1 )
+that quantifies the similarity between the two sequences. An                        for i ← 2 to S do
+example of DTW-alignment of two sequences is presented in                              m[i, 1] ← m[i − 1, 1] + δ(ai , b1 )
+Figure 1: it shows the alignment of points taken from two                           end for
+sinusoids, one being slightly shifted in time. The numerical                        for j ← 2 to T do
+result computed by DTW is the sum of the heights4 of the                               m[1, j] ← m[1, j − 1] + δ(a1 , bj )
+                                                                                    end for
+associations. Alignments at both extremities on Figure 1 show
+that DTW is able to correctly re-align one sequence with the                        for i ← 2 to S do
+other, a process which, in this case, highlights similarities that                     for j ← 2 to T do            
+                                                                                                                     m[i − 1 , j ]
+the Euclidean distance is unable to capture.
+                                                                                         m[i, j] ← δ(ai , bj ) + min m[ i , j − 1]
+   DTW captures flexible similarities by aligning the coordi-                                                        m[i − 1 , j − 1]
+nates inside both sequences (each element of the first sequence                        end for
+is linked to (at least) one element of the second sequence). The                    end for
+cost of the optimal alignment can be recursively computed by:                       return m[S, T ]
+                                     
+                                      D( Ai−1 , Bj−1 ),
+    D(Ai , B j ) = δ(ai , bj ) + min   D( Ai , Bj−1 ),         (7)
+                                                                                  the dynamic programming principle to allow the memoization
+                                       D( Ai−1 , Bj )
+                                     
+                                                                                  of overlapping sub-problems in a S × T matrix. In this way,
+where Ai is the sub-sequence ha1 , . . . , ai i. The overall simi-                the algorithm consists at first of initializing the first column
+larity is given by D(A|A| , B|B| ).                                               and the first row of the matrix. Then, the matrix is computed
+   Unfortunately, a direct implementation of this recursive                       from left to right and from top to bottom. Each element of the
+definition leads to an algorithm that has exponential cost in                     matrix is computed by using the smallest score from the left
+time. Fortunately, the fact that the overall problem exhibits                     element, the upper element and the diagonal one. Once the
+overlapping sub-problems (see Figure 2) allows for the memo-                      matrix is entirely computed, the last element at bottom right
+ization of partial results in a matrix which makes the minimal                    gives the score of the best alignment of the two sequences.
+weight coupling computation a process that costs |A| × |B|                        An example of a result matrix computed with DTW as well
+basic operations. This measure has thus a time and a space                        as its corresponding alignment is given in Figure 3.
+complexity of Θ(|A| × |B|)5 .                                                        DTW allows to find the best global alignment between two
+   The algorithm presented in Figure I details the computation                    numerical sequences. Providing the cost of this alignment,
+of DTW. Given two sequences A and B of lengths S and T                            DTW is generally used as a dissimilarity measure between two
+respectively (S = |A|, T = |B|), this algorithm computes the                      sequences. DTW appears thus to be a time-designed similarity
+score of the alignment and comparison of A and B. It uses                         measure, able to gather locally time-distorted sequences with
+                                                                                  time shifts and, more generally, local time distortions.
+   4 In fact, the distance δ(a , b ) computed in Equation 7 is the distance
+                              i j                                                    Finally, we previously introduced an associated averaging
+between two coordinates without considering the time distance between them.
+   5 Note that the space complexity can be reduced to a Θ (min (|A|, |B|)),       method (DBA) in [3], which makes it applicable to most
+since only the previous and the current rows are necessary for the computation.   distance-based analysis methods. Furthermore, this averaging
+PETITJEAN et al.: SATELLITE IMAGE TIME SERIES ANALYSIS UNDER TIME WARPING                                                                          7
+
+
+
+
+                                                                                                                                                   t
+                                (a)                                                                             (b)
+
+Fig. 3. Example of the matrix computed by DTW. (a) the matrix and the warping path computed by DTW. (b) the resulting alignment of the two sequences.
+
+
+
+method provides a condensed representation of the results that              provides the cost of the alignment of each band separately, and
+can be used for their interpretation by the expert.                         the B scores are then merged (by averaging, for instance). In
+                                                                            this way, DTW will align every band separately, leading to B
+   IV. DYNAMIC T IME WARPING FOR R EMOTE S ENSING                           (possibly different) alignments of the two multi-dimensional
+  The previous subsection detailed the original definition of               sequences. The information about the synchronicity of the B
+DTW. However, its application to remote sensing requires to                 values composing a pixel is thus lost.
+                                                                               The second solution consists of considering that the ra-
+make several choices and adaptations of the original method.
+                                                                            diometric series is composed of a single series of N multi-
+In this subsection, three points will be detailed:
+                                                                            dimensional elements. In this way, a single alignment of the
+A. the extension of DTW to multi-dimensional time series,                   two sequences is made. To this end, the cost function δ has to
+    i.e., multi-spectral radiometric profiles of evolution;                 be able to compare vectors of values. Practically, the Euclidean
+B. the modification of DTW in order to avoid inconsistent                   distance can be used to compare the vectors. This solution
+    temporal distortions, e.g., forbidding the association of               keeps the information on the synchronicity of the B values
+    winter sensed values with summer ones;                                  composing a pixel (sensed vector of values): the pixel remains
+C. the handling cloud-contaminated images in the construc-                  atomic.
+    tion of the sequences.                                                     The second solution appears to better fit the analysis of
+                                                                            radiometric series. Actually, to distinguish the several land
+A. DTW vs multi-dimensional sequences                                       cover states, the set of the B values sensed at the same time
+   The original definition of Dynamic Time Warping is devoted               is required. The first solution would only be interesting if the
+to the study of 1D-signals (e.g., speech signals), i.e., where              behavior of the sequences in every band was independent; if
+each element of the sequence is described in a one-dimensional              the synchronicity of the B values was not required. In this
+space. However, in the analysis of satellite image time series,             way, the first solution would be adapted to sensed areas were
+each element of the sequences corresponds to a multi-spectral               the B are representing uncorrelated phenomenons, which is
+pixel, i.e., a multi-dimensional vector. In this way, DTW has               rarely the case in remote sensing.
+to be modified in order to handle this kind of data. There are
+actually two main ways of comparing two multi-dimensional                   B. Avoiding inconsistent temporal distortions
+sequences with DTW:                                                            DTW makes it possible to align elements on the “length”
+   • computing DTW B times, one time per dimension (i.e.,                   of the distortions/shifts. This ability is very useful to be
+     per band);                                                             sufficiently robust and flexible in order to handle satellite
+   • using a B-dimensional δ in the computation of DTW.                     image time series. However, the expert might want to introduce
+The first solution consists of considering that the radiometric             his/her knowledge of the observed temporal phenology. For
+series is composed of B one-dimensional series, one per band.               example, the expert might want to guarantee that summer-crop
+Then, in order to compare the two radiometric series, DTW                   are not aligned with winter ones, or that values sensed with
+8                                                  IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING – DOI:10.1109/TGRS.2011.2179050
+
+
+
+a time delay of more than two months should not be aligned          procedure remains unchanged, otherwise the value of the
+together.                                                           matrix can be set to +∞. This procedure corresponds to a
+   Constraints on the alignments have actually already been         masking of the matrix in order to compute the warping path
+studied. However, contrary to our case, these constraints aimed     in a warping window. The resulting mask is then consistent
+at speeding up the computation of DTW. They consist of              with the sensing dates of the satellite images and adapted to
+limiting the search of the warping path in a subset of the matrix   this kind of irregularly sampled data.
+called warping window. The objective is to limit the search
+space in order to decrease the computational complexity. The        C. Handling cloud-contaminated images
+idea is to prevent the warping path from straying away from
+the diagonal of the matrix. For instance, the warping path can         In the classification of single satellite images, cloud-covered
+be limited to a certain band around the diagonal of the matrix      pixels have usually a minor impact on the results: cloud-
+named Sakoe-Chiba band [2]. Another example corresponds             covered areas are usually removed from the results. However,
+to a warping window shaped as a parallelogram and named             when handling satellite image time series, the atomic data is
+Itakura parallelogram [42], enabling more distortions in the        the series of radiometric values taken over an area. In this way,
+middle of the sequences than on the extremities. These global       the probability of a cloud contamination greatly increases. Let
+constraints on the search of the warping path are actually          us imagine a simple case where the probability for a pixel to
+limiting the alignments, by preventing an alignment of two          be cloud-covered is constant. Let the probability Pp (C̄) for a
+elements that are too distant. Their aim is to decrease the         sensed area p to be cloud-free, we have then the probability
+computational complexity and the constrain on the alignments        PS (C̄) for a sequence S to be cloud-free is:
+is the way of doing it. We take here the opposite direction:                             PS (C̄) = (Pp (C̄))|S|                   (9)
+we introduce some constrains in order to avoid inconsistent
+temporal distortions, and the decrease of the computational         with |S| be the length of the sequence S. In this way, even with
+complexity is a bonus.                                              a low probability of cloud cover, the probability of a cloud-
+   These global constraints are however not suitable to SITS        free sequence remains very low. Therefore, there are three
+analysis, since the data are irregularly sampled. For example,      main ways of dealing with clouds in the analysis of SITS:
+the Sakoe-Chiba band works by removing all matrix elements            1) letting the cloud-covered values in the dataset;
+that are too distant from the diagonal: the matrix element (i, j)     2) removing predominantly cloud-covered images from the
+cannot be part of the warping path if |i − j| > w (with w                 SITS;
+be the width of the band). As a result, the ith element of            3) removing the cloud-covered values only.
+the first sequence cannot be linked to the j th element of the      The first solution will add noise in the comparison of the ra-
+second sequence if they are more than w elements apart. As          diometric profiles, since the cloud-covered values will be part
+a consequence, this constraint would only make sense if the         of the radiometric behaviors, while they are not characteristic
+elements of the sequences are regularly sampled; the number         of the sensed surface. The second solution can only be used
+of elements would then have a temporal meaning, since w             if the clouds are located on a set of images. In this way, this
+elements would correspond to a time delay of w times the            solution appears to be unrealistic for operational conditions.
+sampling frequency. In the case of SITS, however, limiting          Moreover, all cloud-free values in the removed images will
+the warping window to all elements (i, j) distant of less           be ignored for the analysis, while remaining images (possibly
+than w elements would have no temporal meaning, since two           containing a few clouds) will be treated according to the first
+consecutive elements (i.e., corresponding to two consecutive        solution. The third solution is obviously the most interesting
+sensed images) could be sensed with a time delay of, for            one, since the cloud-covered values are removed beforehand,
+instance, one week, one month, or one year. Thus, given a           while preserving all cloud-free ones. However, this solution
+maximum time delay ∆t, we propose to limit the scope of the         induces sequences with different lengths. In this way, this so-
+matrix to all elements (i, j) fulfilling:                           lution requires a similarity measure able to compare sequences
+          DATE D IFF ( DATE (i) , DATE (j) ) < ∆t            (8)    with different lengths (implying different temporal sampling).
+                                                                    Contrary to classical similarity measure between sequences,
+where DATE is a function returning respectively the date of         DTW is not limited to the comparison of sequences with equal
+the ith image of the first sequence and the date of the j th        lengths. Actually, DTW’s ability to realign sequences makes it
+image of the second sequence, and DATE D IFF is a function          possible to operate non-linear distortions on the temporal axis.
+returning the elapsed time between two dates.                       In this way, DTW makes it possible to compare sequences with
+   Moreover, note that this constraint on the warping path          different lengths and sampling, while keeping its ability to find
+should be chosen in order to ensure that the warping path           the optimal coupling of the two sequences.
+exists, i.e., that the warping window is composed of a single
+part. Finally, this maximum time delay ∆t could be variable,                       V. M ATERIALS AND M ETHODS
+in order to match more complex knowledge about the observed
+temporal phenology.                                                 A. Image data
+   In practice, during the computation of every (i, j) element        We detail here the main information concerning the images
+of the matrix, the condition presented in Equation 8 has to         used for this work. The area of study of this work is located
+be evaluated beforehand: if the condition is true, the classic      near the town of Toulouse in the South West of France. There
+PETITJEAN et al.: SATELLITE IMAGE TIME SERIES ANALYSIS UNDER TIME WARPING                                                                 9
+
+
+
+                                                                    and the amounts of aerosols and water vapor. The state of the
+                                                                    atmosphere at the time of the sensing is in turn characterized
+                                                                    using meteorological sources (NCEP for the pressure and
+                                                                    the humidity), using ozone data sources (TOMS or TOAST)
+                                                                    and using aerosol data (S EAW I FS, A ERONET). Otherwise,
+                                                                    climatological values are used.
+                                                                       Moreover, for each cultivation year, we have a land cover
+                                                                    map produced by the method described in [43] and using a
+                                                                    comprehensive ground reference data set. Also, cloud masks
+                                                                    are produced using the cloud screening procedure described
+                                                                    in [44].
+
+                                                                    B. Construction of the time series
+                                                                       Let us define how the sequences are built from this image
+                                                                    time series. Definition 1 formalizes the concept of a multi-
+                                                                    valued image. For each image, a mask giving the position of
+                                                                    clouds and their projection on the ground is available. Then,
+                                                                    Definition 2 details how the time series are built from the
+                                                                    sequence of images.
+                                                                       Definition 1: Let Simage =< I 1 , . . . , I N > be a series of
+Fig. 5.   One image from the series (August, 4th 2007).             N images of width W and height H. Let B be the number of
+                                                                    bands in the images. Each multivalued (with multiple bands)
+                                                                    image I n (n ∈ [1, N ]) can be seen as a function:
+are 70 F ORMOSAT-2 images acquired over three cultivation
+                                                                            In :   [[1, W]] × [[1, H]]   →         ZB
+years:                                                                                                        QB     n                (10)
+                                                                                         (x, y)          →
+                                                                                                         7      b=1 Ib (x, y)
+    • 46 images in 2006;                                                  Q
+    • 13 images in 2007;                                            with     be the Cartesian product.
+    • 11 images in 2008.                                               Definition 2: Let S be the dataset built from the image time
+The temporal distribution of the images is given in Figure 4        series. S is the set of sequences defined as:
+and one image of the three series is given in Figure 5.              S = {{< I 1 (x, y), · · · , I N (x, y) > |x ∈ [[1, W]], y ∈ [[1, H]]}}
+Moreover, images sensed in 2006 are quite cloud-covered                                                                                (11)
+(about 30 % of the “pixels”), while the two next series are            Then, each sequence is built as the series of tuples
+quite cloud-free (less than 3 %).                                   (NIR,R,G) for each pixel (x, y) in the image series.
+From these images, we use the multi-spectral product at a              Moreover, each satellite image I n is associated to a cloud
+spatial resolution of 8 m and only the three bands Near-            mask defining geographic areas which could be affected by a
+Infrared, Red and Green are kept, since the blue channel gives      cloud. Thus, all the values I n (x, y) are removed/skipped from
+little information about vegetation and is very sensitive to        the series if the mask indicates a cloudy-affected value. Hence,
+atmospheric artifacts.                                              the length of analyzed sequences can differ from one series
+    Before being used in this work, the F ORMOSAT-2 products        to another. Since DTW is able to compare sequences with
+have been orthorectified (guaranteeing that a pixel (x, y)          different lengths, these corrected time series can be used di-
+covers the same geographic area throughout the image se-            rectly, and prevents the interpolation of “cloud-contaminated”
+ries). All images also undergo processes in order to make           values [45].
+the radiometric pixel values comparable from one image to
+another. These processes consist of converting the digital
+                                                                    C. Experimental settings
+counts provided by the sensor into a physical magnitude and
+in restoring their own contribution to the surface by correct-         We provide here some details about the experimental set-
+ing for atmospheric effects. From the instrument radiometric        tings:
+model, digital numbers are first converted into reflectances           • The distance used between two coordinates of sequences
+(normalized physical quantity of solar irradiance). The abso-            is the squared Euclidean distance. As the square function
+lute calibration coefficients used in this step come from the            is a strictly increasing function on positive numbers, and
+monitoring of F ORMOSAT-2 sensor conducted by the French                 because we only use comparisons between distances,
+Space Agency. The inversion of the surface reflectance is then           it is unnecessary to compute square roots. The same
+made by comparing the measured reflectance in simulations                optimization has been used in [46], and is rather usual.
+at the top of the atmosphere, carried out for atmospheric              • The averaging method used for DTW is the association
+and geometric conditions of measurement. The elevation is                of DBA and adaptive scaling (AS) as described in [3]
+taken into account by carrying out simulations for various               with 15 iterations of the process and constraining the AS
+altitudes, including a weighting of the atmospheric pressure             process with the inertia of the clustering algorithm.
+10                                                          IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING – DOI:10.1109/TGRS.2011.2179050
+
+
+
+                                                                                                                        day of year (2006)
+           Jan Feb Mar Apr May Jun Jul                                  Aug Sep Oct Nov Dec
+                                                                                                                        day of year (2007)
+           Jan Feb Mar Apr May Jun Jul                                  Aug Sep Oct Nov Dec
+                                                                                                                        day of year (2008)
+           Jan Feb Mar Apr May Jun Jul                                  Aug Sep Oct Nov Dec
+
+Fig. 4.    Temporal distribution of images used from the two years. Each spot represents an acquired image.
+
+
+                                                                                Cloud covering
+     •   The Kappa index, which is detailed in Appendix A, is                   100 %
+         used to compare the results.                                            90 %
+                                                                                 80 %
+                                                                                 70 %
+                           VI. E XPERIMENTS                                      60 %
+                                                                                 50 %
+   This section aims to demonstrate the utility of DTW for
+                                                                                 40 %
+the analysis of Satellite Image Time Series. We study three                      30 %
+configurations using DTW:                                                        20 %
+                                                                                 10 %
+   • Subsection VI-A presents the clustering of the 2006 year,
+                                                                                  0%                                                            day of year
+     in order to show the ability of DTW to handle “cloud-                              Jan Feb Mar Apr May Jun Jul       Aug Sep Oct Nov Dec
+     contaminated” SITS.
+   • Subsection VI-B details a joint clustering of two culti-                   Fig. 6.   Cloud covering of the SITS sensed in 2006
+     vation years with 13 images over the first year (2007)
+                                                                                                              TABLE II
+     and eleven images over the second year (2008). It aims                     L OSS OF CLOUD - FREE VALUES DEPENDING ON THE ACCEPTED MAXIMUM
+     at showing that the information redundancy sensed over                                        CLOUD - COVERING OF THE IMAGES
+     each is useful in order to improve the generalization
+     performance of the classifier;                                              Maximum accepted cloud covering            40    30    20    10      0
+                                                                                 per image (%)
+   • Subsection VI-C presents a domain adaptation example,
+     learning classes on a year in order to classify another year.               Eliminated images                          14    15    18    20      28
+     It will show that DTW is, not only theoretically, able to                   Million of of cloud-free pixels lost       2.5   3.2   4.7   7.2    18.1
+     compare sequences with different lengths and sampling,
+     in order to reuse formerly sensed image time series.
+                                                                                (as many clusters as there are classes in the reference land
+A. Clustering of the series sensed in 2006                                      cover map). Two configurations are studied: one without any
+   The aim of this experiment is to demonstrate the ability                     constraint on the maximum time delay in the alignment of the
+of DTW to handle sequences with very different lengths                          sequences, and one with a maximum time delay of two month.
+in the same dataset. Figure 6 shows actually that the SITS                      Figures 7(a) and 7(b) presents respectively the obtained results
+sensed in 2006 is quite cloud covered with about 28 % of                        without and with a constraint on the time-delay. Figure 7(c)
+the sensed pixels that are cloud covered. This is a typical                     depicts the land cover reference map.
+example where we would neither want to keep (too numerous)                         Statistically, the result obtained with Dynamic Time Warp-
+the cloudy values in the dataset, nor want to remove the                        ing have an agreement (Kappa) of 86.9 % for the uncon-
+(too numerous) cloud-covered images. To illustrate our point,                   strained version and of 87.2 % for the constrained one.
+Table II illustrates the loss of cloud-free values in the case of               Visually, the main classes are quite well recognized, except
+the second option, i.e., removing the too cloud-covered images.                 for the meadow and the fallow classes that are mixed up
+It can be seen that if the analysis is limited to images with a                 for the two configurations. However, in the unconstrained
+cloud-covering of less than 10 % of the sensed area, 20 images                  configuration, there is also a mix-up between the wild land
+are put aside and 7.2 million of cloud-free sensed pixels are                   class and the forest (in a broad sense), while there is not in
+not used in the analysis (corresponding to more than seven                      the constrained version.
+completely cloud-free images). Obviously, the relevance of the
+analysis would be then seriously affected.
+   Following the methodology proposed in Section V-B for                        B. Joint clustering of two cultivation years
+the construction of the sequences, all cloud-covered values                        This experiment consists of clustering simultaneously the
+(as well as their projections on the ground) are removed. We                    two years 2007 and 2008. Actually, since DTW is able
+are thus provided with a radiometric time series for each area                  to compare sequences with different lengths, the K- MEANS
+(x, y). Then, the times series have been divided into 24 clusters               algorithm is able to classify sequences built over 2007 and
+PETITJEAN et al.: SATELLITE IMAGE TIME SERIES ANALYSIS UNDER TIME WARPING                                                                          11
+
+
+
+
+                                      (a)                                                                   (b)
+
+
+
+
+                                                                         (c)
+
+Fig. 7. The clustering results computed with DTW in the unconstrained and constrained version are depicted respectively in Figures 7(a) and 7(b). This
+clustering can be compared to reference map in Figure 7(c).
+
+
+
+sequences built over 2008, together. We expect this approach to                The second reason is more harmful than the first: if two
+enhance the ability of the clustering algorithm to form relevant               phenomena are not sensed with a similar temporal discretiza-
+clusters. Once the centroids of the K- MEANS algorithm are                     tion, sequences representing this phenomenon can be different
+learned, similar classes (in terms of data representation) are                 enough to be separated by the clustering algorithm. Using
+represented by a single centroid. However, several centroids                   the K- MEANS algorithm to cluster the sequences, this “bad”
+are predominantly representing sequences from only one year,                   separation of the data can occur frequently since two clusters
+for two main reasons:                                                          representing the same class can be much populated, making
+                                                                               centroids easily diverge. In order to reduce this separation
+                                                                               of classes, an Ascendant Hierarchical Clustering algorithm
+  • there are more classes represented in 2007 (25 classes)                    is used in order to aggregate these pairs of centroids. Even
+    than in 2008 (22 classes) ;                                                if these two behaviors are slightly different, their means
+  • the temporal sampling of the data is not very same.
+12                                                IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING – DOI:10.1109/TGRS.2011.2179050
+
+
+
+(mean behaviors) will be very close to each other. Thus,
+starting with the K- MEANS algorithm parametrized to form 30
+clusters, the 30 corresponding centroids are aggregated into
+25 centroids. These 25 centroids are then used to classify
+separately sequences from 2007 and sequences from 2008.
+Thus, two clustering maps can be drawn: one for 2007 and
+one for 2008.
+   Figure 8 shows results from the joint clustering of sequences
+from 2007 and sequences from 2008, as well as corresponding
+reference land cover maps.
+   Results obtained are spatially regular and connected which
+gives a first quality assessment of this result. We computed
+the Kappa index in order to compare the clustering results to
+the land cover reference maps. The clustering maps provided
+by the joint clustering obtained a Kappa of 88 % for the year
+2007 and a Kappa of 87 % for the year 2008. In order to
+evaluate the improvement of this joint clustering, we also
+computed separate clustering of each year. The clustering
+over 2007 obtained a score 87 % while the one over 2008
+obtained a score of 85 %. From a qualitative standpoint and
+according to the reference maps, the main three classes, i.e.,     Fig. 9. Results of the adaptation domain experiment from 2007 to 2008.
+                                                                   The classification map is automatically colorized according to the labels of
+wheat (yellow), corn (orange), and forest (green) are correctly    centroids.
+separated in the data space, for both maps. The main confusion
+concerns the wildland class (gray) and the meadow class (light
+green), since they are spectrally and temporally close to each     2007 and finally to classify the sequences built over 2008 with
+other. Moreover in 2008, the urban class (pink) is sometimes       these labeled centroids. The process is as follows:
+clustered with the wheat class, since there are no images
+during April and May, i.e., during the NDVI peak of the wheat        1) make 25 clusters with the sequences sensed over 2007
+crop.                                                                   using the K- MEANS algorithm;
+   These results show that DTW is able to exploit the infor-         2) for each formed cluster:
+mation redundancy (in terms of type of behavior) between               a) compute its distribution (histogram) in terms of classes
+two years in order to obtain a better classification of each               of the reference land cover map;
+year with few images per year. Thus, the property of DTW               b) for each class appearing in this histogram which is
+to compare sequences with different lengths and samplings                  populated with more than one percent of the image
+makes it possible to benefit from more diverse examples in                 (i.e., 1000 pixels), build a new centroid (in averaging
+order to better generalize the learned model.                              the corresponding sequences).
+                                                                     3) classify sequences from 2008 by assigning the class of
+C. Domain adaptation between two cultivation years                      the closer built centroid.
+
+   The second experiment consists of a domain adaptation              Figure 9 shows results of this domain adaptation experi-
+example: learning classes over 2007 thanks to the reference        ment; the 2008 reference land cover map can be found in
+land cover map, in order to classify the 2008 image series.        Figure 8(d).
+   Classical domain adaptation methodologies are learning             In the same way as for the previous experiments, we com-
+classes on one image in order to classify another one. More-       puted the Kappa index, which gave a score of 84 % compared
+over, the learning process is usually using external knowl-        to the 2008 ground truth. Qualitatively, the corn class is quite
+edge in order to improve the accuracy of the model, if its         well recognized even if it was sometimes confused with the
+generalization is inaccurate. However, in our case, the model      soybean class (red) which has a similar spectral evolution at
+is learned on one satellite image time series in order to          this sampling. Moreover, in the same way than in the previous
+classify another one. In this way, the learned model is better     experiment, the urban class is sometimes clustered with the
+generalized and adding supplement knowledge is proven to           wheat class, since an additional image would be necessary in
+be unnecessary. The true difficulty is actually to make these      May in order to separate them.
+two series comparable. Technically, we use once again the             This experiment shows two aspects. Firstly, it confirms the
+ability of DTW to compare sequences with different lengths         relevance of the use of DTW to compare sequences with
+and sampling in classifying 2008 sequences with centroids          different lengths on one side, and especially with different
+learned on 2007 ones. This experiment aims at showing that         temporal sampling on the other side. Secondly, the Kappa
+this comparison is also thematically relevant.                     score obtained shows that the knowledge associated to an
+   The idea is first to cluster sequences from 2007, then label    image time series acquired one year can be used directly to
+and split these clusters with the reference land cover map of      classify another year.
+PETITJEAN et al.: SATELLITE IMAGE TIME SERIES ANALYSIS UNDER TIME WARPING                                                                               13
+
+
+
+
+                                      (a)                                                                       (b)
+
+
+
+
+                                      (c)                                                                       (d)
+
+Fig. 8. Results of the joint clustering of sequences from 2007 and 2008. Subfigure 8(a) (resp. Subfigure 8(c)) shows the clustering map which can be
+compared to the land cover reference shown in Subfigure 8(b) (resp. Subfigure 8(d)). The maps 8(a) and 8(c) have been recolored according to the land cover
+maps 8(b) and 8(d). The legend of the maps is given in Appendix B.
+
+
+
+                         VII. C ONCLUSION                                      SITS and its ability to be constrained according to expert’s
+                                                                               knowledge about the land cover phenology.
+   In this paper we have introduced the Dynamic Time Warp-                        The second one showed how DTW can be used to jointly
+ing as a tool to deal with two of the main issues raised by                    cluster two sets of data acquired over the same area during
+high temporal resolution satellite image series, namely the                    two different years and therefore taking benefit from the cyclic
+irregular sampling in the temporal dimension and the need for                  behavior of – mostly vegetation – land surfaces. The fact that
+comparison of pairs of time series having different number of                  each year has a different set of dates and that those dates
+samples.                                                                       are not regularly distributed through the year does not prevent
+   In order to illustrate the properties of DTW, we have                       their joint use in order to improve the clustering results. We
+presented three applications to real data. The first one demon-                showed that the joint clustering gives better results than the
+strated the relevance of DTW to handle cloud-contaminated                      separate clustering of each year.
+14                                                IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING – DOI:10.1109/TGRS.2011.2179050
+
+
+
+   The third example belongs to the family of domain adapta-                                  A PPENDIX B
+tion problems where the information extracted from a data set                             L EGEND OF THE MAPS
+is used to process a different data set. In this case, we used
+DTW in order to generate clusters for one year and apply them                  Color                        Class
+to the clustering of another year which, again, has a different                                           corn
+set of available acquisition dates. In this case, the power of                                      corn for silage
+                                                                                                   non-irrigated corn
+the method resides in the fact that ground data gathered in                                              wheat
+during the 2007 agricultural season can be used to process the                                         sunflower
+following year without the need for new field work.                                                     sorghum
+                                                                                                      sorghum II
+   DTW is able to loosen several temporal constraints on                                                soybean
+images sensing. It thus emerges as a flexible tool to handle                                             barley
+                                                                                                           pea
+heterogeneous data produced by remote sensing.                                                            rape
+                                                                                                   broad-leaved tree
+                                                                                                         conifer
+                                                                                                      poplar tree
+                      A PPENDIX A                                                                     eucalyptus
+            E VALUATING CLUSTERING RESULTS                                                                water
+                                                                                                          lake
+                                                                                                       gravel pit
+  In order to compare clustering results to land cover reference                                        meadow
+maps, we compute the Kappa index (κ) which is defined by:                                         temporary meadow
+                                                                                                      fallow land
+                           Pr(a) − Pr(e)                                                               wild land
+                     κ=                                    (12)                              high density housing surface
+                             1 − Pr(e)                                                          specific urban surface
+                                                                                             low density housing surface
+where Pr(a) is the relative agreement among raters, and Pr(e)                                       mineral surface
+is the hypothetical probability of chance agreement, using the
+observed data to calculate the probabilities of each observer                         ACKNOWLEDGMENT
+randomly choosing each category. There are many ways to               The authors would like to thank the French Space Agency
+compute this index. When data is not labeled (as it is the         (CNES) and Thales Alenia Space for supporting this work
+case with clustering), this computation consists of taking all     under research contract n°1520011594 and the colleagues
+point couples ( p1 , p2 ) = ( (x1 , y1 ) , (x2 , y2 ) ) and        from CESBIO (Danielle Ducrot, Claire Marais-Sicre, Olivier
+see the configuration of these two points in each partition        Hagolle and Mireille Huc) for providing the land-cover
+(the clustering and the ground truth). There are four possible     maps and the geometrically and radiometrically corrected
+configurations:                                                    F ORMOSAT-2 images.
+ 1) p1 and p2 belong to the same partition both in the                                          R EFERENCES
+    clustering and in reference map;
+                                                                   [1] H. Sakoe and S. Chiba, “A dynamic programming approach to contin-
+ 2) p1 and p2 belong to the same partition in the clustering           uous speech recognition,” in Proceedings of the Seventh International
+    but not in the reference map;                                      Congress on Acoustics, vol. 3, 1971, pp. 65–69.
+ 3) p1 and p2 belong to the same partition in the reference        [2] ——, “Dynamic programming algorithm optimization for spoken word
+                                                                       recognition,” IEEE Transactions on Acoustics, Speech and Signal Pro-
+    map but not in the clustering;                                     cessing, vol. 26, no. 1, pp. 43–49, 1978.
+ 4) p1 and p2 belong to the same partition neither in the          [3] F. Petitjean, A. Ketterlin, and P. Gançarski, “A global averaging method
+    reference map nor in the clustering.                               for Dynamic Time Warping, with applications to clustering,” Pattern
+                                                                       Recognition, vol. 44, no. 3, pp. 678–693, March 2011.
+   In order to evaluate the number of couples of points in each    [4] P. Coppin, I. Jonckheere, K. Nackaerts, B. Muys, and E. Lambin,
+configuration, a counter can be associated to each configura-          “Digital change detection methods in ecosystem monitoring: a review,”
+                                                                       International Journal of Remote Sensing, vol. 25, pp. 1565–1596, May
+tion and incremented each time a configuration appears:                2004.
+                                                                   [5] D. Lu, P. Mausel, E. Brondizio, and E. Moran, “Change detection
+ 1) a counter ss for the “same same” configuration;                    techniques,” International Journal of Remote Sensing, vol. 25, no. 37,
+ 2) a counter sd for the “same different” configuration;               pp. 2365–2401, June 2004.
+ 3) a counter ds for the “different same” configuration;           [6] A. A. Nielsen, K. Conradsen, and J. J. Simpson, “Multivariate alteration
+                                                                       detection (mad) and maf postprocessing in multispectral, bitemporal
+ 4) a counter dd for the “different different” configuration.          image data: New approaches to change detection studies,” Remote
+Thus, the Kappa index can be computed with:                            Sensing of Environment, vol. 64, no. 1, pp. 1–19, 1998.
+                                                                   [7] P. Howarth, J. Piwowar, and A. Millward, “Time-Series Analysis of
+                                                                       Medium-Resolution, Multisensor Satellite Data for Identifying Land-
+                                ss + dd                                scape Change,” Photogrammetric Engineering and Remote Sensing,
+                 Pr(a) =                                   (13)
+                           ss + sd + ds + dd                           vol. 72, no. 6, pp. 653–663, 2006.
+                                                                   [8] L. Bruzzone, D. Prieto, and S. Serpico, “A neural-statistical approach
+and                                                                    to multitemporal and multisource remote-sensing image classification,”
+                                                                       IEEE Transactions on Geoscience and Remote Sensing, vol. 37, no. 3,
+                                                                       pp. 1350–1359, May 1999.
+           (ss + sd) × (ss + ds) + (sd + dd) × (ds + dd)
+ Pr(e) =                                                           [9] F. Hall, D. Botkin, D. Strebel, K. Woods, and S. Goetz, “Large-scale
+                        (ss + sd + ds + dd)2                           patterns of forest succession as determined by remote sensing,” Ecology,
+                                                      (14)             vol. 72, no. 2, pp. 628–640, 1991.
+PETITJEAN et al.: SATELLITE IMAGE TIME SERIES ANALYSIS UNDER TIME WARPING                                                                                   15
+
+
+
+[10] C. Munyati, “Wetland change detection on the kafue flats, zambia,             [31] T. Celik, “Unsupervised multiscale change detection in multitemporal
+     by classification of a multitemporal remote sensing image dataset,”                synthetic aperture radar images,” in 17th European Signal Processing
+     International Journal of Remote Sensing, vol. 21, no. 20, pp. 1787–                Conference (EUSIPCO), vol. 15, 2009, pp. 47–51.
+     1806, June 2000.                                                              [32] T. Celik and K.-K. Ma, “Multitemporal image change detection using
+[11] G. Foody, “Monitoring the magnitude of land-cover change around                    undecimated discrete wavelet transform and active contours,” IEEE
+     the southern limits of the Sahara,” Photogrammetric Engineering and                Transactions on Geoscience and Remote Sensing, vol. 49, no. 2, pp.
+     Remote Sensing, vol. 67, no. 7, pp. 841–848, 2001.                                 706–716, February 2011.
+[12] W. Cohen, M. Fiorella, J. Gray, E. Helmer, and K. Anderson, “An               [33] E. Keogh, S. Lonardi, and C. A. Ratanamahatana, “Towards parameter-
+     efficient and accurate method for mapping forest clearcuts in the Pacific          free data mining,” in International Conference on Knowledge Discovery
+     Northwest using Landsat imagery,” Photogrammetric engineering and                  and Data mining, SIGKDD. ACM, 2004, pp. 206–215.
+     remote sensing, vol. 64, no. 4, pp. 293–300, 1998.                            [34] A. N. Kolmogorov, “On tables of random numbers,” Sankhyā : The
+[13] L. Bruzzone and D. Prieto, “Automatic analysis of the difference image             Indian Journal of Statistics. Series A, vol. 25, pp. 369–376, 1963.
+     for unsupervised change detection,” IEEE Transactions on Geoscience           [35] V. I. Levenshtein, “Binary codes capable of correcting deletions, in-
+     and Remote Sensing, vol. 38, no. 3, pp. 1171–1182, May 2000.                       sertions, and reversals,” Soviet Physics Doklady, vol. 10, pp. 707–710,
+[14] F. Melgani, G. Moser, and S. B. Serpico, “Unsupervised change-                     1965.
+     detection methods for remote-sensing images,” Optical Engineering,            [36] M. Vlachos, M. Hadjieleftheriou, D. Gunopulos, and E. Keogh, “Index-
+     vol. 41, no. 12, pp. 3288–3297, 2002.                                              ing multidimensional time-series,” The VLDB Journal, vol. 15, no. 1,
+[15] W. Todd, “Urban and regional land use change detected by using Landsat             pp. 1–20, 2006.
+     data,” Journal of Research by the US Geological Survey, vol. 5, pp. 527–      [37] D. Sankoff and J. Kruskal, Time Warps, String Edits and Macro-
+     534, 1977.                                                                         molecules: The Theory and Practice of Sequence Comparison. Addison
+[16] J. R. Jensen, “Urban change detection mapping using landsat digital                Wesley Publishing Company, 1983, ch. The symmetric time-warping
+     data,” Cartography and Geographic Information Science, vol. 8, no. 21,             problem: from continuous to discrete, pp. 125–161.
+     pp. 127–147, October 1981.                                                    [38] J. Aach and G. M. Church, “Aligning gene expression time series with
+[17] J. Inglada and G. Mercier, “A new statistical similarity measure for               time warping algorithms,” Bioinformatics, vol. 17, no. 6, pp. 495–508,
+     change detection in multitemporal SAR images and its extension to                  2001.
+     multiscale change analysis,” IEEE Transactions on Geoscience and              [39] Z. Bar-Joseph, G. Gerber, D. K. Gifford, T. S. Jaakkola, and I. Simon,
+     Remote Sensing, vol. 45, no. 5, pp. 1432–1445, 2007.                               “A new approach to analyzing gene expression time series data,” in
+[18] M. Piles, D. Entekhabi, and A. Camps, “A change detection algorithm                RECOMB: Proceedings of the sixth annual international conference on
+     for retrieving high-resolution soil moisture from smap radar and ra-               Computational Biology. New York, NY, USA: ACM, 2002, pp. 39–48.
+     diometer observations,” IEEE Transactions on Geoscience and Remote            [40] D. M. Gavrila and L. S. Davis, “Towards 3-D model-based tracking
+     Sensing, vol. 47, no. 12, pp. 4125–4131, December 2009.                            and recognition of human movement: a multi-view approach,” in IEEE
+                                                                                        International Workshop on Automatic Face and Gesture Recognition.,
+[19] S. S. Young and C. Y. Wang, “Land-cover change analysis of china
+                                                                                        1995, pp. 272–277.
+     using global-scale pathfinder avhrr landcover (pal) data, 1982-92,”
+                                                                                   [41] T. Rath and R. Manmatha, “Word image matching using dynamic
+     International Journal of Remote Sensing, vol. 22, no. 8, pp. 1457–1477,
+                                                                                        time warping,” in IEEE Conference on Computer Vision and Pattern
+     May 2001.
+                                                                                        Recognition, vol. 2, June 2003, pp. 521–527.
+[20] E. F. Lambin and A. H. Strahlers, “Change-vector analysis in mul-
+                                                                                   [42] F. Itakura, “Minimum Prediction Residual Principle applied to Speech
+     titemporal space: A tool to detect and categorize land-cover change
+                                                                                        Recognition,” IEEE Transactions on Acoustics, Speech and Signal
+     processes using high temporal-resolution satellite data,” Remote Sensing
+                                                                                        Processing, vol. 23, no. 1, pp. 67–72, 1975.
+     of Environment, vol. 48, no. 2, pp. 231–244, 1994.
+                                                                                   [43] S. Idbraim, D. Ducrot, D. Mammass, and D. Aboutajdine, “An unsuper-
+[21] R. Johnson and E. Kasischke, “Change vector analysis: a technique for
+                                                                                        vised classification using a novel ICM method with constraints for land
+     the multispectral monitoring of land cover and condition,” International
+                                                                                        cover mapping from remote sensing imagery,” International Review on
+     Journal of Remote Sensing, vol. 19, no. 16, pp. 411–426, 1998.
+                                                                                        Computers and Software, vol. 4, no. 2, pp. 165–176, March 2009.
+[22] F. Bovolo and L. Bruzzone, “A theoretical framework for unsupervised          [44] O. Hagolle, M. Huc, D. V. Pascual, and G. Dedieu, “A multi-temporal
+     change detection based on change vector analysis in the polar domain,”             method for cloud detection, applied to F ORMOSAT-2, V ENµS, L ANDSAT
+     IEEE Transactions on Geoscience and Remote Sensing, vol. 45, no. 1,                and S ENTINEL -2 images,” Remote Sensing of Environment, vol. 114,
+     pp. 218–236, 2007.                                                                 no. 8, pp. 1747–1755, 2010.
+[23] G. S. Burns and A. T. Joyce, “Evaluation of land cover change detection       [45] A.-B. Salberg, “Land cover classification of cloud-contaminated mul-
+     techniques using Landsat MSS data,” in Proceedings of the Seventh                  titemporal high-resolution images,” IEEE Transactions on Geoscience
+     Pecora Symposium, 1981.                                                            and Remote Sensing, vol. 49, no. 1, pp. 377–387, January 2011.
+[24] H. Hanaizumi, H. Okumura, and S. Fujimura, “Change detection from             [46] A. W.-C. Fu, E. J. Keogh, L. Y. H. Lau, C. A. Ratanamahatana, and
+     remotely sensed multi-temporal images using spatial segmentation,” in              R. C.-W. Wong, “Scaling and time warping in time series querying.”
+     IEEE International Geoscience and Remote Sensing Symposium, vol. 2.                The VLDB Journal, vol. 17, no. 4, pp. 899–921, 2008.
+     Finland: Institute of Electrical and Electronics Engineers, Inc., June
+     1991, pp. 1079–1082.
+[25] C. S. Jha and N. V. M. Unni, “Digital change detection of forest
+     conversion of a dry tropical Indian forest region,” International Journal
+     of Remote Sensing, vol. 15, no. 13, pp. 2543–2552, 1994.
+[26] M. K. Ridd and J. Liu, “A comparison of four algorithms for change
+     detection in an urban environment,” Remote Sensing of Environment,
+     vol. 63, no. 2, pp. 95–100, 1998.
+[27] A. Julea, N. Méger, E. Trouvé, and P. Bolon, “On extracting evolutions
+     from satellite image time series,” in IEEE International Geoscience and
+     Remote Sensing Symposium, vol. 5, July 2008, pp. 228–231.
+[28] F. Petitjean, P. Gançarski, F. Masseglia, and G. Forestier, “Analysing
+     Satellite Image Time Series by Means of Pattern Mining,” in 11th In-
+     ternational Conference on Intelligent Data Engineering and Automated
+     Learning, ser. Lecture Notes in Computer Science, vol. 6283. Springer,
+     2010, pp. 45–52.
+[29] A. Julea, N. Méger, P. Bolon, C. Rigotti, M.-P. Doin, C. Lasserre,
+     E. Trouvé and, and V. Lǎzǎrescu, “Unsupervised spatiotemporal mining
+     of satellite image time series using grouped frequent sequential patterns,”
+     IEEE Transactions on Geoscience and Remote Sensing, vol. 49, no. 4,
+     pp. 1417–1430, April 2011.
+[30] L. Andres, W. Salas, and D. Skole, “Fourier analysis of multi-temporal
+     AVHRR data applied to a land cover classification,” International
+     Journal of Remote Sensing, vol. 15, no. 5, pp. 1115–1121, 1994.
+

@@ -1,0 +1,170 @@
+# Third Batch 3 Claim Matrix
+
+## Proven claims
+
+- `AISTAP-SIM` public samples are sufficient to support the current TP-SSCS scaffold, the first round of ablations, and the operating-policy discussion.
+- The low-rank suppression baseline shows the expected trade-off: stronger clutter suppression comes with stronger target loss.
+- The target-preservation diagnostics on the public AISTAP-SIM sample reveal headroom: oracle blend and oracle gate variants move the Pd/target-loss frontier in a measurable way, and the trainable-gate candidate closes part of the gap, but the whole branch is still scaffold-bounded.
+- The trainable-gate candidate improves over the low-rank residual baseline on target loss while remaining finite and stable, so the manuscript now has a concrete candidate branch rather than only oracle diagnostics.
+- The preferred trainable-gate branch is now reproducible from a saved model state: `results/aistap_sample/tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt`.
+- The current detector-candidate evaluation now runs from the saved model state through a CFAR-style operating table and is archived in `logs/tpsscs_detector_candidate_20260715.md`.
+- The official AISTAP-SIM `simMed_test.mat` full test asset is now locally available and evaluated, adding `105` target-bearing frames beyond the small sample bundle.
+- On `simMed_test.mat`, the pure trainable-gate score remains strongest at loose Pfa (`Pd=0.9272` versus `0.8383` at `Pfa=1e-2`), while the selected conservative `tpsscs_finished_detector` passes the strict in-domain finished-detector protocol by beating `raw` and `low_rank_residual_k30` on all 7 evaluated Pfa points.
+- The strict finished-detector protocol now passes on the official full-test asset: `logs/aistap_finished_detector_protocol_20260715.md` reports `tpsscs_finished_detector` Pd `0.1845` versus `0.0989` at `Pfa=1e-5`, and `0.8692` versus `0.8383` at `Pfa=1e-2`.
+- The official AISTAP-SIM `simWind_test.mat` full test condition is now locally available and evaluated, adding another `105` target-bearing full-test frames.
+- The official cross-condition full-asset validation now passes across `simMed_test` and `simWind_test`: the same saved state and `tpsscs_finished_detector` policy beat `raw` and `low_rank_residual_k30` on all 14 asset-Pfa comparisons under conservative Pfa calibration.
+- The combined official full-asset protocol gate now passes across `simMed_test.mat` and `simWind_test.mat`: `logs/aistap_combined_full_asset_protocol_20260715.md` reports `210` target-bearing items, 14/14 asset-level wins vs raw and low-rank, 7/7 combined wins vs raw and low-rank, and positive bootstrap CIs for the combined mean Pd deltas.
+- The finished-detector full-asset seed-sensitivity check now passes across seeds `7`, `11`, and `23`: `logs/aistap_full_asset_seed_sensitivity_20260717.md` reports 21/21 combined wins vs raw, 21/21 combined wins vs low-rank, 42/42 asset-level wins vs raw, 42/42 asset-level wins vs low-rank, and maximum cross-seed target-Pd range `0.0079`.
+- The strengthened classical-baseline audit now passes on the same official full assets: `logs/aistap_full_asset_classical_cfar_baselines_20260717.md` reports 11 global/local CFAR candidate methods, 7/7 combined wins vs the best classical baseline, 14/14 asset-level wins vs the best classical baseline, and minimum combined delta `0.0205`.
+- The parameter-swept classical-baseline audit now passes on the same official full assets: `logs/aistap_full_asset_classical_cfar_param_sweep_20260717.md` reports 75 global/local CFAR method/configuration candidates, training cells `4,6,8`, guard cells `1,2`, OS percentiles `60,75,90`, 7/7 combined wins vs the best swept classical baseline, 14/14 asset-level wins, and minimum combined delta `0.0162`.
+- The leave-one-condition-out learned-baseline audit now passes on the same official full assets: `logs/aistap_full_asset_loso_learned_raw_baseline_20260717.md` trains a supervised raw-feature logistic detector on one official full asset and tests on the other, then swaps directions; TP-SSCS wins 7/7 combined and 14/14 asset-level comparisons, with minimum combined delta `0.0596` and positive bootstrap CI lower bounds at every Pfa point.
+- The stronger leave-one-condition-out feature-ensemble audit now defines the current supervised in-domain upper boundary: `logs/aistap_full_asset_loso_feature_ensemble_baseline_20260717.md` shows raw/residual HGB beats compact TP-SSCS on all 7 combined Pfa points.
+- The TP-SSCS-feature HGB audit now shows TP-SSCS-derived features are useful inside a strong supervised learner: `logs/aistap_full_asset_loso_tpsscs_feature_ensemble_20260717.md` beats compact TP-SSCS on all 7 combined points and nearly matches the raw/residual HGB with 6/7 combined wins and minimum combined delta `-0.0007`.
+- The positive-target-pixel label-efficiency audit now supports a target-instance scarcity claim: `logs/aistap_full_asset_loso_low_positive_pixel_hgb_20260717.md` shows compact zero-target-label TP-SSCS beats low-label raw/residual HGB at all 7 combined Pfa points for `1`, `2`, `4`, and `8` positive-pixel budgets, with positive bootstrap CI lower bounds.
+- The label-cost Pareto audit now supports the low-label/low-cost positioning against the HGB upper boundary: `logs/aistap_full_asset_label_cost_pareto_20260717.md` shows compact TP-SSCS AUC `0.5313` with zero official full-asset positive target labels and `133.66` ms/frame, dominating low-label HGB budgets `1`, `2`, `4`, `8`, and `16` in AUC, labels, and measured runtime with positive AUC bootstrap CIs; low-label HGB first exceeds compact AUC at budget `64`.
+- The target-free calibration audit now supports rank-order robustness to threshold-source changes: `logs/aistap_full_asset_target_free_calibration_20260717.md` shows same-asset and cross-asset target-free thresholds preserve 7/7 combined TP-SSCS positive Pd margins over raw and low-rank, with positive bootstrap CI lower bounds.
+- The frame-level robustness audit now supports distributional strength of the official full-asset result: `logs/aistap_full_asset_frame_level_robustness_20260717.md` shows TP-SSCS has `1470/1470` nonnegative item-Pfa pairs versus `low_rank_residual_k30`, and broad but not universal support versus raw with minimum combined win fraction `0.890`.
+- The paired nonparametric significance audit now supports formal operating-point significance: `logs/aistap_full_asset_paired_significance_20260717.md` shows all 14 combined comparator/Pfa exact sign tests remain significant after BH-FDR correction, with worst combined q-value `2.945e-29` and minimum matched sign effect `0.816`.
+- The log-Pfa AUC audit now supports whole-operating-surface superiority over the checked Pfa grid: `logs/aistap_full_asset_log_pfa_auc_20260717.md` reports TP-SSCS AUC `0.5313`, low-rank AUC `0.4760`, raw AUC `0.3085`, minimum combined delta `0.0553`, and minimum bootstrap CI lower bound `0.0491`.
+- The component-attribution audit now supports the mechanism of the finished policy: `logs/aistap_full_asset_component_attribution_20260717.md` reports finished-detector log-Pfa AUC gains of `+0.2228` over raw and `+0.0553` over `low_rank_residual_k30`, with `195/15/0` frame-level AUC wins/ties/losses versus low-rank; gate-only is a relaxed learned-score boundary, not a policy that the selected detector uniformly dominates.
+- The local CPU runtime/complexity profile now supports a bounded deployment-cost claim: `logs/aistap_runtime_profile_20260717.md` shows compact TP-SSCS finished-detector inference at median `133.66` ms/frame over 12 deterministic target-bearing official full-asset frames, versus `608.99` ms/frame for raw/residual HGB inference (`4.56x` HGB/compact ratio), with `2641` trainable TP-SSCS parameters.
+- The independent IPIX Dartmouth zero-shot transfer smoke test runs end-to-end using the published primary target bin `9`, but it is negative (`Pfa=1e-2`: raw `Pd=0.0364`, `tpsscs_finished_detector` `Pd=0.0086`).
+- The independent IPIX validation-selected residual-aware fusion passes on 12 disjoint held-out recordings: beta is selected on `19931107_141630_starea.cdf`, no range-bin index feature is used, and the held-out test aggregate wins against raw and low-rank on all 7 Pfa points (`Pfa=1e-2`: fusion `Pd=0.1374` vs raw `0.0972`).
+- The official SSDD SAR ship-detection external validation now passes as a second independent radar family: `scripts/evaluate_ssdd_external_trainable_gate.py` trains on the official train split with a deterministic validation split, tests only on the official test split, and reports 4/7 wins plus 3/7 ties against raw, 0/7 losses against raw, and 7/7 wins against low-rank over `231` test images and `545` ship annotations.
+- The SSDD image-level / annotation-level robustness supplement now passes: `logs/ssdd_image_level_bootstrap_ci_20260715.md` reports `231` official-test images, `545` annotations, positive image-level bootstrap CIs versus raw for all non-fallback Pfa points, and positive image-level bootstrap CIs versus low-rank for all Pfa points.
+- The target-preservation ablation has been rerun with `Ntrue > 0` target-bearing accounting; the current public-sample evidence contains 3 true target-bearing evaluated items.
+- The automatic top-readiness self-check now returns `top_ready` with `0` hard failures; the reusable candidate-state, sample-scale, finished-detector, strengthened classical-baseline, LOSO learned-baseline, IPIX, and SSDD gates are the current evidence basis for the local-reference-superiority decision.
+- The strongest current candidate for the low-false-alarm regime is `rank=30`, `hidden=16`, `steps=150`, with learning rate `0.02`.
+- The `rank=20`, `hidden=16`, `steps=150`, `lr=0.01` branch remains the looser-Pfa alternative.
+- The strongest current learning rate for that candidate is `0.02`.
+- The manuscript-facing trainable gate is now a concrete branch, not just an oracle diagnostic.
+- The trainable branch gives a concrete comparison increment against the five-reference set, but it is not yet a victory claim.
+- The trainable branch is now a real comparison asset, not just an ablation artifact.
+- The trainable branch reduces the gap, but it does not close the comparison.
+- The cross-paper scorecard now shows that AISTAP is ahead on detector-operating-policy evidence density and explicit trainability, and now has two independent external radar-family validation layers beyond the official AISTAP-SIM full-test assets.
+- The leave-one-subset-out cross-condition check across `simMed`, `simNoiseOnly`, and `simWind` broadens the protocol class and preserves finite trainable-gate behavior under holdout.
+- The workspace now also contains an independent radar-source audit spanning SEVIR, MRMS, and MeteoNet.
+- The SEVIR year-holdout result adds a direct independent-source radar benchmark, with a raw max-intensity score reaching test AUC `0.7636` on 2019.
+- The SEVIR year-holdout attempt is limited by a partial local mirror; the current honest CNN fallback split reaches test AUC `0.5972`, which is useful smoke evidence but not a strong external-validation win.
+- The NEXRAD public-bucket window sweep on KMRX adds a threshold-sensitive external radar result: the selected window beats persistence on mean MAE, mean RMSE, CSI@10, and CSI@30, while CSI@20 still favors persistence.
+- The current public-NEXRAD window leaderboard shows that KMRX also has a separate window where CSI@20 flips, but no observed window yet beats persistence on the full threshold set together with the continuous-error metrics.
+- The refined KMRX sweep adds a stronger public-NEXRAD window: `start=219` beats persistence on mean MAE, mean RMSE, CSI@10, and CSI@20, while CSI@30 ties at zero.
+- The immediate-neighbor KMRX sweep confirms that no adjacent public window currently improves on the `start=219` window.
+- The KMRX length sweep tightens the top public-NEXRAD window further: `start=219`, `length=4` beats persistence on mean MAE, mean RMSE, CSI@10, and CSI@20, while CSI@30 ties at zero.
+- The length-3 KMRX refinement tightens the top public-NEXRAD window further still: `start=219`, `length=3` beats persistence on mean MAE, mean RMSE, CSI@10, and CSI@20, while CSI@30 ties at zero.
+- The trainable-branch results/discussion paragraph is now manuscript ready.
+- The strict low-Pfa preference note records why the `rank=30`, `hidden=16`, `steps=150`, `lr=0.02` branch is now preferred.
+- The current low-Pfa branch comparison summary records the shortest comparison summary for the preferred low-Pfa branch.
+- The low-Pfa branch dimension scorecard records a dimension-by-dimension ledger for the preferred low-Pfa branch.
+- The low-Pfa branch multi-seed stability note records repeat-seed evidence for the preferred low-Pfa branch.
+- The low-Pfa branch multi-seed stability note now confirms the preferred branch across seeds `7`, `11`, and `23`.
+- The low-Pfa branch multi-seed paragraph records a manuscript-ready multi-seed summary for the preferred low-Pfa branch.
+- The low-Pfa width check records a rejected wider-hidden-width comparison point.
+- The low-Pfa hidden-width rejection records a rejected hidden-width comparison point at 24.
+- The trainable branch now has a per-reference verdict card.
+- The minimal trainability check shows that the scaffold can be optimized without numerical collapse and can improve validation gate separation.
+- The stress grid shows that the best low-rank rank shifts under perturbation, while the trainable gate remains finite and competitive at the reference operating point.
+- The multi-seed stress note shows the preferred branch stays finite and competitive across seeds `7`, `11`, and `23`.
+- The multi-seed stress note confirms the preferred branch remains stable under perturbation across seeds `7`, `11`, and `23`.
+- The robustness dossier consolidates the preferred branch into a single reviewer-facing stability view.
+- The five-reference gap audit fixes the current comparison standing without overclaiming victory.
+- The figure/claim crosswalk, figure/text linkage, and figure-linked results paragraph are aligned with the current manuscript draft.
+- The manuscript draft contains a continuous Results section, a Methods section, and a strong-baseline acquisition matrix.
+- The manuscript draft has standalone abstract and conclusion paragraphs, so the paper can open and close with the same boundary framing.
+- The active experiment completion plan now separates completed diagnostics from the remaining trainability and stress-grid work.
+- The active five-reference comparison matrix specifies the external standards this paper still needs to beat.
+- The first dense operating-surface note now captures a measured rank/Pfa frontier.
+- The final submission lock and checklist record that no further experiment is currently high-leverage enough to change the comparison position.
+- The final comparison dossier captures the current standing against the five-reference target set.
+- The final comparison scorecard gives an ahead/tied/behind ledger for the five-reference comparison.
+- The final improvement path map translates the scorecard into future lift actions without reopening the current scope.
+- The master comparison dashboard gives a single operational view of the five-reference comparison.
+- The final executive comparison summary gives the shortest honest verdict about where AISTAP stands against the five references.
+- The five-reference win/loss tracker records the current win/loss verdict per reference package.
+- The high-leverage gap priority list ranks the remaining gaps by future evidence-class leverage.
+- The current comparison judgment card records the shortest current verdict on win/tie/behind status.
+- The final Chinese summary records the shortest Chinese-language comparison summary.
+- The comparison evidence index records the file-level evidence used for each reference package.
+- The objective completion audit records which objective requirements are proven and which are still not.
+- The final status table records the compact current state of the objective.
+- The user-facing final summary records the shortest usable final summary.
+- The victory threshold card records the strict conditions required for an unconditional win claim.
+- The cross-paper scorecard records the dimension-by-dimension comparison against `power_se` and the battery package.
+- The reopen conditions card records exactly when the scope may be reopened for further evidence-class upgrades.
+- The final go/no-go gate records whether the paper is presently allowed to claim a win over the five-reference set.
+- The lessons-applied ledger records the strengths already absorbed from the five references.
+- The consolidated evidence-gap summary records the shortest combined verdict on what is proven, what is not proven, and what would justify reopening the scope.
+
+## Bounded claims
+
+- The current evidence supports a method-design and policy-analysis paper on public radar samples.
+- The public sample results justify a target-preserving / low-false-alarm framing.
+- The target-preservation result is diagnostic and oracle-backed; the full-test result adds a conservative in-domain finished-detector protocol, but not independent external validation.
+- The public-sample detector-candidate result is a reproducible model-state-to-CFAR path; the official full-test protocol is the current finished-detector evidence.
+- The full-test target-bearing sample scale is now sufficient for the current in-domain sample-scale gate, but it is still not independent external validation.
+- The minimal trainability result is bounded evidence of trainable-scaffold behavior, not finished detector evidence.
+- The stress-grid result is bounded evidence of robustness, not a universal guarantee.
+- The gap audit is a comparison note, not a victory claim.
+- The current manuscript should treat `RASPNet`, `NetRAD`, and `IPIX` as support for method design and comparison, not as a claim of cross-dataset winner status.
+- The manuscript should keep the strongest claims inside the public-sample boundary until more external baselines or datasets are added.
+- The cross-condition holdout is broader protocol evidence, not independent external-dataset breadth.
+- The official `simMed_test`/`simWind_test` cross-condition result is method-level AISTAP-SIM transfer evidence, not independent non-AISTAP external validation.
+- The IPIX zero-shot transfer result is negative, but the validation-selected residual-aware fusion is a passing independent non-AISTAP 12-recording held-out external-validation result.
+- The SSDD result is a passing independent SAR trainable-gate adaptation result, not a zero-shot transfer of the saved AISTAP-SIM state.
+- The SSDD image-level and annotation-level CI result is a robustness/localization supplement for the same supervised SSDD adaptation protocol, not a new independent dataset.
+- The full-asset seed-sensitivity result shows three checked seeds preserve the same official AISTAP-SIM full-asset win pattern, but it does not prove universal invariance over all initializations.
+- The strengthened classical-baseline result closes the narrow-baseline criticism for the checked CA/GOCA/SOCA/OS-CFAR family, but it remains an AISTAP-SIM full-asset baseline audit rather than an independent external-dataset result.
+- The parameter-swept classical-baseline result closes the fixed-CFAR-parameter criticism for the checked window and OS-percentile grid, but it does not cover every possible CFAR design.
+- The LOSO learned-baseline result closes the narrow criticism that TP-SSCS only beats hand-designed CFAR variants on official AISTAP-SIM full assets, but it does not cover large pretrained radar detectors, end-to-end deep SAR object detectors, or independent non-AISTAP zero-shot deployment.
+- The stronger HGB feature-ensemble result prevents claiming compact TP-SSCS is state-of-the-art against all supervised in-domain learned detectors.
+- The TP-SSCS-feature HGB result supports TP-SSCS as a useful target-preserving feature construction for supervised detectors, but it is not yet a strict all-Pfa win over the raw/residual HGB boundary.
+- The positive-target-pixel label-efficiency result supports compact TP-SSCS under severe target-instance scarcity, but it also shows that raw/residual HGB begins to catch or exceed compact TP-SSCS at some operating points once `16` source-domain positive target pixels are available.
+- The label-cost Pareto result strengthens the low-target-label claim across the whole checked Pfa surface, but it still does not overturn the full-label supervised boundary: low-label HGB exceeds compact AUC from budget `64`, and full-label HGB remains a higher-AUC, higher-label, higher-runtime point.
+- The target-free calibration result supports score ordering under target-free threshold sources, but fixed target-free thresholds are not fully empirical-Pfa calibrated when transferred to target-bearing backgrounds; the main calibrated detector claim still relies on the per-frame empirical-Pfa protocol.
+- The frame-level robustness result supports broad distributional evidence rather than universal per-frame dominance: it shows no negative item-Pfa pairs versus the rank-matched low-rank residual, but the raw comparison includes `61` raw-favorable item-Pfa pairs and should be reported as broad support, not as every-frame improvement.
+- The paired significance result supports exact paired sign-test significance after BH-FDR correction over frozen official full-asset rows, but the sign test ignores ties and does not create a new dataset, pixel-independent trial count, or universal per-frame dominance claim.
+- The log-Pfa AUC result supports superiority over the checked `1e-5` to `1e-2` operating range, but it does not justify extrapolating to unmeasured Pfa values or replacing individual operating-point reporting.
+- The component-attribution result supports a conservative low-false-alarm policy interpretation: the finished detector improves over raw and low-rank residual AUC, but gate-only is near-tied on mean AUC and stronger at looser Pfa, so the selected detector should not be called a universal Pd upper bound.
+- The runtime result supports a local CPU runtime and complexity boundary, not a hardware-independent speed benchmark: it can be used to say the compact gate is small and the measured compact inference stack is faster than the checked raw/residual HGB inference stack on this machine, but not to claim universal real-time operation or speed superiority on other hardware.
+- The radar-source audit does not by itself mean AISTAP has been re-trained on SEVIR, MRMS, or MeteoNet.
+- The SEVIR year-holdout result does not by itself mean the AISTAP method has been re-trained on SEVIR.
+- The upgraded SEVIR year-holdout result is still not an AISTAP cross-source transfer result.
+- The KMRX window sweep does not by itself mean the AISTAP method has been re-trained on NEXRAD.
+- The refined KMRX sweep still does not by itself mean the AISTAP method has been re-trained on NEXRAD.
+- The immediate-neighbor KMRX sweep still does not change the NEXRAD retraining boundary.
+- The KMRX length sweep still does not change the NEXRAD retraining boundary.
+- The length-3 KMRX refinement still does not change the NEXRAD retraining boundary.
+- The five-reference matrix is a comparison contract, not a result claim.
+- The dense operating-surface note is a result claim, but only within the public-sample boundary.
+
+## Not justified
+
+- Claims of universal sea-clutter suppression.
+- Claims that the current scaffold is already a production-ready or externally validated detector.
+- Claims of cross-dataset superiority beyond the current public sample boundary.
+- Claims that the present public samples alone prove a finished production-ready system.
+- Claims that the target-preservation diagnostics are already deployable or that they establish finished TP-SSCS superiority.
+- Claims that the trainability check alone is a finished detector result.
+- Claims that the public-sample detector-candidate evaluation alone is a finished detector result.
+- Claims that the `simMed_test.mat` full-test result alone establishes cross-dataset or external-validation superiority.
+- Claims that the current self-check proves direct acceptance by a CAS一区 Top journal.
+- Claims that the stress grid proves universal robustness.
+- Claims that the current paper already beats the five-reference set in a final, unconditional sense.
+- Claims that compact TP-SSCS beats the strong raw/residual HGB feature ensemble.
+- Claims that TP-SSCS-feature HGB strictly beats raw/residual HGB at every checked Pfa point.
+- Claims that compact TP-SSCS beats low-label raw/residual HGB for all positive-pixel budgets; the supported all-Pfa advantage is limited to the checked `1`, `2`, `4`, and `8` positive-pixel budgets.
+- Claims that the label-cost Pareto audit proves compact TP-SSCS is better than full-label HGB; the supported result is a zero/low-label, lower-runtime Pareto point and HGB exceeds compact AUC from budget `64`.
+- Claims that target-free fixed-threshold transfer fully satisfies every checked empirical Pfa target on target-bearing backgrounds.
+- Claims that TP-SSCS improves every individual target-bearing frame over raw maps; the supported raw comparison is broad distributional support, not universal per-frame dominance.
+- Claims that paired sign-test p-values prove pixel-level independence, a new external dataset, or universal per-frame raw-map dominance; the supported claim is corrected paired significance over frozen official full-asset frame rows.
+- Claims that log-Pfa AUC proves performance outside the checked `1e-5` to `1e-2` Pfa grid.
+- Claims that the selected `tpsscs_finished_detector` uniformly dominates the gate-only endpoint at every checked Pfa; the supported component-attribution result is a low-false-alarm policy tradeoff.
+- Claims that TP-SSCS is guaranteed real-time, hardware-independent, or faster than every possible learned detector implementation; the current runtime evidence is a local CPU profile only.
+- Claims that the current paper already beats the five-reference set before the new experiment logs exist.
+- Claims that the dense operating-surface result applies outside the public sample.
+- Claims that the current paper has a stronger external-validation layer than the battery package.
+- Claims that the current paper is a cross-feeder IEEE benchmark like `power_se`.
+
+## Usage
+
+Use this matrix to keep the README, STATUS, manuscript draft, and log files aligned as the paper is tightened for submission.

@@ -1,0 +1,1010 @@
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 62, 2024                                                                                      4704415
+
+
+
+
+         A DeNoising FPN With Transformer R-CNN
+                 for Tiny Object Detection
+          Hou-I Liu, Yu-Wen Tseng, Kai-Cheng Chang, Pin-Jyun Wang, Hong-Han Shuai , Member, IEEE,
+                                    and Wen-Huang Cheng , Fellow, IEEE
+
+
+
+   Abstract— Despite notable advancements in the field of com-                   [2], [3] and one-stage detectors [4], [5], [6]. While two-stage
+puter vision (CV), the precise detection of tiny objects continues               detectors often yield higher accuracy, one-stage detectors
+to pose a significant challenge, largely due to the minuscule                    boast faster inference speeds, making them more suitable for
+pixel representation allocated to these objects in imagery data.
+This challenge resonates profoundly in the domain of geoscience                  real-time detection. However, most previous works focus on
+and remote sensing, where high-fidelity detection of tiny objects                general object detection, while the methods for detecting tiny
+can facilitate a myriad of applications ranging from urban                       objects have not been explored well. In fact, tiny objects are
+planning to environmental monitoring. In this article, we propose                pervasive in aerial images and are important to a variety of
+a new framework, namely, DeNoising feature pyramid network                       applications, e.g., traffic monitoring [7], surveillance [8], and
+(FPN) with Trans R-CNN (DNTR), to improve the performance
+of tiny object detection. DNTR consists of an easy plug-in                       sea rescue [9].
+design, DeNoising FPN (DN-FPN), and an effective Transformer-                       To this end, we focus on tiny object detection whose order
+based detector, Trans region-based convolutional neural network                  of magnitude is generally smaller than that of small object
+(R-CNN). Specifically, feature fusion in the FPN is important                    detection. Following [10] and [11], the definition of a tiny
+for detecting multiscale objects. However, noisy features may                    object is an object smaller than 16 × 16 pixels, whereas the
+be produced during the fusion process since there is no reg-
+ularization between the features of different scales. Therefore,                 small objects in COCO [12] are smaller than 32 × 32 pixels.
+we introduce a DN-FPN module that utilizes contrastive learning                  The tiny size makes detection challenging. For instance, the
+to suppress noise in each level’s features in the top–down path                  widely-used CNN model [13] reduces the input resolution by
+of FPN. Second, based on the two-stage framework, we replace                     a factor of 32, resulting in an insufficient representation of tiny
+the obsolete R-CNN detector with a novel Trans R-CNN detector
+                                                                                 objects [14], [15], [16].
+to focus on the representation of tiny objects with self-attention.
+The experimental results manifest that our DNTR outperforms                         Traditionally, to accurately detect objects at different scales,
+the baselines by at least 17.4% in terms of APvt on the AI-TOD                   a feature pyramid network (FPN) [17] aggregates multiscale
+dataset and 9.6% in terms of average precision (AP) on the                       features by a top–down path to incorporate both geometric
+VisDrone dataset, respectively. Our code will be available at                    and semantic information, as depicted in Fig. 1. Specifically,
+https://github.com/hoiliu-0801/DNTR.
+                                                                                 the lateral features from the bottom–up path provide geometric
+   Index Terms— Aerial image, contrastive learning, noise reduc-                 information, while the upper-level features from the top–down
+tion, tiny object detection, transformer-based detector.                         path offer semantic information. Unfortunately, upsampling
+                                                                                 methods, such as bilinear interpolation and nearest neighbor
+                          I. I NTRODUCTION
+                                                                                 methods, cause redundant information, while channel reduc-
+
+W      ITH the remarkable advancement of deep learning,
+       object detection has witnessed significant progress over
+the past decade. Object detection techniques can generally
+                                                                                 tion leads to information loss in the features. In these cases,
+                                                                                 the distortion of features is considered noise generation in
+                                                                                 the fusion process of FPN [14], [18], [19], [20]. As shown
+be divided into two main categories: two-stage detectors [1],                    in Fig. 1, the channel reduction may introduce noise in the
+  Manuscript received 23 September 2023; revised 25 January 2024 and             geometric information, whereas the upsampling operation may
+5 April 2024; accepted 20 April 2024. Date of publication 3 May 2024;            produce noise in the semantic information. Consequently, the
+date of current version 16 May 2024. This work was supported in part by          noisy feature maps of FPN adversely affect the detection
+the National Science and Technology Council, Taiwan, under Grant NSTC-
+112-2628-E-002-033-MY4, Grant NSTC-112-2634-F-002-002-MBK, Grant                 of tiny objects since the low-resolution features are more
+NSTC-112-2221-E-A49-059-MY3, and Grant NSTC-112-2221-E-A49-094-                  noise-sensitive.
+MY3. (Corresponding author: Hong-Han Shuai.)                                        A recent line of studies [19], [20], [21] focuses on
+  Hou-I Liu, Pin-Jyun Wang, and Hong-Han Shuai are with the Depart-
+ment of Electronics and Electrical Engineering, National Yang Ming Chiao         leveraging an additional module to enhance feature fusion
+Tung University, Hsinchu 300, Taiwan (e-mail: k39967.c@nycu.edu.tw;              while alleviating redundant feature production. For instance,
+whc666777.sc06@nycu.edu.tw; hhshuai@nycu.edu.tw).                                Liu et al. [20] build a feature feedback module to cap-
+  Yu-Wen Tseng and Kai-Cheng Chang are with the Institute of Electronics,
+National Yang Ming Chiao Tung University, Hsinchu 300, Taiwan (e-mail:           ture better communication between bottom–up and top–down
+ywt0226.ee10@nycu.edu.tw; kaicheng026.ee10@nycu.edu.tw).                         features. Wu et al. [21] introduce an FA2 M module to
+  Wen-Huang Cheng is with the Department of Computer Science and                 learn the pixel-spatial information to align the multilevel
+Information Engineering, National Taiwan University (NTU), Taipei 106,
+Taiwan (e-mail: wenhuang@csie.ntu.edu.tw).                                       features. Nonetheless, these methods require an extra module
+  Digital Object Identifier 10.1109/TGRS.2024.3396489                            to improve their performance, leading to a cumbersome model.
+                      1558-0644 © 2024 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                                    See https://www.ieee.org/publications/rights/index.html for more information.
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+4704415                                                                        IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 62, 2024
+
+
+
+
+Fig. 1. Conventional FPN structure. Following FPN [17], the fusion features are combined with the lateral features and upper-level features. The main purpose
+is to aggregate the geometric and semantic information from the low-resolution and high-resolution features to garner better multiscale features. However, the
+channel reduction (1 × 1 Conv.) and upsampling (Up. ×2) cause noise and damage the geometric and semantic information in FPN, respectively. Note that
+the Conv. and Up. denote the convolution layer and the upsampling operation, respectively.
+
+
+Furthermore, some works aim to recall tiny objects from the                      fostering the extraction of rich, long-range dependencies.
+background based on their properties. For example, Wang                          Specifically, Trans R-CNN first deconstructs each proposal
+et al. [22] and Xu et al. [23], [24] design new label assignment                 into a series of patch tokens. These tokens, representing dis-
+methods based on Gaussian to replace the intersection over                       tinct facets of tiny objects, offer a more granular and effective
+union (IoU) metric since the IoU metric is too sensitive to                      representation than traditional, whole-proposal approaches.
+tiny objects. Xu et al. [25] consider the center point distance                  Subsequently, we propose a shuffle unfolding algorithm aimed
+and the average size of the dataset in the new loss function                     at aggregating surrounding tokens into unfolded tokens to
+for region proposal network (RPN) and non-maximum sup-                           enable the assimilation of local information, which serves as
+pression (NMS). Although the above methods have achieved                         more discriminative representations for tiny objects.
+certain improvements, they only focus on enhancing the per-                         Our contribution in this space, represented by the DN-FPN
+formance of tiny objects to offset the impact of noise. None                     module and Trans R-CNN detector, distinguishes itself by
+of them suppress the noise at its source, i.e., the FPN fusion                   proficiently extracting multiscale features devoid of noise
+process. Hence, we pioneer in minimizing the FPN’s noise                         interference, positioning itself as a more precise tool optimized
+problem to boost the performance of tiny objects.                                for tiny object detection. As illustrated in Fig. 2, we compare
+   In this work, we propose DeNoising FPN (DN-FPN) to                            DeNoising FPN with Trans R-CNN (DNTR) with traditional
+leverage contrastive learning to reduce the FPN’s noise prob-                    frameworks to underline its superiority. While R-CNN-based
+lem. The objective of DN-FPN is to uphold both geometric and                     detectors excel in localizing potential object regions, they
+semantic information within the fusion features, as illustrated                  fall short in global information capture [Fig. 2(a)]. Moreover,
+in Fig. 1. Specifically, we first use geometric and semantic                     DETR-like systems are prone to a high rate of false posi-
+encoders to extract the representations from different layers of                 tives (FP) due to excessive background responses stemming
+FPN’s features. To supervise the encoders, we propose a novel                    from the holistic handling of visual features [Fig. 2(b)],
+contrastive loss to learn the geometric and semantic relation                    as indicated by Huang et al. [31]. In contrast, our DNTR
+of FPN’s features according to their inherent characteristics.                   approach leverages the DN-FPN module to emphasize fore-
+As such, the fusion features maintain the equivalent geometric                   ground elements through the creation of denoising multiscale
+information with the lateral feature (from the bottom–up                         features [Fig. 2(c)]. The subsequent integration of RPN and
+path) and retain the equivalent semantic information with the                    region of interest (RoI)Align [32] techniques,2 followed by
+upper-level feature (from the top–down path) after contrastive                   shuffle unfolding, facilitates a richer local information pool
+learning. Consequently, the noise generated from channel                         within the RoIs by synergizing with neighboring tokens. The
+reduction and upsampling is reduced.1                                            Trans R-CNN detector further accentuates global information
+   Moreover, two-stage detectors are renowned for their pre-                     capture within the RoIs by the proposed mask transformer
+cision in localization and recognition [1], [2], [27]. However,                  encoder (MTE), thereby enhancing the discernibility of tiny
+they often struggle with the nuanced detection of tiny objects                   objects.
+due to insufficient pixel representation of tiny objects [28],                      The contributions are summarized as follows.
+[29]. To address this, we introduce Trans region-based convo-                       1) We present a groundbreaking method for object detec-
+lutional neural network (R-CNN), a two-stage novel detector                             tion in aerial imagery, substantiated by standout perfor-
+that integrates the strengths of vision transformers (ViTs) [30],                       mance on the AI-TOD and VisDrone datasets, where our
+                                                                                        DNTR model surpasses prevailing the state-of-the-art
+   1 It is worth noting that the DN-FPN module only applies in the training
+stage, so it can be incorporated into other FPN-based models without adding         2 We use RPN to generate region proposals, and employ RoIAlign to
+additional FLOPs and parameters during inference (see Table VII).                transform region proposals into RoIs.
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+LIU et al.: DeNoising FPN WITH TRANSFORMER R-CNN FOR TINY OBJECT DETECTION                                                                             4704415
+
+
+
+
+Fig. 2. Comparison of different object detection frameworks. (a) CNN-based two-stage model [1] generates the RoIs (three different shades of blue) by RPN
+and applies R-CNN head to predict objects. (b) DETR-like model [26] flattens the visual feature into image patches and passes them through the transformer
+decoder via cross-attention to transform the object queries into the final bounding boxes. (c) Our DNTR extracts less noisy multiscale features by the DN-FPN
+module. Subsequently, the shuffle unfolding and Trans R-CNN are employed to capture local and global information within an RoI, resulting in better detection
+outcomes for tiny objects.
+
+
+
+      models with average precision (AP) scores of 26.2 and                      more complex model to improve the performance of small
+      33.1, respectively.                                                        object detection.
+   2) We unveil the DN-FPN, designed through geometric-
+      semantic contrastive learning, a technique pioneered to                    B. Advancements in FPNs
+      mitigate the impact of redundant features frequently
+      encountered in FPN-based noisy feature fusion.                                Considering the multiscale concept provides great benefits
+   3) Our development of the Trans R-CNN epitomizes inno-                        to object detection, many studies aim to optimize the network
+      vation in feature discernment, utilizing a novel shuffle                   based on FPN [17]. For example, Gong et al. [18] propose
+      unfolding technique, MTE, and task token selection                         an efficient fusion factor to reweight feature maps during the
+      (TTS) mechanism to foster a more holistic and detailed                     fusion process since semantic information of small objects
+      feature extraction, enhancing both local and global dis-                   can be attenuated by an effective fusion factor to reduce the
+      criminative features.                                                      information from the top layer. Moreover, Gao et al. [38] rotate
+                                                                                 the high-level semantic feature of FPN into four different
+                                                                                 degrees, concatenating them along the channel dimension
+                        II. R ELATED W ORKS                                      and then passing through the convolution layer. In this way,
+A. Resolution Enhancement and Complex Network                                    the interactions between different perspectives of high-level
+Architectures                                                                    semantic features can further reinforce the global semantic
+                                                                                 information. Hu et al. [16] generate the FPN features by
+   Since small objects are blurry and lack detailed information,                 applying adaptive hierarchical upsampling, which can provide
+several works delve into increasing the resolution of images                     great semantic compensation to low-level features, thereby
+based on super-resolution (SR) technologies [33], [34]. For                      preventing the dilution disturbance problem caused by the
+instance, Liu et al. [33] create an SR branch to restore the                     FPN fusion. Nevertheless, the above variant FPN methods
+high-resolution image and applies feature alignment loss to                      also require extra modules or more powerful inputs, such
+preserve the high-frequency texture information. Moreover,                       as additional high-resolution images or additional modules.
+Zhang et al. [34] fuse the infrared and RGB image features to                    In contrast, the proposed DN-FPN module is only used in
+enhance the surface details and perform SR to ameliorate the                     the training phase and raises performance significantly without
+quality of small objects in remote sensing images. On the other                  increasing image resolution.
+hand, some methods present a complex network that can incor-
+porate both high-level and low-level features simultaneously.
+For instance, Liu et al. [35] propose a multidepth image pyra-                   C. Coarse-to-Fine Image Partitioning in Drone Imagery
+mid for detecting small objects based on [36]. Ye et al. [37]                    Detection
+employ the involution and self-attention to the backbone to                         Different from general object detection, drone imagery
+extract spatial features. However, these methods cause an extra                  detection [39], [40], [41], [42], [43] follows a coarse-to-
+computation cost due to using a higher resolution image or a                     fine framework to obtain more precise detection results,
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+4704415                                                                        IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 62, 2024
+
+
+
+i.e., partitioning the input images into small patches and then                  on this, DETR [26] initiates an end-to-end object detection
+using resized patches as the input for detection networks. For                   framework that relies on transformer mechanics to identify
+instance, Zhang et al. [43] split images into equal sizes with                   object boundaries although it struggles with detecting small
+overlapping parts to eliminate the discontinuity of objects at                   objects and has long training periods. To approach this issue,
+the boundaries. Moreover, Meethal et al. [42] introduce a                        Zhu et al. [49] introduce multiscale features into a deformable
+density-guided training method to obtain the density areas,                      attention module, enhancing small object detection and accel-
+which are then zoomed in to detect small and crowded objects                     erating convergence. Further improvements are achieved by
+better. Huang et al. [39] and Wei et al. [40] utilize mosaic                     Zhang et al. [50] and Li et al. [51] with the deployment of
+packing to merge multiscale images, increasing the foreground                    contrastive denoising training methods, significantly enhancing
+ratio and speeding up the inference process. Although the per-                   performance on the COCO dataset [12].
+formance gain is significant, these coarse-to-fine frameworks                       Although transformer models can better leverage self-
+require additional time consumption in the postprocessing                        attention, they are still fatally flawed in handling tiny objects.
+fusion and also produce many partial objects.                                    There is usually an imbalance between the foreground and
+                                                                                 background of remote-sensing images due to the tiny size of
+D. Developments in Loss Function Approaches for Tiny                             objects and their small proportion of the image. Additionally,
+Object Detection                                                                 tiny objects are blurry and can easily be confused with the
+                                                                                 background, as DETR-like methods use the entire feature
+   In tiny object detection, general IoU metrics are too sen-                    map as input, resulting in high FP [31]. More precisely,
+sitive to slight offsets between predicted bounding boxes and                    the self-attention layers mostly perform similarity calculations
+ground-truth data. Therefore, DotD [25] concentrates on the                      with the background, which is inefficient and confusing.
+relative distance between center points by taking the average                    To overcome this obstacle, our Trans R-CNN combines the
+size of all objects in a dataset into account as a new metric.                   advantages of RPN and self-attention, which can better capture
+NWD [22] further models bounding boxes as 2-D Gaussian                           the local and global information within the region proposal.
+distributions and uses the normalized Wasserstein distance to
+alleviate the sensitivity of the location deviation of tiny objects.                                           III. M ETHOD
+Based on NWD [22], instead of setting a fixed threshold,                            Due to the lack of pixel representation of tiny objects, their
+NWD-RKA [23] samples the top-K high-quality regions to                           representations are more sensitive to noise. Additionally, inte-
+avoid assigning a large number of negative labels. Wang                          grating the local and global information from the surrounding
+et al. [44] introduce an area-weighted loss to strengthen the                    pixels enhances the representation of tiny objects. To this end,
+learning of small objects, where the weight increases as size                    we present an effective detection framework, namely, DNTR,
+decreases.                                                                       for tiny object detection. The guiding concept of our DNTR
+                                                                                 is to leverage enhanced geometric and semantic relations,
+E. R-CNN for Small Object Detection                                              effectively capturing the local and global information within
+   Drawing inspiration from R-CNN [27], [45] underscores                         an RoI feature, thereby improving the performance of tiny
+that the proposals generated by RPN are too large for small                      objects. As such, two goals can be achieved.
+                                                                                    1) The noise of FPN features introduced during the fusion
+objects, resulting in poor efficacy. To this end, they employ
+                                                                                        can be reduced by preserving pure geometric and seman-
+the smaller anchor boxes tailored for detecting smaller objects,
+                                                                                        tic information (DN-FPN).
+aligning with the dataset’s statistical characteristics. Moreover,
+                                                                                    2) The RoI features can be better leveraged to capture
+Kisantal et al. [46] observe that the small objects are eas-
+                                                                                        local and global information, resulting in better detection
+ily mismatched with different scale anchors since the small
+                                                                                        (Trans R-CNN).
+objects have fewer samples in the training data. Thus, they
+                                                                                    Fig. 3 shows the overall structure of DNTR, where Fig. 3(a)
+adopt a strategy of copy-pasting the small objects onto images
+                                                                                 illustrates the proposed DN-FPN, which is an FPN with
+without overlap to oversample and augment the quantity
+                                                                                 geometric and semantic encoders optimized by the proposed
+of smaller objects. Furthermore, Noh et al. [47] focus on
+                                                                                 contrastive loss. This part aims to reduce the noise generated
+enlarging the proposals via SR so as to alleviate the poor
+                                                                                 during the FPN fusion process. Afterward, the FPN features
+resolution of small objects.
+                                                                                 undergo the RPN and the RoIAlign [32] to obtain the RoIs.
+                                                                                 Fig. 3(b) presents the proposed innovative detector, Trans
+F. Transformer Models Leveraging Self-Attention in Object                        R-CNN, designed to enhance local relations and capture
+Detection                                                                        more global information within an RoI. We will describe
+   ViT [30] introduces a pivotal shift in object detection,                      the DN-FPN and Trans R-CNN in detail in Sections III-A
+where images are broken down into nonoverlapping tokens                          and III-B.
+to be analyzed through transformer layers for classification
+tasks. Despite its innovation, the method faces issues due                       A. DN-FPN
+to weakened relationships between adjacent tokens, a prob-                          FPN [17] has greatly improved the development of
+lem addressed by Yuan et al. [48] through the utilization                        object detection by merging the features from different lev-
+of unfolded operations to enhance local relations. Building                      els. The fusion process at the ith level of an FPN can
+
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+LIU et al.: DeNoising FPN WITH TRANSFORMER R-CNN FOR TINY OBJECT DETECTION                                                                             4704415
+
+
+
+
+Fig. 3. Overall architecture of DNTR. We use Ci and Pi to represent the multiscale features from the backbone and DN-FPN [see (1)], respectively, where
+i denotes the levels of the multiscale feature. (a) DN-FPN module, which suppresses redundant features by geometric-semantic contrastive learning. Note that
+the Geo. and Sem. represent the geometric and semantic, respectively. (b) Trans R-CNN head, which aims to utilize the surrounding information and capture
+rich long-range dependencies within an RoI.
+
+
+
+be formulated as                                                                 Similarly, the upper-level feature Pi, j is also projected into
+        (                                                                        the geometric representation and semantic representation
+          Conv(Ci ) + Up(Pi+1 ), i = 0, . . . , L − 1                                 p      p
+   Pi =                                                                  (1)     {gi, j , si, j ∈ R256 } by the geometric and semantic encoders,
+          Conv(Ci ),             i=L                                             respectively. It is worth noting that we consider different
+where Pi represents the features in the top–down path, and                       levels and batches of geometric and semantic representations
+Ci represents the features in the bottom–up path, i.e., the                      in the contrastive loss.
+multiscale features of ResNet50 backbone3 produced by down-                           Given L levels of an FPN and B images within a mini-
+sampling (referred to as Fig. 1). Additionally, L denotes the                    batch, we decompose the feature maps of FPN into the
+                                                                                                                                                  p
+number of the levels of FPN. Conv(·) is the convolution oper-                    sets of the geometric representations G = {gi,c j , gi, j | i =
+ation for the channel reduction and Up(·) is the upsampling                      0, . . . , L; j = 0, . . . , B} and semantic representations S =
+                                                                                             p
+operation. As a consensus of FPN, the lateral features contain                   {si,c j , si, j | i = 0, . . . , L; j = 0, . . . , B}, as shown in Fig. 4.
+strong low-level information since the high-resolution feature                   Subsequently, we strive to reduce the distance between the
+maps represent the geometric representation. In contrast, the                    fusion features’ geometric information and the lateral features’
+upper-level features have abundant semantic representation                       geometric information, as the lateral feature represents undis-
+due to the deeper feature extraction.                                            turbed geometric information. Similarly, we bring the semantic
+   Since the geometric information undergoes distortion                          information of the fusion feature and upper-level feature closer
+(referred to as noise) due to channel reduction, while the                       together. Conversely, we aim to repel the geometric and
+semantic information faces similar issues due to upsampling,                     semantic information of fusion features from different levels
+we formulate the FPN noise problem as the geometric and                          and batches, which are unrelated to the fusion features.
+semantic information loss problems. To solve these problems,                          Specifically, we utilize the InfoNCE loss [52] to learn the
+we propose DN-FPN, a contrastive learning method that                            better relationship among geometric representations G, called
+eliminates noise generated by channel reduction Conv(Ci )                        geometric relation, and among semantic representations S,
+and upsampling Up(Pi+1 ). DN-FPN aims to preserve the                            called semantic relation. Establishing a better relationship
+geometric information from the lateral feature Ci and the                        between geometric and semantic representations can lead to
+semantic information from the upper-level feature Pi+1 for                       noiseless feature fusion, making the FPN structure reliable.
+eliminating the noise in the fusion feature Pi .                                 The positive and negative samples of the geometric and
+   1) Geometric and Semantic Representations: First,                             semantic relations are introduced as follows.
+                                                                                      2) Geometric Relation: As depicted in Fig. 4, the lateral
+we employ geometric and semantic encoders to extract the
+                                                                                 features Ci, j are used to provide geometric information to
+geometric and semantic information from the features
+                                                                                 the fusion feature Pi, j . Ideally, the geometric representations
+across each level of the FPN within the minibatch.
+                                                                                 from Ci, j and Pi, j should be identical. However, the channel
+Specifically, we project the lateral feature Ci, j into the
+                                                                                 reduction damages the top–down features Pi, j , which causes
+geometric representation and the semantic representation
+                                                                                 the unequal geometric information to the lateral features Ci, j .
+{gi,c j , si,c j ∈ R256 } by the geometric and semantic encoders,
+                                                                                      Given the kth level of the top–down path and the bth batch,
+respectively, where i denote the ith level of an FPN and                                                                                 p              c
+                                                                                 we regard the geometric representations gk,b (query) and gk,b
+j denotes the index of different samples in a minibatch.
+                                                                                 (positive sample) as the positive pair since the geometric
+  3 We use ResNet50 as the backbone of DNTR to compare our results with          information should be as similar as possible in the lateral
+other state-of-the-art methods easily.                                           direction.
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+4704415                                                                           IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 62, 2024
+
+
+
+
+                                                                                      p       p
+Fig. 4. Illustration of geometric and semantic relations of DN-FPN. We set the g0,1 and s0,1 as the example queries (black frames) of the geometric and
+semantic representations of the lowest fusion feature P0,1 . The geometric and semantic relations of positive and negative samples are shown in the light
+blue and light yellow oval regions, respectively. It is important to note that the queries and positive and negative samples are computed independently in
+the geometric and semantic relations, highlighted in solid and cross frames. In addition, Other denotes the representations that are not included in the loss
+function.
+
+
+
+   Conversely, we define all different levels of geometric                           Similarly, the semantic loss at the kth level for the bth batch,
+                                                                                                    p
+representations from different images within the mini-batch                        denoted by Ls (sk,b ), is derived by
+as negative samples since they have different geometric infor-
+                                                                                                                              p   p
+mation. The negative sample set for geometric relation (G − )                                                                  esk,b ·sk+1,b /τ
+                                                                                                                                                       !
+                                                                                              p 
+can be denoted by                                                                         Ls sk,b = − log          p     p                      p      .   (6)
+                                                                                                                 esk,b ·sk+1,b /τ + s∈S − esk,b ·s/τ
+                                                                                                                                       P
+                    p
+   G − = {gi,c j , gi, j | i = 0, . . . , L , j = 0, . . . , B; j ̸ = b}.   (2)
+                                                                                     The overall semantic loss can be calculated as follows:
+  As such, the geometric loss at the kth level for the bth batch,                                                      L−1 XB
+                p
+denoted by Lg (gk,b ), is derived by                                                                            1      X           p 
+                                                                                                  Lsem =                       Ls sk,b .                   (7)
+                                        p
+                                                                                                           (L − 1) × B k=0 b=0
+                                      egk,b ·gk,b /τ
+                                              c
+                                                         !
+           p 
+      Lg gk,b = − log gp ·gc /τ P                    p        (3)
+                            e k,b k,b + g∈G − egk,b ·g/τ                             In summary, Fig. 4 illustrates the detailed relation of the
+                                                                                   geometric and semantic representations. With L geo and L sem ,
+where the temperature τ is used for controlling how concen-                        the fusion feature preserves consistency with the information
+trated the features are in the representation space. The overall                   source (lateral and upper-level features). As such, tiny objects
+geometric loss can be calculated as follows:                                       can be better detected by features generated by DN-FPN.
+                                    L   B
+                               1 XX            p 
+                  Lgeo =                   Lg gk,b .                        (4)
+                             L × B k=0 b=0                                         B. Trans R-CNN
+   3) Semantic Relation: Following the concept of FPN,                                After DN-FPN obtains enhanced multiscale features, the
+upper-level features propagate rich semantic information to                        next step is to better utilize these features for tiny object
+lower-level features of the top–down path, i.e., the fusion                        detection. According to the past two-stage detection method,
+feature Pi, j . Theoretically, Pi+1, j and Pi, j should have iden-                 R-CNN [27] provides a good way to generate the RoI features
+tical semantic representations. Nonetheless, the upsampling                        for object detection, whereas the long-range dependence is
+operation may generate redundant noise, losing the semantic                        difficult to capture via fully-connected (FC) layers. Therefore,
+information. In this case, the Pi+1, j and Pi, j are no longer                     we introduce an effective detector, Trans R-CNN, which
+equivalent.                                                                        includes the shuffle unfolding mechanism, the MTE, and the
+   Thus, given the kth level of the top–down path and the                          TTS mechanism, as shown in Fig. 5. The goal of Trans R-CNN
+                                                        p
+bth batch, we regard the semantic representation sk,b (query)                      is to enhance the representations of tiny objects, as well as to
+      p
+and sk+1,b (positive sample) as a positive pair.                                   increase global information about those representations. Thus,
+   By contrast, we regard the semantic representations from                        we propose the shuffle unfolding to increase the diversity
+different images within the mini-batch as negative samples.                        of the tiny object representations and the MTE to integrate
+The negative sample set for semantic relation (S − ) can be                        masked self-attention layers to obtain global information.
+denoted by                                                                         To expand the benefits of the above methods, the TTS mech-
+                                                                                   anism is used to better handle the task-specific tokens for the
+                    p
+   S − = {si,c j , si, j | i = 0, . . . , L , j = 0, . . . , B; j ̸ = b}.   (5)    detection head.
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+LIU et al.: DeNoising FPN WITH TRANSFORMER R-CNN FOR TINY OBJECT DETECTION                                                                             4704415
+
+
+
+                                                                                 oversamples the combination of unfolded tokens by randomly
+                                                                                 concatenating them. As the unfolded tokens are concatenated
+                                                                                 from surrounding tokens, increasing feature diversity can be
+                                                                                 regarded as enhancing local information.
+                                                                                    Specifically, the raster scan order only contains the same
+                                                                                 combination of the unfolded tokens. In contrast, in shuffle
+                                                                                 order, the combination of the unfolded tokens is proportional
+                                                                                 to the size of the sliding window, which can exceed the raster
+                                                                                 scan order by K 2 ! times. Nevertheless, due to the complexity,
+                                                                                 we use the oversampling rate r to control the numbers of
+                                                                                 the generated unfolded tokens. For example, r = 4 represents
+                                                                                 4× token numbers, and another three unfolded tokens (light
+                                                                                 orange) are generated by shuffling from the original one
+                                                                                 (orange). Let ti ∈ R D denote the ith unfolded token with
+                                                                                 dimension D. The unfolded token sequence Tunfold = {ti |i =
+                                                                                 1, 2, . . . , r } can maintain the spatial correlation (tokens’ order)
+Fig. 5. Structure of Trans R-CNN, which is composed of shuffle unfolding,        within an RoI and get rich spatial information through varying
+an MTE, and a TTS mechanism. Please note that G c and G b denote the             token combinations. Note that the order of the unfolded tokens
+class-related and box-related groups.
+                                                                                 is fixed after the shuffle unfolding operation. The following
+                                                                                 operations, such as multihead self-attention (MSA) layers and
+                                                                                 FC layers, maintain this order, thereby preserving the spatial
+                                                                                 relationship of the unfolded tokens.
+                                                                                    2) Mask Transformer Encoder: Equipped with the unfolded
+                                                                                 token sequence, we further design an MTE to capture more
+                                                                                 global information within an RoI, which is an effective encoder
+                                                                                 consisting of two masked self-attention layers. First, before
+                                                                                 the attention mechanism, we concatenate the unfolded token
+                                                                                 sequence Tunfold with a class token (tcls ∈ R D ) and a box token
+                                                                                 (tbox ∈ R D ) to form a local token sequence Tl
+
+                                                                                                          Tl = {tcls , Tunfold , tbox }.                   (8)
+
+                                                                                    Note that tcls and tbox are two learnable tokens representing
+                                                                                 the task-specific token for classification and regression head,
+                                                                                 respectively. Second, in order to obtain global information, the
+                                                                                 MTE transforms the local token sequence Tl into the global
+                                                                                 token sequence Tg by the MSA layers. Specifically, Tunfold
+                                                                                 communicates with tcls and tbox via MTE to form global token
+                                                                                 sequence Tg , formulated as
+
+Fig. 6.   Comparison between raster scan order and shuffle order.
+                                                                                                  Tg = MTE(Tl ) = MSA∗×N M (Tl )
+                                                                                                                       , Tunfold , tbox
+                                                                                                                  ′       ′        ′
+                                                                                                                = tcls                                     (9)
+   1) Shuffle Unfolding: Fig. 6 illustrates the proposed shuffle
+unfolding. This algorithm aims to oversample neighboring                         where * indicates that a mask is applied to ignore the
+patch tokens, amassing them through an unfold operation that                     computation of attention scores between tcls and tbox because
+preserves intricate spatial details, a strategy pivotal in tiny                  they are irrelevant to each other. N M denotes the number
+object detection.                                                                of MSA layers. With the mask applied, the self-attention
+   After generating the RoI features by the RPN and RoIAlign,                    layers are capable of simultaneously processing class and box
+we divide each RoI feature into tokens equally with overlaps.                    information.
+This ensures that each token preserves the continuous local                         3) Task Token Selection: After obtaining a global token
+information with the surrounding tokens. Afterward, we con-                      sequence Tg , we design a TTS algorithm for evenly separat-
+catenate the tokens within the K × K sliding window as an                        ing the global unfolded token sequence into a class-related
+unfolded token to better leverage the spatial information. For                   group G c or a box-related group G b . The selected mech-
+the concatenated order, since using the raster scan order [48]                   anism is based on the importance of the unfolded token
+                                                                                                      ′                       ′
+only may limit the feature variety, we propose a shuffle order                   to the class token tcls and the box token tbox  . Specifically,
+to increase the diversity of the feature. The shuffle order                      for the ith unfolded token, we calculate the attention score
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+4704415                                                                        IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 62, 2024
+
+
+
+(αcls
+  i
+      , αbox
+         i
+             ∈ R) as follows:                                                    we evaluate our model on the COCO [12] to demonstrate
+                                         ′
+                                                    ′ T
+                                                       !                       the generalizability of the proposed DNTR. The details of the
+                            Q tcls · K ti                                        datasets are introduced as follows.
+              αcls
+               i
+                   = softmax       √                                    (10)
+                                    dk                                              1) AI-TOD: The AI-TOD dataset includes 28 036 aerial
+                               ′
+                                          T !                                        images and 700 621 instances. Moreover, 86% of objects
+                            Q tbox · K ti′
+             αbox = softmax
+              i
+                                   √                                    (11)            in the dataset are smaller than 16 pixels, the largest
+                                     dk                                                 object is smaller than 64 pixels, and the average object
+           ′
+where Q(tcls  ) and Q(tbox
+                       ′
+                           ), respectively, denote queries of class                     size is only 12.8 pixels. There are 11 214 images for
+and box tokens. Moreover, K (ti′ ) is the key of the unfolded                           training, 2804 for validation, and 14 018 for testing.
+token sequence, and dk is the dimension of the key and queries.                     2) VisDrone: VisDrone consists of 10 209 drone-shot
+For each unfolded token, we rank them by their summation                                images and is split into a training set (6471 images),
+of the attention scores and categorize them into a class-related                        a val set (548 images), and a test set (3190 images).
+group or a box-related group according to their αcls  i
+                                                          and αbox
+                                                                i                       There are ten categories, and the image resolution is
+values. The class-related group is used for the classification                          2000 × 1500 pixels. We train all the models on the
+task, and the box-related group is used for the regression task.                        training set and evaluate using the val set since the test
+The details of the TTS algorithm are shown in Algorithm 1.                              set is only available for special challenges (meaning it
+                                                                                        is not publicly available).
+                                                                                    3) COCO: This is the most popular dataset in general
+C. Overall Objective                                                                    object detection and contains 80 categories, 118k train-
+   The cross-entropy loss (LCE ) is used to optimize the clas-                          ing images, and 5k validation images. The images in
+sification task, and the smooth L 1 loss (LSmoothL1 ) is used for                       COCO are frontal-view images, unlike those captured
+bounding box regression. Moreover, the DN-FPN optimizes                                 from above by drones.
+the features by jointly using geometric loss [see (4)] and                          2) Implementation Details: This work is implemented using
+semantic loss [see (7)]. Consequently, the overall loss function                 the publicly available MMDetection [54]. During the training
+is shown in the following equation, where λ = 0.1 is                             phase, we set the input size as 800 × 800, 1333 × 800, and
+empirically used to balance the effects of different losses:                     1280 × 800 for AI-TOD, VisDrone, and COCO, respectively.
+                                                                                 Furthermore, the model is optimized by the stochastic gradient
+           Ltotal = LCE + LSmoothL1 + λ(Lgeo + Lsem ).                  (12)
+                                                                                 descent (SGD) optimizer with a learning rate of 0.01, weight
+                                                                                 decay of 0.0001, and batch size of 2. The number of epochs
+Algorithm 1 Task Token Selection                                                 is set to 36, 12, and 12 for AI-TOD, VisDrone, and COCO,
+ 1: INPUT: αcls        , αbox   , Tun                                            respectively. For hardware, we train and evaluate the models
+                                        f old , tcls , tbox
+                     i     i          ′          ′      ′
+
+ 2: G c ← {}: class-related group
+                                                                                 on a single NVIDIA RTX 3090 GPU. For the details of the
+ 3: G b ← {}: box-related group
+                                                                                 network architecture, our DNTR model is based on Detec-
+ 4: Nu : length of the unfolded token sequence
+                                                                                 toRS [1] and uses ResNet50 as the backbone. Remarkably,
+ 5: Begin:
+                                                                                 we use Cascade R-CNN instead of HTC [55] as the detector
+ 6: Ncls ← 0, Nbox ← 0
+                                                                                 of DetectoRS since we do not require the segmentation anno-
+ 7: G c ← tcls ′
+                   , G b ← tbox ′                                                tation. Additionally, the encoders in DN-FPN that project the
+ 8: Scor ei ← Sum(αcls       i
+                                , αbox
+                                    i
+                                          )                                      features into representations are composed of two convolution
+ 9: Sort Tun f old according to Scor ei in descending order
+            ′                                                                    layers and two linear layers.
+                                                                                    3) Evaluation Metrics: Following the criterion in [12], the
+                            f old ,) do
+                         ′
+10: for i in range(Tun
+                                                                                 AP, AP50 , and AP75 are used to quantitatively evaluate the
+11:     if ((αcls ≥ αbox ) and (Ncls ≤ Nu /2))
+                 i       i
+                                                                                 detection performance on the AI-TOD, VisDrone, and COCO
+12:           or (Nbox ≥ Nu /2) then
+                                                                                 datasets, respectively. To further demonstrate the performance
+13:           G c ← ti′
+                                                                                 in terms of object size, we also use APs , APm , and AP L on
+14:           Ncls ← Ncls + 1
+                                                                                 COCO. In the case of AI-TOD, due to the tiny size of the
+15:     else
+                                                                                 objects, Wang et al. [11] further subdivide the range of the
+16:           G b ← ti′
+                                                                                 object into very tiny, tiny, small, and medium. Thus, we use
+17:           Nbox ← Nbox + 1
+                                                                                 APvt , APt , APs , and APm to illustrate the performance.
+18:     end if
+19: end for
+                                                                                 B. Comparisons With the State-of-the-Art Methods
+20: RETURN G c , G b
+                                                                                    1) Experiment on AI-TOD: In Table I, we compare the
+                                                                                 performance of DNTR against other strong baselines on the
+                                                                                 AI-TOD test set. Specifically, these baselines include the
+                         IV. E XPERIMENTS
+                                                                                 state-of-the-art methods for remote sensing images [21], [22],
+A. Experimental Setup                                                            [23], [24], [25], [61], as well as the leading detectors for
+  1) Dataset: To demonstrate the effectiveness of our                            computer vision (CV) tasks [1], [2], [6], [26], [50]. Overall,
+approach, we use the datasets mainly containing tiny objects,                    our DNTR outperforms the second-best performance model
+including AI-TOD [11] and VisDrone [53]. In addition,                            RFLA [24] by at least 3.5 APvt (37.6%) and 1.6 APt (6.5%).
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+LIU et al.: DeNoising FPN WITH TRANSFORMER R-CNN FOR TINY OBJECT DETECTION                                                                             4704415
+
+
+
+                                                                           TABLE I
+Q UALITATIVE R ESULT OF THE AI-TOD T EST S ET. N OTE T HAT R ED R EFERS TO THE B EST R ESULTS , AND B LUE R EFERS TO THE S ECOND -B EST R ESULT.
+                         * D ENOTES A R EIMPLEMENTATION OF THE R ESULTS U NDER THE S AME E XPERIMENTAL S ETTING
+
+
+
+
+The performance gain is greater when the object size is smaller
+since this work focuses on detecting tiny objects. To facilitate a
+detailed analysis of the comparison results, we categorize these
+baseline methods into CNN-based models and transformer-
+based models.
+   Table I shows that the performance of all CNN-based
+detectors is below 11 APvt , and some of them even get 0 APvt .
+We attribute the poor performance of the baselines to three
+reasons.
+   1) The instance size is extremely smaller than other
+      datasets, and most of the detection models are evaluated
+      on COCO, which is targeted at generic object detection.
+      Thus, it is expected that the general detection methods
+      perform poorly on AI-TOD.
+   2) Due to the redundant noise caused by FPN, the per-                         Fig. 7. Noise analysis of feature maps between different methods on the
+                                                                                 AI-TOD test set and VisDrone val set.
+      formance of baselines deteriorates on APvt due to tiny
+      objects’ sensitivity to noise.4
+   3) The existing CNN methods are bad at capturing global                       (APm ). Conversely, ATSS and DetectoRS are good at handling
+      information. In contrast, with our Trans R-CNN design,                     large objects (APm ) but are bad at handling tiny objects (APvt ).
+      the AP can be further improved, especially for the APvt .                  Our DNTR outstandingly improves the ability to detect tiny
+Moreover, the existing CNN models may suffer from a tradeoff                     objects while still maintaining performance when detecting
+between detecting tiny and large objects. For example, DoTD                      large objects.
+and Sparse R-CNN are particularly good at handling tiny                             On the other hand, we also compare the performance of
+objects (APvt ) but perform poorly at handling larger ones                       DNTR with the DETR-like models, which are the state-of-the-
+                                                                                 art transformer-based detection models. The transformer-based
+  4 The feature map’s noise is explored in the ablation study (see Figs. 7–9).   models perform poorly without the multiscale deformable
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+4704415                                                                        IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 62, 2024
+
+
+
+                                 TABLE II                                                                         TABLE IV
+          C OMPARISON OF THE DNTR W ITH A L ARGER BACKBONE                       Q UANTITATIVE R ESULT ON THE V IS D RONE VAL S ET. N OTE T HAT R ED
+                       ON THE AI-TOD T EST S ET                                        R EFERS TO THE B EST R ESULTS , AND B LUE R EFERS TO THE
+                                                                                       S ECOND -B EST R ESULT. * D ENOTES A R EIMPLEMENTATION
+                                                                                           OF THE R ESULTS U NDER THE S AME E XPERIMENTAL
+                                                                                              S ETTING . CS AND MP I NDICATE THE C ROPPING
+                                                                                           S TRATEGIES AND M OSAIC PACKING , R ESPECTIVELY
+
+
+
+
+                                TABLE III
+     C OMPARISON OF DNTR W ITH A L ARGER R ESOLUTION ON THE
+           AI-TOD T EST S ET. N OTE T HAT L D ENOTES THE
+                  R ESOLUTION W ITH 1000 × 1000
+
+
+
+
+attention module. Although the benefits from [49] reap a
+significant improvement in overall performance, their ability
+to detect tiny objects still remains below 10 APvt as the
+encoders still extract multiscale features with noise. Further-                  with and without cropping strategies. The top part of Table IV
+more, a DETR-like model’s decoder processes box and class                        shows that DNTR reaches the state-of-the-art performance
+information within the same self-attention layer, increasing the                 without using any cropping strategies. DNTR without cropping
+difficulty of the detection task. In contrast, the proposed Trans                strategies, respectively, outperforms the DetectoRS (the degen-
+R-CNN ingeniously integrates the box and class tokens by a                       erated model of DNTR) by 10.8 AP (48.4%) and 13.7 AP50
+masking mechanism to boost the performance.                                      (34.2%). However, with the cropping strategies (bottom part
+   Table II further investigates the performance with the larger                 of Table IV), our DNTR’s performance slightly lags behind
+backbone and larger resolution. The larger backbones include                     that of the state-of-the-art method, UFPMP [39], due to
+ResNet101, ResNeXt [64], and the Swin transformer [65].                          its utilization of a two-stage pipeline instead of an end-to-
+The results demonstrate that the AP barely improves for all                      end model. Specifically, they use one network for mosaic
+the larger backbones. For the overall AP, the highest one                        packaging (prepossessing) and the other network for object
+is DNTR using ResNet101. However, it only gains 0.2 AP,                          detection (postprocessing). Thus, we also apply our DN-FPN
+which is a negligible improvement. This is because the larger                    modules on UFPMP [39] to utilize their cropping strategy and
+backbones require more downsampling operations, leading to                       achieve the state-of-the-art performance. The results manifest
+serious damage to the representation of tiny objects, i.e., they                 that our DNTR model (or only with the DN-FPN module) is
+are easily lost after downsampling [14], [15]. Note that the                     capable of highlighting tiny objects from images.
+mean size of the objects in AI-TOD is 12.8 pixels, while                            3) Experiments on COCO: To further demonstrate the
+the size of the largest object in AI-TOD is still smaller than                   generalization ability of DNTR, we also evaluate the proposed
+64 pixels, which is much smaller than other datasets. As such,                   method on the COCO dataset, as shown in Table V. Based on
+the larger backbone may be weak at detecting objects of                          the statistics of dataset [11], [12], [71], the absolute size and
+all sizes in AI-TOD. In line with the observation, DNTR                          relative size of most instances in COCO are far greater than
+surpasses all other larger models in terms of APvt . Meanwhile,                  those of the other tiny object datasets (e.g., AI-TOD). For a
+we increase the images from 800 × 800 to 1000 × 1000 by                          fair comparison, the resolution of DNTR we used in COCO
+bilinear upsampling during training with ResNet50 backbone.                      is 1280 × 800 with ResNet50 as the backbone, which is the
+According to Table III, the performance of DetectoRS and                         same as all the counterparts in Table V. Remarkably, the AP L
+DNTR is improved with 3.5 and 2.8 in terms of AP, and                            of DNTR still has a competitive advantage over CNN-based
+4.2 and 4.5 in terms of APvt , respectively. This suggests that                  and DETR-like models. The results manifest that the proposed
+increasing the input resolution brings more advantages to tiny                   method is feasible and effective for objects of a general size.
+objects than using a larger backbone.
+   2) Experiments on VisDrone: Table IV shows the perfor-
+mance of different models on the VisDrone val set. The                           C. Ablation Studies
+evaluation tool and the dataset settings follow the official                        1) Effectiveness of Individual Component: Table VI shows
+guidelines [66]. Since drone-shot images require cropping                        the ablation studies of different components in DNTR on
+strategies for making foreground features become more notice-                    the AI-TOD test set, including DN-FPN, MTE, and TTS.
+able after resizing the subimages, we conduct an experiment                      The results demonstrate that DN-FPN context information
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+LIU et al.: DeNoising FPN WITH TRANSFORMER R-CNN FOR TINY OBJECT DETECTION                                                                             4704415
+
+
+
+                                                                          TABLE V
+Q UANTITATIVE R ESULT ON THE COCO VAL S ET. N OTE T HAT R ED R EFERS TO THE B EST R ESULTS , AND B LUE R EFERS TO THE S ECOND -B EST R ESULT.
+                        * D ENOTES A R EIMPLEMENTATION OF THE R ESULTS U NDER THE S AME E XPERIMENTAL S ETTING
+
+
+
+
+                                TABLE VI                                                                         TABLE VIII
+A BLATION S TUDY OF O UR A RCHITECTURE ON THE AI-TOD T EST S ET.                    C OMPARISON B ETWEEN D IFFERENT M ODELS W ITH THE P ROPOSED
+  P LEASE N OTE T HAT THE MTE I NDICATES THE M ASK T RANSFORMER                                  DN-FPN ON THE AI-TOD T EST S ET
+      E NCODER , AND TTS I NDICATES THE TASK T OKEN S ELECTION
+
+
+
+
+                                TABLE VII
+C OMPARISONS OF THE C OMPUTATIONAL C OMPLEXITY OF DN-FPN W ITH
+  OTHER E NHANCED FPN M ETHODS ON THE AI-TOD T EST S ET. N OTE
+      T HAT THE PARAMETERS AND FLOP S R ESULTS O NLY S HOW
+              THE A DDITIONAL M ODULE BASED ON FPN
+                 ( SEE TABLE VI FOR T OTAL FLOP S )
+
+
+
+
+                                                                                 the FPN features by an extra offset network, which learns the
+                                                                                 alignment between the high-level and low-level features.
+propagation within FPN boosts the performance of tiny object                        3) Effectiveness of the DN-FPN Module: Since the pro-
+detection. Compared to the baseline, which is NWD [22],                          posed DN-FPN improves FPN without introducing additional
+the performance is improved by 4.8 AP (23.0%), 4.0 APvt                          FLOPs and parameters, FPN in other models can be easily
+(62.5%), 6.3 APt (32.0%), and 0.3 APs (1.0%) with the                            augmented by DN-FPN to enhance performance. Table VIII
+DN-FPN only. Moreover, MTE increases APvt from 10.4 to                           shows the performance of different detection methods with
+12.7 by better leveraging the global information. Lastly, TTS                    the proposed DN-FPN. The results show that the proposed
+can raise the AP slightly and reach the state-of-the-art per-                    DN-FPN benefits different models, including one-stage models
+formance. For the model complexity, DNTR improves the                            (i.e., FoveaBox, ATSS, and YOLOv8s) and two-stage mod-
+overall performance considerably with a bit of floating point                    els (Faster R-CNN, Double Head R-CNN, and DetectoRS).
+operations (FLOPs) overhead.                                                     As such, DN-FPN is a better neck and can be used as a
+   2) Complexity Analysis of the DN-FPN Module: Table VII                        plug-and-play module. It is worth noting that DetectoRS has
+shows the comparison of the proposed DN-FPN with other                           a recursive feature pyramid structure (two FPNs). Thus, it can
+methods that enhance FPN modules in terms of AP, model                           benefit from the noise reduction capability of DN-FPN twice,
+size, and FLOPs on the AI-TOD dataset. The results demon-                        improving 10.8 AP and the 10.4 APvt .
+strate that our DN-FPN does not use any extra parameters and                        4) Efficiency Analysis of the DNTR: In evaluating the
+FLOPs on FPN while improving AP and APvt by 10.7 (71.8%)                         effectiveness of different object detection models, we present
+and 7.9 (316.0%) as compared to the FA2 M module. This is                        a comparative analysis in terms of inference speed (measured
+because the geometric and semantic encoders in DN-FPN are                        in frames per second, FPS) and computational complexity
+only used in the training stage for producing denoising features                 (quantified as FLOPs) between our proposed DNTR and other
+and are discarded during the inference. In contrast, to enhance                  established baseline methods, as shown in Table IX. Our
+the spatial information of tiny objects,Wu et al. [21] aggregate                 DNTR demonstrates superior AP across all tested models.
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+4704415                                                                        IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 62, 2024
+
+
+
+                                TABLE IX                                                                          TABLE XI
+C OMPARISON OF THE E FFICIENCY OF DNTR ON THE AI-TOD T EST S ET.                 U NFOLDING O RDER AND THE N UMBER OF U NFOLDED T OKENS ON THE
+  N OTE T HAT DN-FPN I S E LIMINATED D URING THE I NFERENCE S TAGE ,                  AI-TOD T EST S ET. N OTE T HAT THE 1× AND 4× D ENOTE THE
+              T HUS I NCURRING N O A DDITIONAL C OST IN                                         OVERSAMPLING R ATE OF T OKENS (r )
+                       T ERMS OF FPS AND FLOP S
+
+
+
+
+                                                                                 the AP increases more with the proposed shuffle unfolding.
+                                                                                 This is because the shuffle unfolding operation brings more
+                                                                                 variety to object representation. Consequently, we use shuffle
+                                                                                 order with 64 tokens as our detail setting in the Trans R-CNN
+                                 TABLE X
+                                                                                 detector.
+          A BLATION ON THE C OEFFICIENT OF THE T RAINING L OSS
+
+
+                                                                                 D. Visualization
+                                                                                    To further validate the denoising capability of our DN-FPN,
+                                                                                 we propose to leverage the peak signal-to-noise ratio (PSNR)
+                                                                                 to evaluate the noise level of the feature maps. By first creating
+                                                                                 a target image (zero matrix) with the shape H × W × 1,
+                                                                                 where H and W denote the height and width, respectively,
+                                                                                 we project the center points of the ground-truth bounding
+However, it does not achieve the highest inference speed.                        boxes onto the target image. The Gaussian kernel (with a stan-
+Notably, models based on the YOLO and DETR architectures                         dard deviation parameter of 4) is applied to each center point
+exhibit higher FPS rates but compromise on AP scores,                            on the target image, transforming it into the target feature.
+especially in the context of APvt , which measures the precision                    Next, we select the bottom feature map, characterized by a
+for detecting very tiny objects.                                                 dimension of H × W × 256, from the top–down path of the
+   It is important to emphasize that the primary goal of our                     FPN as the distorted image used for PSNR calculation, lever-
+research is to enhance the detection performance of tiny                         aging its heightened utility in tiny object detection. To compute
+objects through the DNTR model. Considering the balance                          the PSNR with target features, we select the maximum value
+between accuracy and inference speed, we further integrate                       among 256 channels at each position to transform the feature
+DN-FPN with YOLOv8s by substituting the PAN-FPN [73]                             maps to H × W × 1. By doing so, the feature map is trans-
+with our DN-FPN. The integration results, as detailed in                         formed into the response feature. Consequently, we compute
+Table IX, reveal that YOLOv8s equipped with DN-FPN                               the PSNR between the target feature and the response feature.
+not only matches the original speed of YOLOv8s but also                          A higher PSNR reflects a higher feature quality, resulting in
+significantly improves detection accuracy, with increases of                     better detection ability for tiny objects.
+61.2%, 59.1%, and 97.1% in AP, AP50 , and APvt scores,                              The average PSNR of the dataset is represented by PSNRave .
+respectively. In conclusion, the proposed DNTR sets a new                        Fig. 7 compares PSNRave of our DNTR with different
+benchmark for tiny object detection in terms of accuracy,                        methods. Our approach significantly outperforms Deformable-
+while a modified YOLOv8s integrated with DN-FPN offers                           DETR [49] and NWD-RKA [23] on both AI-TOD and
+a competitive solution that does not compromise on speed.                        VisDrone datasets. The performance of Deformable-DETR is
+   5) Coefficient of the Training Objective: During training,                    much worse than that of other methods, which aligns with
+we observed that the summation of the geometric and semantic                     our earlier description. Consequently, we visualize the target
+loss tends to dominate the overall loss, which neglects the                      and response features of Deformable-DETR, NWD-RKA, and
+classification and detection loss, resulting in a reduction of                   DNTR on the AI-TOD dataset in Fig. 8. The results demon-
+the AP. Hence, we employ a coefficient λ to restrict the                         strate that the proposed DN-FPN reduces noise effectively,
+influence of geometric and semantic loss, as shown in Table X.                   while the proposed Trans R-CNN concentrates more on fore-
+Accordingly, an elevation of λ leads to a decrease in AP, yet                    ground objects than the background. In contrast, the response
+the adjustment of the coefficient λ exhibits low sensitivity to                  features of Deformable-DETR and NWD-RKA show attention
+overall performance. Consequently, we select λ to 0.1, which                     to the background, which is regarded as the noise in the
+achieves the highest APvt .                                                      feature maps. Moreover, DNTR better detects tiny bounding
+   6) Unfolding Order and the Number of Unfolded Tokens:                         boxes than its counterparts since the results yield more truth
+Here, we investigate the effect of shuffle unfolding and the                     positives and fewer false negatives. Another observation is
+number of unfolded tokens. Table XI shows the comparison                         that Deformable-DETR contains a lot of background responses
+of the raster scan order and the proposed shuffle order, which                   since DETR-like methods do not apply the RPN to filter out
+manifests that these two approaches obtain a similar AP under                    the unimportant areas, leading to FP [31].
+the basic token number (1×), i.e., 16 tokens within an RoI                          To demonstrate DNTR’s robustness, we also visualize the
+feature. However, when the oversampling is applied on tokens,                    detection and their corresponding response feature results on
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+LIU et al.: DeNoising FPN WITH TRANSFORMER R-CNN FOR TINY OBJECT DETECTION                                                                             4704415
+
+
+
+
+Fig. 8. Visualization of model results on the AI-TOD test set. The first column shows the original images and their target features. The rest of the columns
+are within detection results and corresponding response features. We compare the results of Deformable-DETR, NWD-RKA, and DNTR. The green, cyan,
+and red boxes indicate true positives (TP), FP, and false negatives (FN), respectively, while Def-DETR stands for Deformable-DETR. Our DNTR evidently
+outperforms in both detection results and the quality of response features.
+
+
+
+                                                                                 adeptly mitigates noise through geometric-semantic con-
+                                                                                 trastive learning. Simultaneously, the Trans R-CNN facet
+                                                                                 excels in global information aggregation via the MTE and
+                                                                                 finetunes discriminative feature extraction through the inno-
+                                                                                 vative TTS mechanism. The experimental results show that
+                                                                                 the proposed DNTR outstripped contemporaries on the AI-
+                                                                                 TOD and VisDrone datasets, recording AP scores of 26.2%
+                                                                                 and 33.1%, respectively, thereby asserting its state-of-the-art
+                                                                                 stature. While our development signals a significant stride
+                                                                                 in tiny object detection, it also casts a spotlight on the
+                                                                                 prevailing challenges faced by full transformer detectors
+                                                                                 in this specialized domain, as evidenced by the relative
+Fig. 9. Visualization of the model results on the (a) VisDrone val set and
+(b) COCO val set. The upper and lower rows display the detection and feature     underperformance of DETR-like techniques on the AI-TOD
+response results of DNTR and the DetectoRS, respectively. Note that the          dataset. We recognize this as a critical frontier for fur-
+green, red, and cyan boxes denote the TP, FP, and FN of the detection results.   ther advancements and pledge to deepen our exploration in
+                                                                                 this direction, harboring aspirations to enhance DNTR fur-
+                                                                                 ther. In summary, DNTR not only carves out a promising
+the VisDrone and COCO datasets, as illustrated in Fig. 9(a)                      trajectory for future research but establishes a benchmark
+and 9(b), respectively. Under the findings from the detection                    in tiny object detection, nudging the scientific community
+results, our DNTR consistently obtains fewer FP and false                        toward innovative solutions that bridge existing gaps in the
+negatives in the detection results across both the VisDrone                      field.
+val set and COCO val set. Moreover, the response features of
+DetectoRS still exhibit a significant response to the cluttered                                                R EFERENCES
+background. In contrast, our model can effectively disregard                      [1] S. Qiao, L.-C. Chen, and A. Yuille, “DetectoRS: Detecting objects with
+the background and focus solely on the relevant foreground                            recursive feature pyramid and switchable atrous convolution,” in Proc.
+information. This observation is consistent with the findings                         IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2021,
+                                                                                      pp. 10208–10219.
+obtained from the AI-TOD dataset.                                                 [2] S. Ren, K. He, R. Girshick, and J. Sun, “Faster R-CNN: Towards
+                                                                                      real-time object detection with region proposal networks,” IEEE
+                                                                                      Trans. Pattern Anal. Mach. Intell., vol. 39, no. 6, pp. 1137–1149,
+                           V. C ONCLUSION                                             Jun. 2017.
+                                                                                  [3] Z. Cai and N. Vasconcelos, “Cascade R-CNN: Delving into high
+   We introduce DNTR, a two-stage model optimized for                                 quality object detection,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern
+tiny object detection. The design of the DN-FPN module                                Recognit., Jun. 2018, pp. 6154–6162.
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+4704415                                                                            IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 62, 2024
+
+
+
+ [4] T.-Y. Lin, P. Goyal, R. Girshick, K. He, and P. Dollár, “Focal loss for        [28] Y. Xue et al., “SmallTrack: Wavelet pooling and graph enhanced
+     dense object detection,” in Proc. IEEE Int. Conf. Comput. Vis. (ICCV),              classification for UAV small object tracking,” IEEE Trans. Geosci.
+     Oct. 2017, pp. 2999–3007.                                                           Remote Sens., vol. 61, 2023, Art. no. 5618815.
+ [5] Z. Tian, C. Shen, H. Chen, and T. He, “FCOS: Fully convolutional               [29] J. Li, H. Zhang, R. Song, W. Xie, Y. Li, and Q. Du, “Structure-
+     one-stage object detection,” in Proc. IEEE/CVF Int. Conf. Comput. Vis.              guided feature transform hybrid residual network for remote sensing
+     (ICCV), Oct. 2019, pp. 9626–9635.                                                   object detection,” IEEE Trans. Geosci. Remote Sens., vol. 60, 2022,
+ [6] T. Kong, F. Sun, H. Liu, Y. Jiang, L. Li, and J. Shi, “FoveaBox: Beyound            Art. no. 5610713.
+     anchor-based object detection,” IEEE Trans. Image Process., vol. 29,           [30] A. Dosovitskiy et al., “An image is worth 16×16 words: Transformers
+     pp. 7389–7398, 2020.                                                                for image recognition at scale,” in Proc. IEEE Conf. Int. Conf. Learn.
+                                                                                         Represent., Apr. 2021.
+ [7] W. Sun, L. Dai, X. Zhang, P. Chang, and X. He, “RSOD: Real-time
+     small object detection algorithm in UAV-based traffic monitoring,” Appl.       [31] Y.-X. Huang, H.-I. Liu, H.-H. Shuai, and W.-H. Cheng, “DQ-
+     Intell., vol. 52, no. 8, pp. 8448–8463, Jun. 2022.                                  DETR: DETR with dynamic query for tiny object detection,” 2024,
+                                                                                         arXiv:2404.03507.
+ [8] H. Fang, Z. Liao, X. Wang, Y. Chang, and L. Yan, “Differentiated
+                                                                                    [32] K. He, G. Gkioxari, P. Dollár, and R. Girshick, “Mask R-CNN,” in Proc.
+     attention guided network over hierarchical and aggregated features for
+                                                                                         IEEE Int. Conf. Comput. Vis. (ICCV), Oct. 2017, pp. 2980–2988.
+     intelligent UAV surveillance,” IEEE Trans. Ind. Informat., vol. 19, no. 9,
+     pp. 9909–9920, Sep. 2023.                                                      [33] F. Liu et al., “ESRTMDet: An end-to-end super-resolution enhanced
+                                                                                         real-time rotated object detector for degraded aerial images,” IEEE J.
+ [9] H. Zhao, H. Zhang, and Y. Zhao, “YOLOv7-sea: Object detection                       Sel. Topics Appl. Earth Observ. Remote Sens., vol. 16, pp. 4983–4998,
+     of maritime UAV images based on improved YOLOv7,” in Proc.                          2023.
+     IEEE/CVF Winter Conf. Appl. Comput. Vis. Workshops (WACVW),
+                                                                                    [34] J. Zhang, J. Lei, W. Xie, Z. Fang, Y. Li, and Q. Du, “SuperY-
+     Jan. 2023, pp. 233–238.
+                                                                                         OLO: Super resolution assisted object detection in multimodal remote
+[10] B. Bosquet, M. Mucientes, and V. M. Brea, “STDnet: Exploiting high                  sensing imagery,” IEEE Trans. Geosci. Remote Sens., vol. 61, 2023,
+     resolution feature maps for small object detection,” Eng. Appl. Artif.              Art. no. 5605415.
+     Intell., vol. 91, May 2020, Art. no. 103615.                                   [35] Z. Liu, G. Gao, L. Sun, and Z. Fang, “HRDNet: High-resolution detec-
+[11] J. Wang, W. Yang, H. Guo, R. Zhang, and G.-S. Xia, “Tiny object                     tion network for small objects,” in Proc. IEEE Int. Conf. Multimedia
+     detection in aerial images,” in Proc. 25th Int. Conf. Pattern Recognit.             Expo. (ICME), Jul. 2021, pp. 1–6.
+     (ICPR), Jan. 2021, pp. 3791–3798.                                              [36] J. Wang et al., “Deep high-resolution representation learning for visual
+[12] T. Lin et al., “Microsoft COCO: Common objects in context,” in Proc.                recognition,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 43, no. 10,
+     Eur. Conf. Comput. Vis., Aug. 2014, pp. 740–755.                                    pp. 3349–3364, Oct. 2020.
+[13] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning for               [37] T. Ye, W. Qin, Y. Li, S. Wang, J. Zhang, and Z. Zhao, “Dense and small
+     image recognition,” in Proc. IEEE Conf. Comput. Vis. Pattern Recognit.              object detection in UAV-vision based on a global–local feature enhanced
+     (CVPR), Jun. 2016, pp. 770–778.                                                     network,” IEEE Trans. Instrum. Meas., vol. 71, pp. 1–13, 2022.
+[14] Z. Liu, G. Gao, L. Sun, and L. Fang, “IPG-Net: Image pyramid guidance          [38] T. Gao, Q. Niu, J. Zhang, T. Chen, S. Mei, and A. Jubair, “Global to
+     network for small object detection,” in Proc. IEEE/CVF Conf. Comput.                local: A scale-aware network for remote sensing object detection,” IEEE
+     Vis. Pattern Recognit. Workshops (CVPRW), Jun. 2020, pp. 4422–4430.                 Trans. Geosci. Remote Sens., vol. 61, 2023, Art. no. 5615614.
+[15] C. Yang, Z. Huang, and N. Wang, “QueryDet: Cascaded sparse                     [39] Y. Huang, J. Chen, and D. Huang, “UFPMP-det: Toward accurate and
+     query for accelerating high-resolution small object detection,” in Proc.            efficient object detection on drone imagery,” Proc. AAAI Conf. Artif.
+     IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2022,                    Intell., vol. 36, no. 1, Jun. 2022, pp. 1026–1033.
+     pp. 13658–13667.                                                               [40] Z. Wei, C. Duan, X. Song, Y. Tian, and H. Wang, “AMRNet: Chips aug-
+[16] X. Hu, W. Xu, Y. Gan, J. Su, and J. Zhang, “Towards disturbance                     mentation in aerial images object detection,” 2020, arXiv:2009.07168.
+     rejection in feature pyramid network,” IEEE Trans. Artif. Intell., vol. 4,     [41] F. Yang, H. Fan, P. Chu, E. Blasch, and H. Ling, “Clustered object
+     no. 4, pp. 946–958, Aug. 2023.                                                      detection in aerial images,” in Proc. IEEE/CVF Int. Conf. Comput. Vis.
+[17] T. Y. Lin, P. Dollàr, R. Girshick, K. He, B. Hariharan, and S. Belongie,            (ICCV), Oct. 2019, pp. 8311–8320.
+     “Feature pyramid networks for object detection,” in Proc. IEEE Conf.           [42] A. Meethal, E. Granger, and M. Pedersoli, “Cascaded zoom-in detector
+     Comput. Vis. Pattern Recognit., Jul. 2017, pp. 2117–2125.                           for high resolution aerial images,” in Proc. IEEE/CVF Conf. Comput.
+[18] Y. Gong, X. Yu, Y. Ding, X. Peng, J. Zhao, and Z. Han, “Effective fusion            Vis. Pattern Recognit. Workshops (CVPRW), Jun. 2023, pp. 2045–2054.
+     factor in FPN for tiny object detection,” in Proc. IEEE/CVF Winter Conf.       [43] Y. Zhang, C. Wu, W. Guo, T. Zhang, and W. Li, “CFANet: Efficient
+     Appl. Comput. Vis., Jan. 2021, pp. 1160–1168.                                       detection of UAV image based on cross-layer feature aggregation,” IEEE
+                                                                                         Trans. Geosci. Remote Sens., vol. 61, 2023, Art. no. 5608911.
+[19] J. Ma and B. Chen, “Dual refinement feature pyramid networks for
+     object detection,” 2020, arXiv:2012.01733.                                     [44] P. Wang, X. Sun, W. Diao, and K. Fu, “FMSSD: Feature-merged
+                                                                                         single-shot detection for multiscale objects in large-scale remote sens-
+[20] D. Liu, J. Liang, T. Geng, A. Loui, and T. Zhou, “Tripartite feature                ing imagery,” IEEE Trans. Geosci. Remote Sens., vol. 58, no. 5,
+     enhanced pyramid network for dense prediction,” IEEE Trans. Image                   pp. 3377–3390, May 2020.
+     Process., vol. 32, pp. 2678–2692, 2023.
+                                                                                    [45] C. Chen, M.-Y. Liu, O. Tuzel, and J. Xiao, “R-CNN for small object
+[21] J. Wu, Z. Pan, B. Lei, and Y. Hu, “FSANet: Feature-and-spatial-aligned              detection,” in Proc. Asian Conf. Comput. Vis. Cham, Switzerland:
+     network for tiny object detection in remote sensing images,” IEEE Trans.            Springer, 2017, pp. 214–230.
+     Geosci. Remote Sens., vol. 60, 2022, Art. no. 5630717.
+                                                                                    [46] M. Kisantal, Z. Wojna, J. Murawski, J. Naruniec, and K. Cho, “Aug-
+[22] J. Wang, C. Xu, W. Yang, and L. Yu, “A normalized Gaussian Wasser-                  mentation for small object detection,” 2019, arXiv:1902.07296.
+     stein distance for tiny object detection,” 2021, arXiv:2110.13389.
+                                                                                    [47] J. Noh, W. Bae, W. Lee, J. Seo, and G. Kim, “Better to follow, follow
+[23] C. Xu, J. Wang, W. Yang, H. Yu, L. Yu, and G.-S. Xia, “Detecting tiny               to be better: Towards precise supervision of feature super-resolution
+     objects in aerial images: A normalized Wasserstein distance and a new               for small object detection,” in Proc. IEEE/CVF Int. Conf. Comput. Vis.
+     benchmark,” ISPRS J. Photogramm. Remote Sens., vol. 190, pp. 79–93,                 (ICCV), Oct. 2019, pp. 9724–9733.
+     Aug. 2022.                                                                     [48] L. Yuan et al., “Tokens-to-token ViT: Training vision transformers from
+[24] C. Xu, J. Wang, W. Yang, H. Yu, L. Yu, and G. Xia, “RFLA: Gaussian                  scratch on ImageNet,” in Proc. IEEE/CVF Int. Conf. Comput. Vis.
+     receptive field based label assignment for tiny object detection,” in Proc.         (ICCV), Oct. 2021, pp. 538–547.
+     Eur. Conf. Comput. Vis., Aug. 2022, pp. 526–543.                               [49] X. Zhu, W. Su, L. Lu, B. Li, X. Wang, and J. Dai, “Deformable DETR:
+[25] C. Xu, J. Wang, W. Yang, and L. Yu, “Dot distance for tiny object                   Deformable transformers for end-to-end object detection,” in Proc. IEEE
+     detection in aerial images,” in Proc. IEEE/CVF Conf. Comput. Vis.                   Conf. Int. Conf. Learn. Represent., Apr. 2021.
+     Pattern Recognit. Workshops (CVPRW), Jun. 2021, pp. 1192–1201.                 [50] H. Zhang et al., “DINO: DETR with improved denoising anchor boxes
+[26] N. Carion, F. Massa, G. Synnaeve, N. Usunier, A. Kirillov, and                      for end-to-end object detection,” in Proc. Int. Conf. Learn. Represent.,
+     S. Zagoruyko, “End-to-end object detection with transformers,” in Proc.             Apr. 2023.
+     Eur. Conf. Comput. Vis., Aug. 2020, pp. 213–229.                               [51] F. Li, H. Zhang, S. Liu, J. Guo, L. M. Ni, and L. Zhang, “DN-DETR:
+[27] R. Girshick, J. Donahue, T. Darrell, and J. Malik, “Rich feature hierar-            Accelerate DETR training by introducing query DeNoising,” in Proc.
+     chies for accurate object detection and semantic segmentation,” in Proc.            IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2022,
+     IEEE Conf. Comput. Vis. Pattern Recognit., Jun. 2014, pp. 580–587.                  pp. 13609–13617.
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+LIU et al.: DeNoising FPN WITH TRANSFORMER R-CNN FOR TINY OBJECT DETECTION                                                                                 4704415
+
+
+
+[52] K. He, H. Fan, Y. Wu, S. Xie, and R. Girshick, “Momentum contrast for                                    Yu-Wen Tseng received the B.S. degree from the
+     unsupervised visual representation learning,” in Proc. IEEE/CVF Conf.                                    Undergraduate Honors Program of Electrical Engi-
+     Comput. Vis. Pattern Recognit. (CVPR), Jun. 2020, pp. 9726–9735.                                         neering and Computer Science, National Yang Ming
+[53] D. Du et al., “VisDrone-DET2019: The vision meets drone object                                           Chiao Tung University (NYCU), Hsinchu, Taiwan,
+     detection in image challenge results,” in Proc. IEEE/CVF Int. Conf.                                      in 2021, where he is currently pursuing the master’s
+     Comput. Vis. Workshop (ICCVW), Oct. 2019, pp. 213–226.                                                   degree.
+[54] (2018). Mmdetection-Detectors. [Online]. Available: https://github.                                        His research interests include visual perception in
+     com/open-mmlab/mmdetection/tree/master/configs/detectors                                                 2-D and 3-D scenarios.
+[55] K. Chen et al., “Hybrid task cascade for instance segmentation,” in Proc.
+     IEEE/CVF Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2019,
+     pp. 4969–4978.
+[56] Y. Wu et al., “Rethinking classification and localization for object                                     Kai-Cheng Chang received the B.S. degree
+     detection,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.                                       from the Department of Electrical Engineer-
+     (CVPR), Jun. 2020, pp. 10183–10192.                                                                      ing, National Chung Hsing University (NCHU),
+[57] G. Jocher, A. Chaurasia, and J. Qiu. (Jan. 2023). Ultralytics YOLO.                                      Taichung, Taiwan, in 2021. He is currently pursuing
+     [Online]. Available: https://github.com/ultralytics/ultralytics                                          the master’s degree with National Yang Ming Chiao
+[58] S. Zhang, C. Chi, Y. Yao, Z. Lei, and S. Z. Li, “Bridging the gap between                                Tung University (NYCU), Hsinchu, Taiwan.
+     anchor-based and anchor-free detection via adaptive training sample                                        His research interests include domain adaptation
+     selection,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.                                       and traffic light detection.
+     (CVPR), Jun. 2020, pp. 9756–9765.
+[59] X. Zhou, V. Koltun, and P. Krähenbühl, “Probabilistic two-stage detec-
+     tion,” 2021, arXiv:2103.07461.
+[60] P. Sun et al., “Sparse R-CNN: End-to-end object detection with learnable                                 Pin-Jyun Wang received the B.S. degree from
+     proposals,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.                                       the Department of Electronics Engineering, National
+     (CVPR), Jun. 2021, pp. 14449–14458.                                                                      Yang Ming Chiao Tung University (NYCU),
+[61] G. Guo, P. Chen, X. Yu, Z. Han, Q. Ye, and S. Gao, “Save the tiny,                                       Hsinchu, Taiwan, in 2024.
+     save the all: Hierarchical activation network for tiny object detection,”                                  His research interests include deep learning and
+     IEEE Trans. Circuits Syst. Video Technol., vol. 34, no. 1, pp. 221–234,                                  crowded object detection.
+     Jan. 2024.
+[62] D. Meng et al., “Conditional DETR for fast training convergence,” in
+     Proc. IEEE/CVF Int. Conf. Comput. Vis., Oct. 2021, pp. 3651–3660.
+[63] S. Liu et al., “DAB-DETR: Dynamic anchor boxes are better queries for
+     DETR,” in Proc. IEEE Conf. Int. Conf. Learn. Represent., Apr. 2022.
+[64] S. Xie, R. Girshick, P. Dollár, Z. Tu, and K. He, “Aggregated residual                                    Hong-Han Shuai (Member, IEEE) received the
+     transformations for deep neural networks,” in Proc. IEEE Conf. Comput.                                    B.S. degree from the Department of Electrical Engi-
+     Vis. Pattern Recognit. (CVPR), Jul. 2017, pp. 5987–5995.                                                  neering, National Taiwan University (NTU), Taipei,
+[65] Z. Liu et al., “Swin transformer: Hierarchical vision transformer using                                   Taiwan, in 2007, the M.S. degree in computer sci-
+     shifted windows,” in Proc. IEEE/CVF Int. Conf. Comput. Vis. (ICCV),                                       ence from NTU, in 2009, and the Ph.D. degree from
+     Oct. 2021, pp. 9992–10002.                                                                                the Graduate Institute of Communication Engineer-
+[66] P. Zhu, L. Wen, X. Bian, H. Ling, and Q. Hu, “Vision meets drones: A                                      ing, NTU, in 2015.
+     challenge,” 2018, arXiv:1804.07437.                                                                         He is currently an Associate Professor with
+[67] (2020).     YOLOv5-Github.       [Online].    Available:      https://github.                             National Yang Ming Chiao Tung University
+     com/ultralytics/yolov5                                                                                    (NYCU), Hsinchu, Taiwan. His research interests
+[68] B. Du, Y. Huang, J. Chen, and D. Huang, “Adaptive sparse convolutional                                    are in the areas of multimedia processing, machine
+     networks with global context enhancement for faster object detection on         learning, social network analysis, and data mining.
+     drone images,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern Recognit.              Dr. Shuai’s works have appeared in top-tier conferences such as MM, CVPR,
+     (CVPR), Jun. 2023, pp. 13435–13444.                                             AAAI, KDD, WWW, ICDM, CIKM, and VLDB, and top-tier journals such as
+[69] Y. Ma, L. Chai, and L. Jin, “Scale decoupled pyramid for object                 IEEE T RANSACTIONS ON K NOWLEDGE AND DATA E NGINEERING (TKDE),
+     detection in aerial images,” IEEE Trans. Geosci. Remote Sens., vol. 61,         IEEE T RANSACTIONS ON M ULTIMEDIA (TMM), IEEE T RANSACTIONS
+     2023, Art. no. 4704314.                                                         ON N EURAL N ETWORKS AND L EARNING S YSTEMS (TNNLS), and IEEE
+[70] S. Deng et al., “A global-local self-adaptive network for drone-view            I NTERNET OF T HINGS J OURNAL (JIOT). Moreover, he has served as a PC
+     object detection,” IEEE Trans. Image Process., vol. 30, pp. 1556–1569,          Member for international conferences, including MM, AAAI, IJCAI, and
+     2021.                                                                           WWW, and an invited reviewer for journals including TKDE, TMM, Journal
+[71] X. Yu, Y. Gong, N. Jiang, Q. Ye, and Z. Han, “Scale match for                   of Visual Communication and Image Representation (JVCI). and JIOT.
+     tiny person detection,” in Proc. IEEE Winter Conf. Appl. Comput. Vis.
+     (WACV), Mar. 2020, pp. 1246–1254.                                                                      Wen-Huang Cheng (Fellow, IEEE) is currently a
+[72] S. Huang, Z. Lu, R. Cheng, and C. He, “FaPN: Feature-aligned pyramid                                   Professor with the Department of Computer Science
+     network for dense image prediction,” in Proc. IEEE/CVF Int. Conf.                                      and Information Engineering, National Taiwan Uni-
+     Comput. Vis. (ICCV), Oct. 2021, pp. 844–853.                                                           versity (NTU), Taipei, Taiwan. His research interests
+[73] S. Liu, L. Qi, H. Qin, J. Shi, and J. Jia, “Path aggregation network for                               include artificial intelligence, multimedia, computer
+     instance segmentation,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern                                   vision, machine learning, digital transformation, and
+     Recognit., Jun. 2018, pp. 8759–8768.                                                                   financial technology.
+                                                                                                              Dr. Cheng has actively participated in interna-
+                                                                                                            tional events and played important leading roles in
+                          Hou-I Liu received the B.S. degree from the                                       prestigious journals, conferences, and professional
+                          Department of Materials Science and Engineering,                                  organizations, including the Editor-in-Chief of IEEE
+                          National Tsing Hua University (NTHU), Hsinchu,             CTSoc News on Consumer Technology, a Senior Editor of IEEE Consumer
+                          Taiwan, in 2016, and the M.S. degree in electrical         Electronics Magazine, an Associate Editor of IEEE T RANSACTIONS ON
+                          engineering from the National Taipei University of         M ULTIMEDIA (TMM), the General Chair of ACM MMAsia in 2023, IEEE
+                          Technology (NTUT), Taipei, Taiwan, in 2018. He is          ICCETW in 2022 and 2023, IEEE ICME in 2022, and ACM ICMR in 2021,
+                          currently pursuing the Ph.D. degree with National          the Chair of IEEE Multimedia Systems and Applications (MSA) Technical
+                          Yang Ming Chiao Tung University (NYCU),                    Committee, and a Governing Board Member of IAPR. He has received
+                          Hsinchu.                                                   numerous research and service awards, including the Best Paper Award
+                            His research interests include computer                  of 2021 IEEE ICME and the Outstanding Associate Editor Award of IEEE
+                          vision, object detection on remote sensing, and            T-MM (2020 and 2021, twice). He is an IEEE Distinguished Lecturer, an ACM
+                          high-resolution images.                                    Distinguished Member, and an IET Fellow.
+
+Authorized licensed use limited to: National Yang Ming Chiao Tung University. Downloaded on July 02,2024 at 04:58:15 UTC from IEEE Xplore. Restrictions apply.
+

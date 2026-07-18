@@ -1,0 +1,803 @@
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                        1
+
+
+
+
+Truncation Cross Entropy Loss for Remote Sensing
+                Image Captioning
+             Xuelong Li, Fellow, IEEE, Xueting Zhang, Wei Huang, and Qi Wang, Senior Member, IEEE
+
+
+
+
+    Abstract—Recently, remote sensing image captioning (RSIC)                                   (a) Many tennis courts arranged neatly with
+has drawn an increasing attention. In this field, the encoder-                                      some plants surrounded.
+decoder based methods have become the mainstream due to                                         (b) Many tennis courts arranged neatly with
+their excellent performance. In encoder-decoder framework, the                                      some trees surrounded.
+convolutional neural network (CNN) is utilized to encode a                                      (c) Many tennis courts arranged neatly with
+remote sensing image into a semantic feature vector, and a                                          some plants surrounded.
+sequence model such as long short-term memory (LSTM) is                                         (d) Some tennis courts arranged neatly with
+subsequently adopted to generate a content-related caption based                                    some plants surrounded.
+on the feature vector. During the traditional training stage,
+probability of the target word at each time step is forcibly               Fig. 1: The sentences for an image is not unique, and some
+optimized to 1 by Cross Entropy (CE) loss. However, because                words can be replaced by other words like their synonyms.
+of the variability and ambiguity of possible image captions, the
+target word could be replaced by other words like its synonyms,
+and therefore such optimization strategy would result in over-
+fitting of the network. In this paper, we explore the over-fitting         image captioning. This kind of methods typically contain two
+phenomenon in RSIC caused by CE loss, and correspondingly                  stages: image understanding and caption generation. In image
+propose a new Truncation Cross Entropy (TCE) loss aiming
+to alleviate the over-fitting problem. In order to verify the              understanding phase, the convolutional neural network (CNN)
+effectiveness of the proposed approach, extensive comparison               is utilized as a feature extractor to encode the input remote
+experiments are performed on three public remote sensing image             sensing image into a high-level semantic feature vector of fixed
+captioning datasets, including UCM-captions, Sydney-captions               dimension, which aggregates the visiual features and objects
+and RSICD. The state-of-the-art result of Sydney-captions and              of the images. Subsequently, in caption generation phase, the
+RSICD and the competitive results of UCM-captions achieved by
+TCE loss demonstrate that the proposed method is beneficial to             logic and syntax relationship of these visual features and
+RSIC.                                                                      objects is decoded into a well-formed sentence by a sequence
+                                                                           model, such as long short-term memory (LSTM) [17]. In this
+  Index Terms—remote sensing, image captioning, Truncation
+Cross Entropy loss, over-fitting                                           way, a lot of concise and meaningful sentences would be
+                                                                           generated for the input remote sensing images, which is in line
+                                                                           with the logic of human language and is helpful for human
+                      I. INTRODUCTION
+                                                                           cognitive understanding.
+
+H     IGH resolution remote sensing images, which have
+      a wide range of applications [1]–[7], can be easily
+obtained nowadays due to the rapid development of remote
+                                                                              Commonly, during the training stage, the encoder-decoder
+                                                                           models are optimized by Cross Entropy (CE) loss [18], which
+                                                                           regards the word prediction as a classification task [19]. At
+sensing technology. How to efficiently mine the relationship               each time step, a word is predicted by the decoder network
+between the visual features and semantic information hidden in             according to the following three components: the feature vec-
+remote sensing images has been widely concerned. Motivated                 tor, the previous word and the generated sentence. It is worth
+by natural image captioning [8]–[14], remote sensing image                 mentioning that the probability of the target word at each time
+captioning (RSIC) [15] has been explored in the past few                   step is forcibly optimized to 1 by CE loss. Nevertheless, due to
+years. RSIC, which combines computer vision with natural                   the variability and ambiguity of possible image captions, the
+language processing [16], aims to let machine automatically                target word may be strongly related to other non-target words
+generate human understandably descriptions from the given                  like its synonyms. For example, as shown in Fig. 1, the given
+remote sensing images.                                                     remote sensing image can be described by several sentences
+   Benefiting from the technology of deep learning, the meth-
+                                                                           of (a)-(d). For (a) and (b), the object words of “plants” and
+ods based on neural encoder-decoder architecture have grad-
+                                                                           “trees” could be replaced by each other. Similarly, for (c)
+ually become a growing trend in the field of remote sensing
+                                                                           and (d), “Many” and “Some” are alternative. To improve the
+  This work was supported by the National Key R&D Program of China under   output probability of target word, the unreasonable noise in the
+Grant 2018YFB1107403, National Natural Science Foundation of China under   image would be learned. Thus, such 1-Probability optimization
+Grant U186420461773316, U1801262, and 61871470.
+  X. Li, X. Zhang, W. Huang and Q. Wang are with the School
+                                                                           strategy would lead to the over-fitting of the network when the
+of Computer Science and with the Center for OPTical IMagery Anal-          noise is learned.
+ysis and Learning (OPTIMAL), Northwestern Polytechnical University,           In order to quantitatively explore the over-fitting caused by
+Xi’an 710072, China (e-mail: li@nwpu.edu.cn; zxt@mail.nwpu.edu.cn;
+hw2hwei@gmail.com; crabwq@gmail.com).                                      CE loss, in this paper, three different forms of CE loss are
+  Q. Wang is the corresponding author.                                     defined firstly according to the optimized objects, which are
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                  2
+
+
+
+Positive Cross Entropy (PCE) loss, Negative Cross Entropy                                 II. R ELATED W ORK
+(NCE) loss, and Positive-Negative Cross Entropy (PNCE) loss.
+In PCE loss, only the target word regarded as positive sample          In this section, the relevant work of remote sensing image
+is adopted to optimize the model, and it is intrinsically equal      captioning and Cross Entropy loss will be briefly introduced.
+to the normal CE loss used in RSIC. In contrast, when using
+NCE loss, only the non-target words treat as negative samples        A. Remote Sensing Image Captioning
+are employed for optimization of the model. In terms of PNCE
+loss, both the positive and negative samples (i. e., all the words       Generally, the methods of RSIC can be roughly divided
+in the vocabulary) would be adopted to optimize the whole            into three categories: retrival based methods, template based
+model.                                                               methods and encoder-decoder model based methods.
+   Besides, to alleviate the over-fitting problem, a novel Trun-         Retrival based methods depend on the retrival results and
+cation Cross Entropy (TCE) loss for remote sensing image             the matching degree. For example, Wang et al. [20] presented
+caption generation is first presented in this paper. Different       a collective semantic metric learning architecture to describe
+from the conventional CE loss, the proposed TCE loss is              the image content more diversely. Based on the techonolegy
+a piecewise loss which consists of two parts: a traditional          of metric learning, this model maps the dimensions of input
+CE loss and a truncation loss. More specifically, during the         images representation and their corresponding captions rep-
+training stage, an upper limit would be set to 1 − γ to decide       resentation to the same space. By computing the distances
+which loss would be selected. When the output probability of         between the test image and all collective captions, the caption
+the current word is lower than 1 − γ, the traditional CE loss        with the smallest distance would be picked up as the final
+would be employed to optimize the whole model. And when              descriptive sentence. However, since the generated captions
+the output probability of the word exceeds the upper limit           are sereached from the existing database, the methods based
+of 1 − γ, the truncation loss mechanism would be activated           on retrival are difficult to perform well when facing an input
+immediately, which means the target probability of this word         image which has low similarity with all the images in database.
+will not be optimized higher than 1 − γ. In this way, a margin           Template based methods aim to define a fixed sentence tem-
+of γ, which is also quite valuable for the sentence, can be          plate with several blanks reserved. Then after extracting fea-
+reserved for the non-target words in the vocabulary. Such            tures from input images, the detected objects, their attributes
+a fuzzy mechanism can effectively alleviate the over-fitting         and the relationship among them would be correspondingly
+phenomenon caused by CE loss and enhence the performance             filled in the reserved blanks. For instance, a Fully Convolu-
+of the base model.                                                   tional Networks (FCN) based method was proposed by Shi
+   Overall, the main contributions of this paper can be sum-         et al. [21] for better describing the remote sensing images in
+marized as follows:                                                  human languge, where fully convolutional networks [22] are
+                                                                     employed to capture the elements with three different levels
+ 1) To explore the over-fitting caused by Cross Entropy loss         in a remote sensing image. In addition, a collective of triplets
+    in RSIC, we present three types of loss, including PCE           are used to guide the generation of the captions. Nevertheless,
+    loss, NCE loss and PNCE loss according to the optimized          for templated based methods, one problem researchers have to
+    words. And the corresponding comparison experiments              consider is that the predefined template has greatly limited the
+    are conducted with quantitative analysis.                        flexibility of the generated captions, thus making the forms of
+ 2) A novel Truncation Cross Entropy (TCE) loss, which               the generated sentences quite rigid.
+    aims to alleviate the over-fitting problem caused by CE              The encoder-decoder model based methods [23] are end-
+    loss, is first proposed for caption generation of remote         to-end which mainly contains two stages of encoding and
+    sensing images. By researving a probability margin for           decoding. The purpose of encoding is to represent the input
+    non-target words, the proposed TCE loss is helpful to            image as a feature vector of fixed dimension, where different
+    generate more flexible and concise descriptions for re-          kinds of feature extractors, especially CNN, can be employed.
+    mote sensing images and further enhence the generaliza-          For decoding, a sequence model such as RNN [24] or LSTM
+    tion performance of the whole model.                             [17] can be utilized to generate the corresponding caption
+ 3) Different CNNs combined with LSTM are applied on                 word by word with the guidance of the feature vector. The
+    three public datasets to verify the effectiveness of the         methods of this type for RSIC were first proposed in [25]
+    proposed TCE loss. The state-of-the-art result of Sydney-        by Qu et al., where a multimodal nueral network model is
+    captions and RSICD and the competitive results of UCM-           specially designed to understand the remote sensing images in
+    captions, which are achieved by TCE loss, demonstrate            semantic level. Besides, different CNNs combined with RNN
+    that the proposed approach is beneficial for RSIC.               or LSTM are explored to find the best combination for RSIC
+   The remainder of this article is organized as follows: Section    in this paper with two public datasets released. After that, Lu
+II introduces the related works of remote sensing image              et al. [26] presented a new public dataset for RSIC, and both
+captioning and Cross Entropy loss. In Section III, we describe       the “soft” and “hard” attention are introduced in this paper.
+the proposed Truncation Cross Entropy loss based method in           After that, attention mechanism is widely used in the field of
+detail. The experimental results and analysis on three datasets      RSIC. For example, Yuan et al. [27] presented a multi-level
+are introuced in Section IV. Finally, conclusions are provided       attention module concentrating on different spatial positions
+in Section V.                                                        and different scales. In general, methods based on encoder-
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                      3
+
+
+
+
+ <start> some airplanes                                some            airplanes          are        ...   <end>
+   are parking on an
+     airport <end>                                                                                                         Prediction
+                                                       p(y1)             p(y2)            p(y3)             p(yN)
+                                                                                                                             Word
+
+                              TCE Loss                                                                                      Output
+                                                       Wh h1             Wh h2           Wh h3              Wh hN
+                                                                                                                           Transform
+
+
+                                LSTM       C0                     C1               C2
+                                                       LSTM             LSTM             LSTM               LSTM
+                            Initialization h0                     h1               h2
+
+
+
+
+                                                                                                                             Word
+                                                       We <S>            We y1           We y2             We yN-1
+                                                                                                                           Embedding
+  Convolutional              Feature
+     Blocks                  Vector
+                                                        <S>                y1              y2                yN-1           Previous
+                                                                                                                             Word
+
+                                                       <start>           some           airplanes    ...   airport
+                               Fig. 2: The framework of the proposed TCE loss based method.
+
+
+decoder model have become more and more popular because                A. Feature Extractor
+of their excellent performace.                                            For an encoder-decoder based method, the goal of image
+                                                                       representation is to encode the input images into high-level
+B. Cross Entropy Loss for RSIC                                         semantic features, which is a vital part for RSIC. Traditionally,
+                                                                       the methods of feature extraction can be generally divided
+   Cross Entropy (CE) is mainly used to indicate the difference
+                                                                       into two categories: handcrafted features and deep learning
+information between two probability distributions. Generally,
+                                                                       features. Nowadays, a large number of deep learning models,
+for encoder-decoder based model of RSIC, the procedure of
+                                                                       especially Convolutional Neural Network (CNN) [28]–[31],
+word prediction can be viewed as a classification task, where
+                                                                       have shown surprising feature representation in a wide range of
+CE loss is employed for optimization. For decoding part, all
+                                                                       image fields, and they also work well in remote sensing image
+words in candidate vocabulary would be assigned a probability
+                                                                       captioning. Different from the methods based on handcrafted
+after going through a softmax layer. The goal of CE loss is
+                                                                       features, which require considerable engineering skills and
+to optimize the probability of the target word to 1 while non-
+                                                                       domain knowledge, CNN can automatically learn features
+target words to 0, and only one word would be generated at
+                                                                       from data through a deep-structured neural network. Besides,
+each time step. CE loss used in RSIC can be formulated as:
+                                                                       since many processing layers are generally contained, CNN
+                            N
+                            X                                          can learn and obtain more powerful feature representations
+                 LCE = −          y (i) ∗ log ŷ (i)             (1)   with multiple levels of abstraction.
+                            i=1                                           Since CNN has achieved excellent visual image representa-
+where LCE denotes the Cross Entropy loss, y (i) and ŷ (i) refer       tion, it is utilized to extract the features of remote sensing
+to the ground truth label and its factual output probability,          images. For a CNN model, it is usually composed of the
+respectively. N represents the total number of classes.                stacked convolutional blocks (backbone) and fully-connected
+                                                                       layer (classifier). However, the classifier is redundant for
+                                                                       RSIC. Therefore, the last fully-connected layer is removed
+                    III. M ETHODOLOGY
+                                                                       from CNN and the rest CNN backbone is used as feature
+   In this section, the proposed Truncation Cross Entropy              extractor. To verify that the proposed TCE loss is not limited
+(TCE) loss is introduced in detail and used to optimize                by CNN models, in this paper, several different kinds of CNN
+the captioning models obeying the classical encoder-decoder            models are used for feature extraction.
+framework for RSIC. As shown in Fig. 2, the workflow of TCE               Given an RGB remote sensing image of I, the multi-channel
+loss based encoder-decoder model mainly consists of three              semantic feature map with the spatial size of H × W , which
+components: (1) Feature Extractor. (2) Caption Generator. (3)          is denoted as F ∈ RC×H×W , is extracted from the image by
+Truncation Cross Entropy Loss.                                         CNN backbone. Here C is the number of feature channels. It
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                         4
+
+
+
+is formulated as:
+                                                                                                LSTM Cell
+                      F = CN Nconv (I),                      (2)
+                                                                      ct-1                                                            ct
+where CN Nconv represents the CNN backbone.
+  To reduce the model parameters, F is converted into the                                                                      tanh
+
+corresponding feature vector of v ∈ RC by a Global Average                        ft           it                       ot
+Pooling (GAP) layer [32], which is formulated as:
+                                                                      yt               σ        σ          tanh          σ
+                         v = GAP (F ),                       (3)                                                                      ht
+
+                                                                           xt
+B. Caption Generator
+                                                                                    Fig. 3: The structure of LSTM.
+   Generally, the goal of caption generation is to decode the
+feature vector extracted by CNN into a sequence of words.
+Here, Long-Short Term Memory (LSTM) [17], which is a
+widely used sequence generation model, is utilized as a caption     C. Optimization Loss
+generator in our model. Different from the traditional sequence
+models, since LSTM is able to store long-term memory                   1) Loss Defination: In image captioning, the word pre-
+information, it has a good ability to solve the problem of          diction is regarded as a multi-classification task. Therefore,
+gradient vanishing.                                                 the word probability distribution of the generated sentence
+   The structure of LSTM used in this paper is shown in Fig. 3,     and reference sentence can be denoted as ŷ = [ŷ1 , ..., ŷN ],
+and it is constructed by several basic blocks stacked together.     ŷt ∈ RK , and y = [y1 , ..., yN ], yt ∈ RK . Here N is the
+It is worth noting that the core of LSTM is the cell state,         sentence length and K is the vocabulary size. For a label
+where the transfer process of information from the last cell        sequence of s = [s1 , ..., sN ] where si ∈ R1 refers to the word
+state ct−1 to the current cell state ct is specially controlled     number in the vocabulary at time step t. ŷ is the one-hot verson
+by three gates, i.e., input gate it , forget gate ft , and output   of s. Generally, for a predicted sentence, the loss utilized for
+gate ot . At time step t, the update procedure of LSTM can be       optimization during training can be denoted as:
+represented as follows:                                                                                   T
+                                                                                                          X
+               it = σ(Wxi xt + Whi ht−1 + bi ),              (4)                                L=−              Lt ,                  (13)
+                                                                                                           t=1
+              ft = σ(Wxf xt + Whf ht−1 + bf ),               (5)
+                                                                    where t and T represent the current time step and the total
+             c˜t = tanh(Wxc xt + Whc ht−1 + bi ),            (6)    time steps, respectively.
+                    ct = ft ∗ ct−1 + it ∗ c˜t ,              (7)       2) PCE, NCE and PNCE Loss: At time step t, the
+                                                                    sub-loss of Lt can be expressed in three different forms of
+              ot = σ(Wxo xt + Who ht−1 + bo ),               (8)    Positive Cross Entropy loss (PCE loss, denoted as LP CE ),
+                      ht = ot ∗ tanh(ct ),                   (9)    Negative Cross Entropy loss (NCE loss, denoted as LN CE )
+                                                                    and Positive-Negative Cross Entropy loss (PNCE loss), which
+where ht represents the hidden state of LSTM at time t, which       aim at optimizing target words directly and indirectly. It is
+is also the output of LSTM at this time step. tanh and σ            worth mentioning that the concepts of NCE loss and PNCE
+sigmoid are respectively the hyperbolic tangent function and        loss are first proposed in this paper.
+sigmoid function. All the W and b are the learnable parameters
+                                                                      In LP CE , only the target word, which can be regarded as
+of weights and bias. In addition, xt denotes the input of LSTM
+                                                                    the positive sample, is treat as optimization objective. It is
+at time t, and the definition of xt is formulated by:
+                                                                    defined as LP CE :
+                    xt = concat(v, yt−1 ),                  (10)                                          (s )          (s )
+                                                                                           LP CE = −yt t ∗ log ŷt t
+                                                                                                                                       (14)
+where v and yt−1 denote the feature vector extracted by CNN                                                      (s )
+                                                                                                    = − log ŷt t ,
+and the output of LSTM at time t − 1, respectively. xt is the
+combination of v and yt−1 .                                         where st denotes the number of the target word at time step t.
+                                                                      (s )      (s )
+   In general, the overall procedure of decoding can be denoted     yt t and ŷt t respectively refer to the output probability and
+                                                                                                                                  (s )
+as:                                                                 target probability of st . It is obviously that the value of yt t
+                       ht = LST M (xt ),                   (11)     equals to 1. The goal of PCE loss is to optimize the output
+                                                                    probability of the target word to 1. PCE loss intrinsically is
+                        yt = Wed ∗ ht ,                     (12)    the typical CE loss [33] when it is used in RSIC.
+where yt represents the output of an word embedding opera-            In LN CE , only the non-target words at time step t, which
+tion on ht . At each time step, only one word would be output       can be considered as the negative samples in contrast to the
+by LSTM.                                                            positive sample, are treat as optimization objectives. It is
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                              5
+
+
+
+defined as LN CE :                                                                           1. There are many residential areas near the school.
+                          N                                                                  2. A playground is built next to a white building.
+                    1     X             (i)                (i)                               3. Several playgrounds are in the big school.
+     LN CE = −                    (1 − yt ) ∗ (1 − log ŷt )
+                  N −1                                                                       4. Several playgrounds are in the big school.
+                          i6=st
+                           N
+                                                                     (15)                    5. There are many residential areas near the school.
+                   1 X            (i)
+              =−       (1 − log ŷt ),                                      Fig. 5: An example of an image and its corresponding five
+                 N −1
+                          i6=st                                             captions in RSICD.
+        (i)       (i)
+where yt and ŷt respectively refer to the output probability
+and target probability of the i-th word in the vocabulary except               TCE loss is developed based on PCE loss. Different from
+st . The goal of NCE loss is to optimize the sum of the output              PCE loss, however, an upper limit of 1−γ is set in TCE loss to
+probability of all the non-target words to 0.                               determine which loss would be chosen during the optimization
+    Although both PCE and NCE loss have the same goal                       procedure. Supposing that the output probability of the target
+to make the output probability of st converge to 1, their                                (s )
+                                                                            word (i.e., yt t ) exceeds the upper limit of 1 − γ, the loss
+optimization objectives and strategies are different. For more              function switches from PCE loss to Truncation loss. Therefore,
+comprehensive ablation study, they are composed into a new                    (s )
+                                                                            yt t would be optimized to a value of 1−γ instead of 1, which
+combination loss of PNCE loss denoted as LP N CE , which is                 means a probability margin of γ would be specially reserved
+defined as:                                                                 for the rest non-target words in the vocabulary except the
+    LP N CE = LP CE + LN CE                                                 target word. In this way, the over-fitting phenomenon caused
+                                              N                             by common CE loss can be effectively alleviated.
+                        (s )         1 X            (i)              (16)
+              = − log ŷt t −            (1 − log ŷt ),
+                                   N −1                                                           IV. E XPERIMENTS
+                                          i6=st
+
+   3) TCE Loss: The aim of Truncation Cross Entropy (TCE)                      In this section, experiments are conducted on three datasets
+loss is designed to alleviate the over-fitting problem of cap-              to verify the effectiveness and generalization of the proposed
+tioning model for RSIC at training stage. The proposed TCE                  method. First, we introduce the experimental datasets and
+loss denoted as LT CE is a piecewise function, which is made                evaluation metrics of RSIC. Then the experiment settings are
+up of two components: a common PCE loss and a truncation                    provided in detail. Following that, the over-fitting phenomenon
+loss. It is formulated as:                                                  caused by Cross Entropy loss is discussed, and the ablation
+                    (s )      (s )       (s )                              experiments of PCE, NCE, PNCE and TCE loss are performed.
+                 −yt t ∗ log ŷt t , if yt t < 1 − γ                        Finally, our results are compared with some state-of-the-art
+    LT CE =                                               (17)
+                 − log(1 − γ),              otherwise,                      models with comparative analysis.
+where γ is the value of truncation threshold which reserves a
+margin for the non-target words during the training stage. In               A. Datasets
+this paper, γ is set to 0, 0.1, 0.2, 0.3 and 0.4, respectively. It is          There are three widely used RSIC datasets of different sizes,
+worth mentioning that TCE loss is actually the PCE/CE loss                  including Sydney-captions, UCM-captions and RSICD.
+                           (s )       (s )
+when γ is equal to 0. yt t and ŷt t respectively refer to the                 1) Sydney-captions: The Sydney-captions dataset is pro-
+output probability and target probability of st . The proposed              posed by Qu et al. [25], which is based on Sydney Data Set
+TCE loss is illustrated in Fig. 4.                                          [34]. It contains 613 images with seven scene categories, in-
+                                                                            cluding industrial, rivers, residential, meadow, runway, airport
+                                                                            and ocean. All the images are collected from Google Earth
+                                                                            of Sydney, Australia. Besides, the resolution of each image
+                                                                            is 0.5m. For each image, five reference sentences are given
+                                                                            to abstract the content from different observers. Totally, there
+                                                                            are 237 different words in Sydney-captions dataset. 80% of
+                                                                            the images in Sydney-captions are used for training, 10% for
+                                                                            validation and the rest 10% for test.
+                                                                               2) UCM-captions: The UCM-captions dataset [25] is also
+                                                                            proposed in [25], which is based on the UC Merced (UCM)
+                                                                            land-use data set [35]. It contains 2100 high resolution remote
+                                                     margin for
+                                                  non-target words          sensing images with 21 scene categories, including building,
+                                                                            beach, airplane, chaparral, forest, harbor, freeway, overpass,
+                                                                            intersection, runway, river, agricultural, dense residential, ten-
+                                                                            nis court, sparse residential, golf course, baseball diamond,
+                                                                            medium residential, parking lot, mobile home park, and stor-
+                                                                            age tank. All the images are measuring 256 × 256 pixels with
+         Fig. 4: TCE loss with different values of γ.                       a pixel resolution of 0.3048m. Totally, there are 368 different
+                                                                            words in UCM-captions dataset. Similar to Sydney-captions
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                   6
+
+
+
+
+                              Many       planes      are parked near                 a     terminal       in        an     airport
+                               0.1835      0.7965   0.7109   0.5640      0.3779   0.6009     0.3243      0.7245   0.7570    0.7252
+
+                              Several     others others        in         in      others     large      others others others
+                               0.1635      0.2035   0.2891   0.2138      0.3479   0.3991     0.2013      0.2755   0.2430    0.2748
+
+                               Some                          near         on               building
+                               0.1604                        0.1018      0.0850              0.0868
+
+Fig. 6: An example of the probability of the generated top-3 words at each time step. The 1st, 2nd and 3rd row show the words
+of the maximal, the submaximal and the third probability at each time step. Besides, the others denotes all the non-maximal
+words in the vocabulary.
+
+
+data set, five descriptions are given for each image. And the       adopted in ROUGE L metric to evaluate the similarity of the
+splitting ratio is the same as Sydney-captions.                     reference sentence and the generated sentence.
+   3) RSICD: The RSICD dataset is proposed by Lu et al.                4) CIDEr: Consensus-based Image Description Evaluation
+[26], which consists of 10921 images measuring 224 × 224            (CIDEr) [43] is a metric for image captioning. In CIDEr, each
+pixels. All the images are collected from MapABC, Baidu             sentence is translated into a “document” and expressed as a
+Map, Google Earth, and Tianditu with different resolutions.         TF-IDF (term frequency inverse document frequency) vector.
+Totally, there are 3323 different words in RSICD dataset. Sim-      Then the cosine similarity between the reference sentence and
+ilar to previous datasets, five reference sentences are provided    the generated sentence would be calculated by the model.
+for each image. It is mentioning that there are repetitions in      Compared with the above mentioned metrics, CIDEr takes into
+the five reference sentences and its splitting ratio is the same    account the frequence of words in the vocabulary.
+as Sydney-captions and UCM-captions. There is a captioning
+example of a remote sensing image is shown in Fig. 5.               C. Experimental Settings
+                                                                       In this paper, all the experiments are built on Pytorch
+B. Evaluation Metrics                                               1.3 of Python 3.7. Four different CNN models pretrained on
+   In the field of remote sensing image caption generation, four    ImageNet, including AlexNet [44], VGG16 [45], ResNet18
+evaluation metrics are commonly used, including BLEU [40],          [46], and GoogleNet [47], are employed to explore the efficient
+METEOR [41], ROUGE L [42] and CIDEr [43]. The value                 CNN feature extractor for RSIC. We remove all layers after
+range of BLEU, METEOR and ROUGE L are all from 0 to                 the last convolutional layer of CNNs, which are replaced by
+1, and the value range of CIDEr is from 0 to 5. For all four        a global average pooling layer. The output of CNN extractors
+metrics, the larger the value is, the better the quality of the     is a high-dimension feature vector, which is the input of
+generated captions is.                                              a one-layer LSTM. For AlexNet, the dimension of feature
+                                                                    vector is 256, while for the other three CNN extractors, the
+   1) BLEU: BiLingual Evaluation Understudy (BLEU) [40]
+                                                                    dimension of the feature vector is 512. During decoder stage,
+was first utilized to evaluate the quality of machine transla-
+                                                                    the dimension of both the word embedding and hidden state of
+tion models, and now it is widely used in various sequence
+                                                                    LSTM is set to 512 in all the experiments. In order to improve
+generation tasks. By calculating the precision of n-gram of
+                                                                    the memory efficiency, the data is processed in batches with
+different lengths and performing geometric weighted average,
+                                                                    the batch size set to 64. During the whole training phase,
+BLEU aims to measure the n-gram coincidence between the
+                                                                    Adam is utilized to optimize the models. All the models are
+generated sequence and the reference sequence. Here, the
+                                                                    trained for 50 epochs with the learning rate of 1e-4. For TCE
+value of n is set to 1, 2, 3, 4 corresponding to BLEU1, BLEU2,
+                                                                    loss, we set the truncation threshold value γ to 0, 0.1, 0.2, 0.3,
+BLEU3 and BLEU4.
+                                                                    0.4, respectively to explore the effect of margin value.
+   2) METEOR: Metric for Evaluation of Translation with
+Explicit ORdering (METEOR) [41] is measured by computing
+an alignment between the generated sentence and the reference       D. Exploring The Efficient CNN Extractor
+sentence. Based on a single-precision weighted harmonic mean           In order to explore the efficient CNN extractor for RSIC,
+and single-word recall rate, METEOR takes into account both         four classical CNN achitectures are adopted here, including
+precision and recall rate, thus it can solve some of the defects    AlexNet, VGG16, ResNet18, and GoogleNet. AlexNet [44]
+inherent in the BLEU standard.                                      is designed by implements deep convolutional neural network
+   3) ROUGE L: Recall-Oriented Understudy for Gisting               structure for the first time in large-scale image datasets. Com-
+Evaluation (ROUGE) [42] was first applied in the field of text      pared with AlexNet, VGG16 [45] is improved by replacing
+summarization. It is similar to BLEU, while the difference          the large convolution kernels with several small consecutive
+is that ROUGE L concentrates on calculating the recall rate.        convolution kernels, with much deeper layers to learn more
+F-measure based on LCS(Longest Common Subsequence) is               complex patterns. GoogleNet [47] has an unique inception
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                  7
+
+
+
+                 TABLE I: The experimental results with different CNN extractors on UCM-captions dataset.
+
+      CNN Extractor          BLEU1         BLEU2         BLEU3        BLEU4         METEOR          ROUGE L           CIDEr
+      AlexNet                0.7567        0.6728        0.6123       0.5626         0.3984          0.6755           2.4720
+      VGG16                  0.7758        0.6965        0.6410       0.5929         0.4275          0.7073           2.6150
+      ResNet18               0.8079        0.7384        0.6861       0.6397         0.4496          0.7306           2.7688
+      GoogleNet              0.8193        0.7522        0.7007       0.6559         0.4708          0.7483           2.8996
+
+                TABLE II: The experimental results of PCE (i.e., CE), NCE and PNCE loss on three datasets.
+
+  Dataset                   Loss       BLEU1        BLEU2        BLEU3       BLEU4        METEOR         ROUGE L          CIDEr
+                           LP CE       0.8193       0.7522       0.7007      0.6559        0.4708         0.7483          2.8996
+  UCM-captions            LN CE        0.8034       0.7327       0.6775      0.6283        0.4586         0.7382          2.8390
+                          LP N CE      0.8035       0.7442       0.6943      0.6474        0.4617         0.7433          2.9470
+                           LP CE       0.7960       0.7238       0.6496      0.5810        0.4244         0.7034          2.0180
+  Sydney-captions         LN CE        0.7751       0.6882       0.6066      0.5346        0.4015         0.6837          1.9248
+                          LP N CE      0.7877       0.7106       0.6512      0.6015        0.4147         0.6920          2.1999
+                           LP CE       0.7440       0.6183       0.5295      0.4615        0.3421         0.6500          2.3524
+  RSICD                   LN CE        0.7011       0.5608       0.4710      0.4065        0.3059         0.6068          1.9541
+                          LP N CE      0.7290       0.6058       0.5203      0.4555        0.3248         0.6438          2.2900
+
+
+structure consisting of several convolutional kernels of differ-     it comes to PNCE loss, both the positive and negative samples
+ent sizes, and thus is better for multi-scale feature extraction     are adopted for optimization.
+task. For taking advantage of a novel residual block, ResNet
+[46] is designed to alleviate the problem of gradient disappear-        The experimental results are shown in Table II. Overall, the
+ance in deep networks with skip-connection operation, which          encoder-decoder model optimized by PCE loss achieves the
+makes the network training faster and more stable. Since the         best performance on all three datasets, and PNCE loss has
+number of images in UCM-captions dataset is moderately,              the suboptimal results and NCE loss performs worst. Taking
+experiments with different CNN extractors are conducted on           RSICD for instance, the BLEU1, BLEU2, BLEU3, BLEU4,
+UCM-captions to find the efficient CNN extractor for RSIC.           METEOR, ROUGE L and CIDEr scores of the model opti-
+   The experimental results with four pretrained CNN extrac-         mized by PCE loss are respectively 0.7440, 0.6183, 0.5295,
+tors on UCM-captions dataset are provided in Table I, where          0.4615, 0.3421, 0.6500 and 2.3524, which have increases of
+the truncation threshold value of γ is fixed to 0, i.e., PCE loss.   0.0429, 0.0575, 0.0585, 0.055, 0.0362, 0.0432 and 0.3983,
+In the experiments, GoogleNet achieves the best performance          respectively, as compared to the model optimized by NCE
+in all kinds of evaluation metrics. Taking CIDEr for example,        loss. When NCE is added to PCE loss, i. e., PNCE loss,
+GooleNet has an increase of 0.4276 as compared to AlexNet,           the scores drop by respectively 0.015, 0.0125, 0.0092, 0.006,
+0.2846 as compared to VGG16, and 0.1308 as compared to               0.0173, 0.0062 and 0.0624 as compared to single PCE loss.
+ResNet18. Thus, it would be used as the feature extractor in         Such results show that compared with PCE loss, NCE loss
+all the subsequent experiments. It is probably that GoogleNet        plays a negative role in improving the caption quality.
+can fuse multi-scale features by applying several convolution
+kernels of different sizes at each layer, which is suitable for         First of all, it should be noted that the model would be
+feature extraction of remote sensing images                          overfitting and further decrease the performance when the
+                                                                     output probability of all the words is optimized to 1. Although
+                                                                     the training targets of PCE, NCE and PNCE loss are the
+E. Results of PCE, NCE and PNCE Loss                                 same to make the output probability of words at each time
+   To quantificationally explore the influence of positive and       optimized to 1, but they have different training effects. NCE
+negative sample training strategy for RSIC, we use the pro-          loss optimizes the negative words at each time step while
+posed three kinds of losses of PCE loss (i.e., CE loss), NCE         PCE loss directly optimize the positive words. Limited by
+loss and PNCE loss, to optimize the same encoder-decoder             the implicit optimization targets, it is understandable that the
+model (GoogleNet + LSTM) on three datasets. The model                performance of NCE loss falls behind PCE loss. But when
+optimized by PCE loss only uses the positive samples for             NCE is added to PCE loss, the new PNCE loss would lead to
+optimization during training stage. Similarly, all the negative      the faster convergence of model and make the model miss the
+samples are utilized to optimize the model for NCE loss. When        better parameter space.
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                 8
+
+
+
+TABLE III: The experimental results of TCE loss with different margin values on three datasets. When γ is equal to 0, TCE
+loss is equivalent to PCE/CE loss.
+
+  Dataset               Threshold     BLEU1       BLEU2          BLEU3      BLEU4       METEOR          ROUGE L          CIDEr
+                          γ =0        0.8193      0.7522         0.7007     0.6559       0.4708          0.7483          2.8996
+  UCM-captions           γ = 0.1      0.8210      0.7622         0.7140     0.6700       0.4775          0.7567          2.8547
+                         γ = 0.2      0.8237      0.7604         0.7089     0.6681       0.4762          0.7591          2.9809
+                         γ = 0.3      0.8057      0.7415         0.6880     0.6387       0.4694          0.7451          2.9038
+                         γ = 0.4      0.8242      0.7592         0.7059     0.6569       0.4730          0.7551          2.9332
+                          γ =0        0.7960      0.7238         0.6496     0.5810       0.4244          0.7034          2.0180
+  Sydney-captions        γ = 0.1      0.7937      0.7304         0.6717     0.6193       0.4430          0.7130          2.4042
+                         γ = 0.2      0.7873      0.7173         0.6512     0.5926       0.4429          0.7039          2.1447
+                         γ = 0.3      0.8067      0.7356         0.6677     0.6082       0.4266          0.7050          2.3607
+                         γ = 0.4      0.7820      0.7062         0.6355     0.5757       0.4332          0.6991          2.0517
+                          γ =0        0.7440      0.6183         0.5295     0.4615       0.3421          0.6500          2.3524
+  RSICD                  γ = 0.1      0.7589      0.6264         0.5319     0.4597       0.3431          0.6565          2.3237
+                         γ = 0.2      0.7438      0.6138         0.5212     0.4513       0.3353          0.6448          2.3041
+                         γ = 0.3      0.7608      0.6358         0.5471     0.4791       0.3425          0.6687          2.4665
+                         γ = 0.4      0.7512      0.6270         0.5398     0.4735       0.3439          0.6548          2.4143
+
+                       TABLE IV: Comparison results of different methods on UCM-captions dataset.
+
+                                              BLEU1      BLEU2       BLEU3      BLEU4       METEOR        ROUGE L         CIDEr
+  FC-Att+LSTM [36]                            0.8135     0.7502      0.6849     0.6352       0.4173        0.7504         2.9958
+  SM-Att+LSTM [36]                            0.8154     0.7575      0.6936     0.6458       0.4240        0.7632         3.1864
+  Soft Attention [26]                         0.7454     0.6545      0.5855     0.5250       0.3886        0.7237         2.6124
+  Hard Attention [26]                         0.8157     0.7312      0.6702     0.6182       0.4263        0.7698         2.9947
+  GCN Based Multi-Level Attention [27]        0.8330     0.7712      0.7154     0.6623       0.4371        0.7763         3.1684
+  sound-a-a [37]                              0.7484     0.6837      0.6310     0.5896       0.3623        0.6579         2.7281
+  RTRMN(statistical) [38]                     0.8028     0.7322      0.6821     0.6393       0.4258        0.7726         3.1270
+  VAA [39]                                    0.8192     0.7511      0.6927     0.6387       0.4380        0.7824         3.3946
+  The Proposed Method                         0.8210     0.7622      0.7140     0.6700       0.4775        0.7567         2.8547
+
+
+F. Results of Truncation Cross Entropy (TCE) Loss                 ROUGE L and CIDEr scores are respectively 0.7608, 0.6358,
+                                                                  0.5471, 0.4791, 0.3425, 0.6687 and 2.4665 under the cir-
+   In order to slow down the speed towards overfitting during     cumstance that γ is set to 0.3. Compared with PCE loss
+the training stage and further search for the parameters with     optimized model (namely, when γ is equal to 0 in Table III),
+more generalization performance, we use Truncation Cross          there are wide increases of 0.0168, 0.0175, 0.0176, 0.0176,
+Entropy (TCE) loss to optimize the same encoder-decoder           0.0004, 0.0187 and 0.1141, respectively. Besides, it is worth
+based model (GoogleNet + LSTM) on three datasets. Different       mentioning that the optimal value of γ is 0.1 for both UCM-
+from PCE, NCE and PNCE loss mentioned above, the output           captions and Sydney-captions, and it increases to 0.3 when
+probability of the target word would not be optimized to 1 by     using the largest dataset of RSICD. Overall, according to
+TCE loss, which means a probability margin could be reserved      the results, it can be observed that by setting a truncation
+for the rest non-target words related except the target word.     threshold, the model optimized by TCE loss achieves better
+The truncation threshold denoted as γ is set to 0, 0.1 0.2        performance than PCE loss, and the best threshold varies with
+0.3 and 0.4, respectively, to further explore the influence of    the datasets.
+probability margin in this subsection.
+   Table III shows the comparative results of PCE loss and           It is notable that the best optimal margin value of γ increases
+TCE loss with different margin values on three datasets.          with the size of a dataset, more specifically, the size of
+Compared with absolute PCE loss, when adding Margin Max           its vocabulary. Since RSICD contains more words (the total
+Operation (TCE loss), the performance of RSIC obtains a           number of words is 1187) than the other two datasets, the
+comprehensive enhancement. Similarly, taking RSICD for            same features or objects in RSICD can be described with
+example, the BLEU1, BLEU2, BLEU3, BLEU4, METEOR,                  more synonymous words compared with them in the other
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                   9
+
+
+
+                        TABLE V: Comparison results of different methods on Sydney-captions dataset.
+
+                                                 BLEU1      BLEU2       BLEU3      BLEU4       METEOR        ROUGE L        CIDEr
+  FC-Att+LSTM [36]                               0.8076     0.7160      0.6276     0.5544       0.4099        0.7114        2.2033
+  SM-Att+LSTM [36]                               0.8143     0.7351      0.6586     0.5806       0.4111        0.7195        2.3021
+  GoogleNet Soft Attention [26]                  0.7322     0.6674      0.6223     0.5820       0.3942        0.7127        2.4993
+  GoogleNet Hard Attention [26]                  0.7591     0.6610      0.5889     0.5258       0.3898        0.7189        2.1819
+  GCN Based Multi-Level Attention [27]           0.8233     0.7548      0.6587     0.6003       0.4202        0.7237        2.3110
+  sound-a-a [37]                                 0.7093     0.6228      0.5393     0.4602       0.3121        0.5974        1.7477
+  VAA [39]                                       0.7431     0.6646      0.6029     0.5495       0.3930        0.6999        2.4073
+  The Proposed Method                            0.7937     0.7304      0.6717     0.6193       0.4430        0.7130        2.4042
+
+                            TABLE VI: Comparison results of different methods on RSICD dataset.
+
+                                                 BLEU1      BLEU2       BLEU3      BLEU4       METEOR        ROUGE L        CIDEr
+  FC-Att+LSTM [36]                               0.7459     0.6250      0.5338     0.4574       0.3395        0.6333        2.3664
+  SM-Att+LSTM [36]                               0.7571     0.6336      0.5385     0.4612       0.3513        0.6458        2.3563
+  Soft Attention [26]                            0.6753     0.5308      0.4333     0.3617       0.3255        0.6109        1.9643
+  Hard Attention [26]                            0.6669     0.5182      0.4164     0.3407       0.3201        0.6084        1.7925
+  GCN Based Multi-Level Attention [27]           0.7597     0.6421      0.5517     0.4623       0.3543        0.6563        2.3614
+  sound-a-a [37]                                 0.6196     0.4819      0.3902     0.3195       0.2733        0.5143        1.6386
+  RTRMN(statistical) [38]                        0.6102     0.4514      0.3535     0.2859       0.2751        0.5452        1.4820
+  The Proposed Method                            0.7608     0.6358      0.5471     0.4791       0.3425        0.6687        2.4665
+
+
+two datasets. Therefore, the problem of over-fitting between         of the image should be paid more attention. Differently, Hard
+the interchangeable words during the training stage is more          Attention is a stochastic method, where a sampling strategy
+serious for it. Further, more probability margin of each word        is employed to concentrate on different parts of the image
+need to be reserved for its relative words in RSICD, which           and then reinforcement learning is adopted to better improve
+means that the optimal truncation threshold of γ should be           the performance of the model. GCN Based Multi-Level At-
+bigger. In contrast, the number of words in UCM-captions             tention is proposed by [27]. Typically, a multilevel attention
+and Sydney-captions is respectively 368 and 237, thus a small        module is presented for better performance of RSIC, and
+value of γ can perform well for them.                                the position-adaptive and scale-adaptive image representations
+   In summary, compared with the pure PCE loss, by reserving         can be learned by this model. The method of sound-a-a is
+a suitable probability margin for the relative words to replace      proposed [37], where a sound mechanism is introduced as an
+the target word, TCE loss is rather effective to alleviate the       active attention to improve the quality of caption generation.
+over-fitting for all three datasets during optimization process.     RTRMN(statistical) is proposed in [38]. This model aims to
+                                                                     overcome the drawback of long-term information dilution in
+G. Comparison with State-of-the-Art Methods                          RNN, and a topic word strategy is presented to fully utilize
+   To verify the effectiveness of the proposed method, compar-       the given five reference captions. VAA is proposed in [39],
+ison experiments are conducted on several state-of-the-art ap-       where a novel Visual Aligning Attention model is presented
+proaches, including FC-Att+LSTM [36], SM-Att+LSTM [36],              to address the problem of not explicitly training the attention
+Soft Attention [26], Hard Attention [26], GCN Based Multi-           layers in encoder-decoder model.
+Level Attention [27], sound-a-a [37], RTRMN(statistical) [38],          1) Results on UCM-captions: Table IV shows the com-
+and VAA [39]. All of these methods are built on encoder-             parison results between the aforementioned methods and
+decoder framework. Both FC-Att+LSTM and SM-Att+LSTM                  the proposed CNN-LSTM model with TCE loss on UCM-
+are proposed in [36], where the multiple attributes, which           captions dataset. It can be seen that the results of the pro-
+are extracted from the high-level semantic features of remote        posed method are the best among all the methods in terms
+sensing images by attention mechanism, are utilized to obtain        of BLEU4 and METEOR. According to BLEU1, BLEU2,
+better caption quality based on the basic model. The main            BLEU3, ROUGE L and CIDEr, the performance of the pro-
+difference of these two models is that their high-level attributes   posed method just slightly fall behind the other state-of-the-art
+are the output of different layers of CNN (the last fully            approaches.
+connected layer for FC-Att+LSTM while the softmax layer                 2) Results on Sydney-captions: The comparative results on
+for SM-Att+LSTM). Soft Attention and Hard Attention are              Sydney-captions dataset are shown in Table V. It can be
+introduced in [26]. In particular, Soft Attention is a determin-     observed that the proposed method performs best in terms
+istic method where a weight is given to decide which part            of BLEU3, BLEU4 and METEOR. As for BLEU1, BLEU2,
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                                  10
+
+
+
+
+(a) There are two tennis courts      (b) There are two white storage        (c) An overpass go across the roads   (d) Many boats docked in lines at
+arranged neatly and surrounded by    tanks on the ground.                   with some cars on the roads.          the harbor and the water is deep
+some plants.                                                                                                      blue.
+
+
+
+
+(e) A residential area with many     (f) Many buildings and some green      (g) Many airplanes are parked in      (h) A baseball field is near several
+houses arranged neatly and divided   trees are in a commercial area.        an airport.                           buildings and some green trees.
+into rectangles by some roads.
+
+
+
+
+(i) Some buildings and green trees   (j) Some green trees and several       (k) Many cars are parked in a park-   (l) Many buildings and green trees
+are in two sides of a river with a   buildings are around a circle build-   ing lot.                              are around a football field.
+bridge.                              ing.
+
+                              Fig. 7: Examples of test images and the corresponding generated captions.
+
+
+ROUGE L and CIDEr, our method achieves a competitive                        of-the-art methods, our approach has two obvious advantages,
+performance compared with other state-of-the-art approaches.                which can be summarized as follows:
+   3) Results on RSICD: As the biggest RSIC dataset, RSICD                     Without adding extra modules or parameters. Different
+contains much more images than the other two datasets with                  from the other comparison methods, the proposed method
+complex scenarios, and thus its result is more robust and                   aims to improve the encoder-decoder based model from the
+convincing. The comparative results are shown in Table VI.                  aspect of training optimization, which means the model of
+The highest score for each metric is marked in bold. It can                 our method is the basic CNN combined with LSTM, without
+be observed that compared with all the existing sate-of-the-                adding any extra modules. In other words, there are no extra
+art approaches, the proposed method takes the first place                   parameters embedded into our model, so the computational
+in BLEU1, BLUE4, ROUGE L and CIDEr, and competitive                         complexity and training cost of TCE loss is almost equal
+results in BLEU2, BLEU3 and METEOR. Such experimental                       to the basic model, which operates much faster than the
+results completely prove the effectiveness and superiority of               aforementioned methods.
+our approach.                                                                 Getting better performance. From Table IV to Table
+  4) Advantages of Our Method: According to the analysis                    VI, the comparative results show that the proposed method
+of methods and comparative experimental results on three                    achieves superior performance on RSIC datasets. Typically,
+datasets, it can be found that compared with the other sate-                when the number of n-gram for BLEU metric (from BLEU1
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                                           11
+
+
+
+to BLEU4) increases, our method gets relatively better perfor-                   [13] S. Chen, Q. Jin, P. Wang, and Q. Wu, “Say as you wish: Fine-grained
+mance compared with others. It is probably caused by that                             control of image caption generation with abstract scene graphs,” arXiv
+                                                                                      preprint arXiv:2003.00387, 2020.
+the constraints on each word in phrase would be relaxed                          [14] Y. Zhou, M. Wang, D. Liu, Z. Hu, and H. Zhang, “More grounded image
+during the training stage, which makes our method more                                captioning by distilling image-text matching model,” arXiv preprint
+flexible for multiple consecutive words. It is beneficial for the                     arXiv:2004.00390, 2020.
+                                                                                 [15] X. Zhang, Q. Wang, S. Chen, and X. Li, “Multi-scale cropping mecha-
+open caption from different observers. Some examples of test                          nism for remote sensing image captioning,” in IGARSS 2019-2019 IEEE
+images and the corresponding generated captions are shown                             International Geoscience and Remote Sensing Symposium. IEEE, 2019,
+in Fig. 6 and Fig. 7.                                                                 pp. 10 039–10 042.
+                                                                                 [16] A. Graves, A.-r. Mohamed, and G. Hinton, “Speech recognition with
+                                                                                      deep recurrent neural networks,” in 2013 IEEE international conference
+                           V. C ONCLUSION                                             on acoustics, speech and signal processing. IEEE, 2013, pp. 6645–
+                                                                                      6649.
+    In this paper, we first quantificationally explore the over-                 [17] S. Hochreiter and J. Schmidhuber, “Long short-term memory,” Neural
+fitting phenomena in remote sensing image captioning (RSIC)                           computation, vol. 9, no. 8, pp. 1735–1780, 1997.
+caused by Cross Entropy loss. To deal with this problem, a                       [18] Z. Zhang and M. Sabuncu, “Generalized cross entropy loss for training
+                                                                                      deep neural networks with noisy labels,” in Advances in neural infor-
+novel Truncation Cross Entropy (TCE) loss is specially pro-                           mation processing systems, 2018, pp. 8778–8788.
+posed for RSIC. By setting a truncation threshold, the output                    [19] A. Romero, C. Gatta, and G. Camps-Valls, “Unsupervised deep feature
+probability of the target word would not be optimized to 1 by                         extraction for remote sensing image classification,” IEEE Transactions
+                                                                                      on Geoscience and Remote Sensing, vol. 54, no. 3, pp. 1349–1362, 2015.
+TCE loss, and thus a probability margin can be reserved for                      [20] B. Wang, X. Lu, X. Zheng, and X. Li, “Semantic descriptions of
+the rest words in the vocabulary. Based on a classic encoder-                         high-resolution remote sensing images,” IEEE Geoscience and Remote
+decoder model (CNN plus LSTM), comparative experiments                                Sensing Letters, vol. 16, no. 8, pp. 1274–1278, 2019.
+                                                                                 [21] Z. Shi and Z. Zou, “Can a machine generate humanlike language descrip-
+are conducted on three widely used remote sensing image                               tions for a remote sensing image?” IEEE Transactions on Geoscience
+captioning datasets, including UCM-captions, Sydney-captions                          and Remote Sensing, vol. 55, no. 6, pp. 3623–3634, 2017.
+and RSICD. The superior performance of the experimental                          [22] J. Long, E. Shelhamer, and T. Darrell, “Fully convolutional networks
+                                                                                      for semantic segmentation,” in Proceedings of the IEEE conference on
+results compared with other state-of-the-art methods shows                            computer vision and pattern recognition, 2015, pp. 3431–3440.
+that the proposed TCE loss is rather effective for RSIC.                         [23] W. Huang, Q. Wang, and X. Li, “Denoising-based multiscale feature
+                                                                                      fusion for remote sensing image captioning,” IEEE Geoscience and
+                                                                                      Remote Sensing Letters, 2020.
+                              R EFERENCES                                        [24] M. Schuster and K. K. Paliwal, “Bidirectional recurrent neural net-
+                                                                                      works,” IEEE transactions on Signal Processing, vol. 45, no. 11, pp.
+ [1] W. Huang, Q. Wang, and X. Li, “Feature sparsity in convolutional
+                                                                                      2673–2681, 1997.
+     neural networks for scene classification of remote sensing image,” in
+     IGARSS 2019-2019 IEEE International Geoscience and Remote Sensing           [25] B. Qu, X. Li, D. Tao, and X. Lu, “Deep semantic understanding of high
+     Symposium. IEEE, 2019, pp. 3017–3020.                                            resolution remote sensing image,” in 2016 International Conference on
+ [2] Q. Wang, S. Liu, J. Chanussot, and X. Li, “Scene classification with             Computer, Information and Telecommunication Systems (CITS). IEEE,
+     recurrent attention of vhr remote sensing images,” IEEE Transactions             2016, pp. 1–5.
+     on Geoscience and Remote Sensing, vol. 57, no. 2, pp. 1155–1167, 2018.      [26] X. Lu, B. Wang, X. Zheng, and X. Li, “Exploring models and data
+ [3] S. Zhang, G. He, H.-B. Chen, N. Jing, and Q. Wang, “Scale adaptive               for remote sensing image caption generation,” IEEE Transactions on
+     proposal network for object detection in remote sensing images,” IEEE            Geoscience and Remote Sensing, vol. 56, no. 4, pp. 2183–2195, 2017.
+     Geoscience and Remote Sensing Letters, vol. 16, no. 6, pp. 864–868,         [27] Z. Yuan, X. Li, and Q. Wang, “Exploring multi-level attention and se-
+     2019.                                                                            mantic relationship for remote sensing image captioning,” IEEE Access,
+ [4] X. Liu, Q. Liu, and Y. Wang, “Remote sensing image fusion based                  2019.
+     on two-stream fusion network,” Information Fusion, vol. 55, pp. 1–15,       [28] E. Othman, Y. Bazi, N. Alajlan, H. Alhichri, and F. Melgani, “Using
+     2020.                                                                            convolutional features and a sparse autoencoder for land-use scene
+ [5] R. Pires de Lima and K. Marfurt, “Convolutional neural network for               classification,” International Journal of Remote Sensing, vol. 37, no. 10,
+     remote-sensing scene classification: Transfer learning analysis,” Remote         pp. 2149–2167, 2016.
+     Sensing, vol. 12, no. 1, p. 86, 2020.                                       [29] K. Nogueira, O. A. Penatti, and J. A. dos Santos, “Towards better
+ [6] Q. Wang, Z. Yuan, Q. Du, and X. Li, “Getnet: A general end-to-end                exploiting convolutional neural networks for remote sensing scene
+     2-d cnn framework for hyperspectral image change detection,” IEEE                classification,” Pattern Recognition, vol. 61, pp. 539–556, 2017.
+     Transactions on Geoscience and Remote Sensing, vol. 57, no. 1, pp.          [30] G. Huang, Z. Liu, L. Van Der Maaten, and K. Q. Weinberger, “Densely
+     3–13, 2018.                                                                      connected convolutional networks,” in Proceedings of the IEEE confer-
+ [7] Q. Wang, X. He, and X. Li, “Locality and structure regularized low rank          ence on computer vision and pattern recognition, 2017, pp. 4700–4708.
+     representation for hyperspectral image classification,” IEEE Transactions   [31] E. Maggiori, Y. Tarabalka, G. Charpiat, and P. Alliez, “Convolutional
+     on Geoscience and Remote Sensing, vol. 57, no. 2, pp. 911–923, 2018.             neural networks for large-scale remote-sensing image classification,”
+ [8] O. Vinyals, A. Toshev, S. Bengio, and D. Erhan, “Show and tell: A                IEEE Transactions on Geoscience and Remote Sensing, vol. 55, no. 2,
+     neural image caption generator,” in Proceedings of the IEEE conference           pp. 645–657, 2016.
+     on computer vision and pattern recognition, 2015, pp. 3156–3164.            [32] M. Lin, Q. Chen, and S. Yan, “Network in network,” arXiv preprint
+ [9] K. Xu, J. Ba, R. Kiros, K. Cho, A. Courville, R. Salakhudinov, R. Zemel,         arXiv:1312.4400, 2013.
+     and Y. Bengio, “Show, attend and tell: Neural image caption generation      [33] T.-Y. Lin, P. Goyal, R. Girshick, K. He, and P. Dollár, “Focal loss
+     with visual attention,” in International conference on machine learning,         for dense object detection,” in Proceedings of the IEEE international
+     2015, pp. 2048–2057.                                                             conference on computer vision, 2017, pp. 2980–2988.
+[10] J. Lu, C. Xiong, D. Parikh, and R. Socher, “Knowing when to look:           [34] F. Zhang, B. Du, and L. Zhang, “Saliency-guided unsupervised feature
+     Adaptive attention via a visual sentinel for image captioning,” in               learning for scene classification,” IEEE Transactions on Geoscience and
+     Proceedings of the IEEE conference on computer vision and pattern                Remote Sensing, vol. 53, no. 4, pp. 2175–2184, 2014.
+     recognition, 2017, pp. 375–383.                                             [35] Y. Yang and S. Newsam, “Bag-of-visual-words and spatial extensions
+[11] K. Shuster, S. Humeau, H. Hu, A. Bordes, and J. Weston, “Engaging im-            for land-use classification,” in Proceedings of the 18th SIGSPATIAL in-
+     age captioning via personality,” in Proceedings of the IEEE Conference           ternational conference on advances in geographic information systems.
+     on Computer Vision and Pattern Recognition, 2019, pp. 12 516–12 526.             ACM, 2010, pp. 270–279.
+[12] X. Yang, K. Tang, H. Zhang, and J. Cai, “Auto-encoding scene graphs for     [36] X. Zhang, X. Wang, X. Tang, H. Zhou, and C. Li, “Description gener-
+     image captioning,” in Proceedings of the IEEE Conference on Computer             ation for remote sensing images using attribute attention mechanism,”
+     Vision and Pattern Recognition, 2019, pp. 10 685–10 694.                         Remote Sensing, vol. 11, no. 6, p. 612, 2019.
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                              12
+
+
+
+[37] X. Lu, B. Wang, and X. Zheng, “Sound active attention framework for        Qi Wang (M’15-SM’15) received the B.E. degree in
+     remote sensing image captioning,” IEEE Transactions on Geoscience          automation and the Ph.D. degree in pattern recog-
+     and Remote Sensing, 2019.                                                  nition and intelligent systems from the University
+[38] B. Wang, X. Zheng, B. Qu, and X. Lu, “Retrieval topic recurrent memory     of Science and Technology of China, Hefei, China,
+     network for remote sensing image captioning,” IEEE Journal of Selected     in 2005 and 2010, respectively. He is currently a
+     Topics in Applied Earth Observations and Remote Sensing, vol. 13, pp.      Professor with the School of Computer Science, with
+     256–270, 2020.                                                             the Center for OPTical IMagery Analysis and Learn-
+[39] Z. Zhang, W. Zhang, W. Diao, M. Yan, X. Gao, and X. Sun, “Vaa:             ing, Northwestern Polytechnical University, Xi’an,
+     Visual aligning attention model for remote sensing image captioning,”      China. His research interests include computer vi-
+     IEEE Access, vol. 7, pp. 137 355–137 364, 2019.                            sion and pattern recognition.
+[40] K. Papineni, S. Roukos, T. Ward, and W.-J. Zhu, “Bleu: a method
+     for automatic evaluation of machine translation,” in Proceedings of
+     the 40th annual meeting on association for computational linguistics.
+     Association for Computational Linguistics, 2002, pp. 311–318.
+[41] M. Denkowski and A. Lavie, “Meteor universal: Language specific
+     translation evaluation for any target language,” in Proceedings of the
+     ninth workshop on statistical machine translation, 2014, pp. 376–380.
+[42] C.-Y. Lin, “Rouge: A package for automatic evaluation of summaries,”
+     in Text summarization branches out, 2004, pp. 74–81.
+[43] R. Vedantam, C. Lawrence Zitnick, and D. Parikh, “Cider: Consensus-
+     based image description evaluation,” in Proceedings of the IEEE confer-
+     ence on computer vision and pattern recognition, 2015, pp. 4566–4575.
+[44] A. Krizhevsky, I. Sutskever, and G. E. Hinton, “Imagenet classification
+     with deep convolutional neural networks,” in Advances in neural infor-
+     mation processing systems, 2012, pp. 1097–1105.
+[45] K. Simonyan and A. Zisserman, “Very deep convolutional networks for
+     large-scale image recognition,” arXiv preprint arXiv:1409.1556, 2014.
+[46] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning for image
+     recognition,” in Proceedings of the IEEE conference on computer vision
+     and pattern recognition, 2016, pp. 770–778.
+[47] C. Szegedy, W. Liu, Y. Jia, P. Sermanet, S. Reed, D. Anguelov, D. Erhan,
+     V. Vanhoucke, and A. Rabinovich, “Going deeper with convolutions,”
+     in Proceedings of the IEEE conference on computer vision and pattern
+     recognition, 2015, pp. 1–9.
+
+
+
+
+Xuelong Li (M’02-SM’07-F’12) is currently a Professor with the School
+of Computer Science, with the Center for OPTical IMagery Analysis and
+Learning, Northwestern Polytechnical University, Xi’an, China.
+
+
+
+
+                         Xueting Zhang received the B.E. degree in con-
+                         trol theory and engineering from the Northwestern
+                         Polytechnical University, Xi’an, China, in 2018. She
+                         is currently working toward the M.S. degree in
+                         computer science in the Center for OPTical IMagery
+                         Analysis and Learning, Northwestern Polytechnical
+                         University, Xi’an, China. Her research mainly fo-
+                         cuses remote sensing image proccessing.
+
+
+
+
+                         Wei Huang received the B.E. degree in control
+                         theory and engineering from the Northwestern Poly-
+                         technical University, Xi’an, China, in 2018. He is
+                         currently working toward the M.S. degree in com-
+                         puter science in the Center for OPTical IMagery
+                         Analysis and Learning, Northwestern Polytechnical
+                         University, Xi’an, China. His research interests in-
+                         clude deep learning and remote sensing.
+

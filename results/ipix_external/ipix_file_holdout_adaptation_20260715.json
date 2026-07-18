@@ -1,0 +1,471 @@
+{
+  "date": "20260715",
+  "state": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_sample\\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt",
+  "train_files": [
+    "19931107_135603_starea.cdf",
+    "19931107_141630_starea.cdf"
+  ],
+  "test_files": [
+    "19931107_145028_starea.cdf"
+  ],
+  "train_load_info": {
+    "files": [
+      {
+        "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931107_135603_starea.cdf",
+        "window": 1024,
+        "stride": 1024,
+        "windows": 128,
+        "nrange": 14,
+        "ntxpol": 2,
+        "prf": 1000.0,
+        "ranges_m": [
+          2574.0,
+          2589.0,
+          2604.0,
+          2619.0,
+          2634.0,
+          2649.0,
+          2664.0,
+          2679.0,
+          2694.0,
+          2709.0,
+          2724.0,
+          2738.999755859375,
+          2754.0,
+          2769.0
+        ]
+      },
+      {
+        "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931107_141630_starea.cdf",
+        "window": 1024,
+        "stride": 1024,
+        "windows": 128,
+        "nrange": 14,
+        "ntxpol": 2,
+        "prf": 1000.0,
+        "ranges_m": [
+          2574.0,
+          2589.0,
+          2604.0,
+          2619.0,
+          2634.0,
+          2649.0,
+          2664.0,
+          2679.0,
+          2694.0,
+          2709.0,
+          2724.0,
+          2738.999755859375,
+          2754.0,
+          2769.0
+        ]
+      }
+    ],
+    "window": 1024,
+    "stride": 1024
+  },
+  "test_load_info": {
+    "files": [
+      {
+        "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931107_145028_starea.cdf",
+        "window": 1024,
+        "stride": 1024,
+        "windows": 128,
+        "nrange": 14,
+        "ntxpol": 2,
+        "prf": 1000.0,
+        "ranges_m": [
+          5474.99951171875,
+          5490.00048828125,
+          5505.0,
+          5520.0,
+          5535.0,
+          5550.0,
+          5564.99951171875,
+          5580.0,
+          5595.0,
+          5610.0,
+          5625.0,
+          5639.99951171875,
+          5655.00048828125,
+          5670.0
+        ]
+      }
+    ],
+    "window": 1024,
+    "stride": 1024
+  },
+  "train_info": {
+    "train_rows": 196608,
+    "train_positive_rows": 65536,
+    "train_negative_rows": 131072,
+    "feature_count": 8
+  },
+  "protocol": {
+    "passed": false,
+    "failures": [
+      "adapted TP-SSCS does not beat raw at Pfa 1e-05",
+      "adapted TP-SSCS does not beat raw at Pfa 3e-05",
+      "adapted TP-SSCS does not beat raw at Pfa 0.0001",
+      "adapted TP-SSCS does not beat raw at Pfa 0.0003",
+      "adapted TP-SSCS does not beat raw at Pfa 0.001",
+      "adapted TP-SSCS does not beat raw at Pfa 0.003",
+      "adapted TP-SSCS does not beat raw at Pfa 0.01"
+    ],
+    "comparisons": [
+      {
+        "pfa": 1e-05,
+        "adapted_pd": 0.0163116455078125,
+        "raw_pd": 0.0227203369140625,
+        "lowrank_pd": 4.57763671875e-05,
+        "adapted_empirical_pfa": 0.0,
+        "beats_raw": false,
+        "beats_lowrank": true,
+        "pfa_calibrated": true
+      },
+      {
+        "pfa": 3e-05,
+        "adapted_pd": 0.0163116455078125,
+        "raw_pd": 0.0227203369140625,
+        "lowrank_pd": 4.57763671875e-05,
+        "adapted_empirical_pfa": 0.0,
+        "beats_raw": false,
+        "beats_lowrank": true,
+        "pfa_calibrated": true
+      },
+      {
+        "pfa": 0.0001,
+        "adapted_pd": 0.018829345703125,
+        "raw_pd": 0.02471160888671875,
+        "lowrank_pd": 0.00011444091796875,
+        "adapted_empirical_pfa": 9.765625e-05,
+        "beats_raw": false,
+        "beats_lowrank": true,
+        "pfa_calibrated": true
+      },
+      {
+        "pfa": 0.0003,
+        "adapted_pd": 0.02188873291015625,
+        "raw_pd": 0.02661895751953125,
+        "lowrank_pd": 0.0003204345703125,
+        "adapted_empirical_pfa": 0.00029296875,
+        "beats_raw": false,
+        "beats_lowrank": true,
+        "pfa_calibrated": true
+      },
+      {
+        "pfa": 0.001,
+        "adapted_pd": 0.025665283203125,
+        "raw_pd": 0.0295562744140625,
+        "lowrank_pd": 0.0008544921875,
+        "adapted_empirical_pfa": 0.0009765625,
+        "beats_raw": false,
+        "beats_lowrank": true,
+        "pfa_calibrated": true
+      },
+      {
+        "pfa": 0.003,
+        "adapted_pd": 0.02938079833984375,
+        "raw_pd": 0.033233642578125,
+        "lowrank_pd": 0.0027618408203125,
+        "adapted_empirical_pfa": 0.0029296875,
+        "beats_raw": false,
+        "beats_lowrank": true,
+        "pfa_calibrated": true
+      },
+      {
+        "pfa": 0.01,
+        "adapted_pd": 0.0385589599609375,
+        "raw_pd": 0.0423431396484375,
+        "lowrank_pd": 0.00969696044921875,
+        "adapted_empirical_pfa": 0.0099609375,
+        "beats_raw": false,
+        "beats_lowrank": true,
+        "pfa_calibrated": true
+      }
+    ],
+    "summary": [
+      {
+        "method": "ipix_adapted_tpsscs_calibrator",
+        "pfa_target": 1e-05,
+        "pd_mean": 0.0163116455078125,
+        "pd_std": 0.10010361892702162,
+        "empirical_pfa_mean": 0.0,
+        "n_windows": 128
+      },
+      {
+        "method": "ipix_adapted_tpsscs_calibrator",
+        "pfa_target": 3e-05,
+        "pd_mean": 0.0163116455078125,
+        "pd_std": 0.10010361892702162,
+        "empirical_pfa_mean": 0.0,
+        "n_windows": 128
+      },
+      {
+        "method": "ipix_adapted_tpsscs_calibrator",
+        "pfa_target": 0.0001,
+        "pd_mean": 0.018829345703125,
+        "pd_std": 0.10974873816864475,
+        "empirical_pfa_mean": 9.765625e-05,
+        "n_windows": 128
+      },
+      {
+        "method": "ipix_adapted_tpsscs_calibrator",
+        "pfa_target": 0.0003,
+        "pd_mean": 0.02188873291015625,
+        "pd_std": 0.12215818855587213,
+        "empirical_pfa_mean": 0.00029296875,
+        "n_windows": 128
+      },
+      {
+        "method": "ipix_adapted_tpsscs_calibrator",
+        "pfa_target": 0.001,
+        "pd_mean": 0.025665283203125,
+        "pd_std": 0.1372122885839267,
+        "empirical_pfa_mean": 0.0009765625,
+        "n_windows": 128
+      },
+      {
+        "method": "ipix_adapted_tpsscs_calibrator",
+        "pfa_target": 0.003,
+        "pd_mean": 0.02938079833984375,
+        "pd_std": 0.14630094462518128,
+        "empirical_pfa_mean": 0.0029296875,
+        "n_windows": 128
+      },
+      {
+        "method": "ipix_adapted_tpsscs_calibrator",
+        "pfa_target": 0.01,
+        "pd_mean": 0.0385589599609375,
+        "pd_std": 0.1580405651184997,
+        "empirical_pfa_mean": 0.0099609375,
+        "n_windows": 128
+      },
+      {
+        "method": "low_rank_residual_k30",
+        "pfa_target": 1e-05,
+        "pd_mean": 4.57763671875e-05,
+        "pd_std": 0.0002072281445966698,
+        "empirical_pfa_mean": 0.0,
+        "n_windows": 128
+      },
+      {
+        "method": "low_rank_residual_k30",
+        "pfa_target": 3e-05,
+        "pd_mean": 4.57763671875e-05,
+        "pd_std": 0.0002072281445966698,
+        "empirical_pfa_mean": 0.0,
+        "n_windows": 128
+      },
+      {
+        "method": "low_rank_residual_k30",
+        "pfa_target": 0.0001,
+        "pd_mean": 0.00011444091796875,
+        "pd_std": 0.00038012409919546073,
+        "empirical_pfa_mean": 9.765625e-05,
+        "n_windows": 128
+      },
+      {
+        "method": "low_rank_residual_k30",
+        "pfa_target": 0.0003,
+        "pd_mean": 0.0003204345703125,
+        "pd_std": 0.0006944310111067357,
+        "empirical_pfa_mean": 0.00029296875,
+        "n_windows": 128
+      },
+      {
+        "method": "low_rank_residual_k30",
+        "pfa_target": 0.001,
+        "pd_mean": 0.0008544921875,
+        "pd_std": 0.0012437462750458602,
+        "empirical_pfa_mean": 0.0009765625,
+        "n_windows": 128
+      },
+      {
+        "method": "low_rank_residual_k30",
+        "pfa_target": 0.003,
+        "pd_mean": 0.0027618408203125,
+        "pd_std": 0.0031174681601925276,
+        "empirical_pfa_mean": 0.0029296875,
+        "n_windows": 128
+      },
+      {
+        "method": "low_rank_residual_k30",
+        "pfa_target": 0.01,
+        "pd_mean": 0.00969696044921875,
+        "pd_std": 0.00720045802226279,
+        "empirical_pfa_mean": 0.0099609375,
+        "n_windows": 128
+      },
+      {
+        "method": "raw",
+        "pfa_target": 1e-05,
+        "pd_mean": 0.0227203369140625,
+        "pd_std": 0.12584774181288064,
+        "empirical_pfa_mean": 0.0,
+        "n_windows": 128
+      },
+      {
+        "method": "raw",
+        "pfa_target": 3e-05,
+        "pd_mean": 0.0227203369140625,
+        "pd_std": 0.12584774181288064,
+        "empirical_pfa_mean": 0.0,
+        "n_windows": 128
+      },
+      {
+        "method": "raw",
+        "pfa_target": 0.0001,
+        "pd_mean": 0.02471160888671875,
+        "pd_std": 0.1341839014524982,
+        "empirical_pfa_mean": 9.765625e-05,
+        "n_windows": 128
+      },
+      {
+        "method": "raw",
+        "pfa_target": 0.0003,
+        "pd_mean": 0.02661895751953125,
+        "pd_std": 0.14228764362057789,
+        "empirical_pfa_mean": 0.00029296875,
+        "n_windows": 128
+      },
+      {
+        "method": "raw",
+        "pfa_target": 0.001,
+        "pd_mean": 0.0295562744140625,
+        "pd_std": 0.15096695405787114,
+        "empirical_pfa_mean": 0.0009765625,
+        "n_windows": 128
+      },
+      {
+        "method": "raw",
+        "pfa_target": 0.003,
+        "pd_mean": 0.033233642578125,
+        "pd_std": 0.15740954358133588,
+        "empirical_pfa_mean": 0.0029296875,
+        "n_windows": 128
+      },
+      {
+        "method": "raw",
+        "pfa_target": 0.01,
+        "pd_mean": 0.0423431396484375,
+        "pd_std": 0.16717304992886148,
+        "empirical_pfa_mean": 0.0099609375,
+        "n_windows": 128
+      },
+      {
+        "method": "tpsscs_finished_detector",
+        "pfa_target": 1e-05,
+        "pd_mean": 0.019317626953125,
+        "pd_std": 0.10860311923393841,
+        "empirical_pfa_mean": 0.0,
+        "n_windows": 128
+      },
+      {
+        "method": "tpsscs_finished_detector",
+        "pfa_target": 3e-05,
+        "pd_mean": 0.019317626953125,
+        "pd_std": 0.10860311923393841,
+        "empirical_pfa_mean": 0.0,
+        "n_windows": 128
+      },
+      {
+        "method": "tpsscs_finished_detector",
+        "pfa_target": 0.0001,
+        "pd_mean": 0.01938629150390625,
+        "pd_std": 0.10859130551283669,
+        "empirical_pfa_mean": 9.765625e-05,
+        "n_windows": 128
+      },
+      {
+        "method": "tpsscs_finished_detector",
+        "pfa_target": 0.0003,
+        "pd_mean": 0.01959228515625,
+        "pd_std": 0.10855642407744759,
+        "empirical_pfa_mean": 0.00029296875,
+        "n_windows": 128
+      },
+      {
+        "method": "tpsscs_finished_detector",
+        "pfa_target": 0.001,
+        "pd_mean": 0.0201263427734375,
+        "pd_std": 0.1084669791752042,
+        "empirical_pfa_mean": 0.0009765625,
+        "n_windows": 128
+      },
+      {
+        "method": "tpsscs_finished_detector",
+        "pfa_target": 0.003,
+        "pd_mean": 0.02202606201171875,
+        "pd_std": 0.10816607100397052,
+        "empirical_pfa_mean": 0.0029296875,
+        "n_windows": 128
+      },
+      {
+        "method": "tpsscs_finished_detector",
+        "pfa_target": 0.01,
+        "pd_mean": 0.02893829345703125,
+        "pd_std": 0.10712695450168179,
+        "empirical_pfa_mean": 0.0099609375,
+        "n_windows": 128
+      },
+      {
+        "method": "tpsscs_trainable_gate",
+        "pfa_target": 1e-05,
+        "pd_mean": 0.0192718505859375,
+        "pd_std": 0.10861090088851452,
+        "empirical_pfa_mean": 0.0,
+        "n_windows": 128
+      },
+      {
+        "method": "tpsscs_trainable_gate",
+        "pfa_target": 3e-05,
+        "pd_mean": 0.0192718505859375,
+        "pd_std": 0.10861090088851452,
+        "empirical_pfa_mean": 0.0,
+        "n_windows": 128
+      },
+      {
+        "method": "tpsscs_trainable_gate",
+        "pfa_target": 0.0001,
+        "pd_mean": 0.02101898193359375,
+        "pd_std": 0.11826153650397943,
+        "empirical_pfa_mean": 9.765625e-05,
+        "n_windows": 128
+      },
+      {
+        "method": "tpsscs_trainable_gate",
+        "pfa_target": 0.0003,
+        "pd_mean": 0.022735595703125,
+        "pd_std": 0.12711467480369135,
+        "empirical_pfa_mean": 0.00029296875,
+        "n_windows": 128
+      },
+      {
+        "method": "tpsscs_trainable_gate",
+        "pfa_target": 0.001,
+        "pd_mean": 0.02469635009765625,
+        "pd_std": 0.13354764527387547,
+        "empirical_pfa_mean": 0.0009765625,
+        "n_windows": 128
+      },
+      {
+        "method": "tpsscs_trainable_gate",
+        "pfa_target": 0.003,
+        "pd_mean": 0.027099609375,
+        "pd_std": 0.13810304142956498,
+        "empirical_pfa_mean": 0.0029296875,
+        "n_windows": 128
+      },
+      {
+        "method": "tpsscs_trainable_gate",
+        "pfa_target": 0.01,
+        "pd_mean": 0.0333404541015625,
+        "pd_std": 0.14239180933560128,
+        "empirical_pfa_mean": 0.0099609375,
+        "n_windows": 128
+      }
+    ]
+  },
+  "boundary": "Independent IPIX file-level holdout adaptation; train files and test files are disjoint."
+}

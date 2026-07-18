@@ -1,0 +1,11 @@
+calibration_mode,residual_safety_factor,gate_margin_scale,combined_pfa_calibrated,asset_pfa_calibrated,all_methods_combined_pfa_calibrated,combined_wins_vs_raw,combined_wins_vs_lowrank,asset_wins_vs_raw,asset_wins_vs_lowrank,combined_points,asset_points,min_combined_delta_vs_raw,min_combined_delta_vs_lowrank,max_combined_tpsscs_pfa_ratio,max_asset_tpsscs_pfa_ratio,strict_pass
+same_asset_target_free_conservative,1000.0,4096.0,False,False,False,7,0,14,0,7,14,0.3534205224376703,0.0,51.925473646100194,60.26560748262179,False
+same_asset_target_free_conservative,1000.0,16384.0,False,False,False,7,0,14,0,7,14,0.3534205224376703,0.0,51.925473646100194,60.26560748262179,False
+same_asset_target_free_conservative,1000.0,65536.0,False,False,False,7,0,14,0,7,14,0.3534205224376703,0.0,51.925473646100194,60.26560748262179,False
+same_asset_target_free_conservative,1000.0,1024.0,False,False,False,7,7,14,14,7,14,0.39421889757944745,0.03443905039936013,52.31084914742675,60.57100229294379,False
+cross_asset_target_free_conservative,1000.0,4096.0,False,False,False,7,0,14,0,7,14,0.35493131512593257,0.0,52.51444269687086,59.43678819840562,False
+cross_asset_target_free_conservative,1000.0,16384.0,False,False,False,7,0,14,0,7,14,0.35493131512593257,0.0,52.51444269687086,59.43678819840562,False
+cross_asset_target_free_conservative,1000.0,65536.0,False,False,False,7,0,14,0,7,14,0.35493131512593257,0.0,52.51444269687086,59.43678819840562,False
+cross_asset_target_free_conservative,1000.0,1024.0,False,False,False,7,7,14,14,7,14,0.39536182898474115,0.034271620237159794,52.878008612867,59.78581527940166,False
+same_asset_target_free_conservative,1000.0,256.0,False,False,False,7,7,14,14,7,14,0.4539533489611222,0.08138335548148157,55.37920163980702,63.028581929034914,False
+cross_asset_target_free_conservative,1000.0,256.0,False,False,False,7,7,14,14,7,14,0.4551783942507329,0.08317267552380658,55.982692651223985,62.18520737624058,False

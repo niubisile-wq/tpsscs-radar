@@ -1,0 +1,915 @@
+                                         IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                                                                     1
+
+
+
+
+                                               Lightweight Salient Object Detection in Optical
+                                               Remote Sensing Images via Feature Correlation
+                                                                           Gongyang Li, Zhi Liu, Senior Member, IEEE, Zhen Bai,
+                                                                       Weisi Lin, Fellow, IEEE, and Haibin Ling, Senior Member, IEEE
+
+
+
+                                            Abstract—Salient object detection in optical remote sensing                                 0.87
+                                                                                                                                                              SARNet                                    EMFINet
+                                         images (ORSI-SOD) has been widely explored for understanding                                          CorrNet            47FPS                                      25FPS
+                                                                                                                                                   100FPS
+                                         ORSIs. However, previous methods focus mainly on improving                                                          MJRBM MINet                   GateNet
+                                                                                                                                                                                                                     PA-KRN
+arXiv:2201.08049v1 [cs.CV] 20 Jan 2022
+
+
+
+
+                                                                                                                                        0.82                  32FPS                         25FPS
+                                         the detection accuracy while neglecting the cost in memory and                                                                     12FPS                                     16FPS
+                                                                                                                                                     ITSD
+                                         computation, which may hinder their real-world applications. In                                             16FPS
+                                                                                                                                                              DAFNet                 GCPA
+                                                                                                                                                                                      23FPS
+                                         this paper, we propose a novel lightweight ORSI-SOD solution,                                                             26FPS                                SUCA
+
+
+
+
+                                                                                                                   Accuracy(mean F-m)
+                                                                                                                                        0.77 CSNet                                                       24FPS
+                                         named CorrNet, to address these issues. In CorrNet, we first                                              38FPS
+                                         lighten the backbone (VGG-16) and build a lightweight subnet for
+                                         feature extraction. Then, following the coarse-to-fine strategy, we                                       SAMNet
+                                                                                                                                        0.72         44FPS                                           EGNet
+                                         generate an initial coarse saliency map from high-level semantic                                                                                             9FPS
+                                         features in a Correlation Module (CorrM). The coarse saliency
+                                         map serves as the location guidance for low-level features.                                    0.67                                        RADF
+                                         In CorrM, we mine the object location information between                                                                PoolNet            7FPS
+                                                                                                                                                                    25FPS
+                                         high-level semantic features through the cross-layer correlation                                                                     R3Net
+                                         operation. Finally, based on low-level detailed features, we refine                            0.62                                    2FPS
+                                         the coarse saliency map in the refinement subnet equipped with
+                                         Dense Lightweight Refinement Blocks, and produce the final fine                                                                            DSS
+                                                                                                                                                                                    8FPS
+                                         saliency map. By reducing the parameters and computations of                                   0.57
+                                                                                                                                               0             30               60              90             120              150
+                                         each component, CorrNet ends up having only 4.09M parame-
+                                         ters and running with 21.09G FLOPs. Experimental results on                                                                         Parameters(M)
+                                         two public datasets demonstrate that our lightweight CorrNet
+                                         achieves competitive or even better performance compared with             Fig. 1. Accuracy, parameters and inference speed comparisons of our CorrNet
+                                                                                                                   and other CNN-based methods on the EORSSD dataset [13]. • represents
+                                         26 state-of-the-art methods (including 16 large CNN-based meth-
+                                                                                                                   real-time methods, • represents non-real-time methods, and • represents our
+                                         ods and 2 lightweight methods), and meanwhile enjoys the clear            CorrNet.
+                                         memory and run time efficiency. The code and results of our
+                                         method are available at https://github.com/MathLee/CorrNet.
+                                            Index Terms—Lightweight salient object detection, optical              an emerging topic in SOD, i.e., ORSI-SOD. Optical remote
+                                         remote sensing image, cross-layer correlation, dense lightweight          sensing images (ORSIs) are photographed by satellites and
+                                         refinement block.                                                         aerial sensors, and have three optical bands (i.e., red, green
+                                                                                                                   and blue bands), which are the same as natural scene images
+                                                                 I. I NTRODUCTION                                  (NSIs). The scenes of ORSIs are completely different from
+                                                                                                                   NSIs and are very challenging. ORSI-SOD can discover at-
+                                              ALIENT object detection (SOD) [1]–[3] focuses on ex-
+                                         S    tracting the visually distinctive objects or regions in a
+                                         scene, and often serves as an important preprocessing step
+                                                                                                                   tractive objects, which is conducive to quickly analyzing and
+                                                                                                                   understanding ORSIs.
+                                                                                                                      Early traditional NSI-SOD methods [14] mainly relied on
+                                         in computer vision. It has been successfully applied in image             hand-crafted features, which usually lead to unsatisfactory
+                                         retargeting [4], image quality assessment [5], [6], and object            detection accuracy. Recently, convolutional neural networks
+                                         segmentation [7], [8], etc. In recent decades, there have been            (CNNs) [15] have demonstrated powerful capabilities in com-
+                                         many branches of SOD, such as SOD in natural scene images                 puter vision, and greatly promoted the development of NSI-
+                                         (NSI-SOD) [1], video SOD [2], RGB-D SOD [9], [10], co-                    SOD algorithms [1], which often generate satisfactory saliency
+                                         saliency detection [11], SOD in optical remote sensing images             maps. However, the improvement in detection accuracy often
+                                         (ORSI-SOD) [12], etc. In this paper, we are committed to                  comes from more complicated network structures, which typ-
+                                                                                                                   ically come with a large amount of parameters and increased
+                                            Gongyang Li, Zhi Liu, and Zhen Bai are with Shanghai Institute
+                                         for Advanced Communication and Data Science, Shanghai University,         computational complexity. Since ORSIs and NSIs have gaps
+                                         Shanghai 200444, China, and School of Communication and Informa-          in the scene, it is not appropriate to directly migrate NSI-
+                                         tion Engineering, Shanghai University, Shanghai 200444, China (email:     SOD to ORSIs, but most of the existing ORSI-SOD meth-
+                                         ligongyang@shu.edu.cn; liuzhisjtu@163.com; bz536476@163.com).
+                                            Weisi Lin is with the School of Computer Science and Engi-             ods [13], [16]–[18] are affected by NSI-SOD methods. There-
+                                         neering, Nanyang Technological University, Singapore 639798 (e-mail:      fore, ORSI-SOD methods usually have a large computational
+                                         wslin@ntu.edu.sg).                                                        consumption and memory burden, and are accompanied by
+                                            Haibin Ling is with the Department of Computer Science, Stony Brook
+                                         University, Stony Brook, NY 11794 USA (email: hling@cs.stonybrook.edu).   limited inference speed.
+                                            Corresponding author: Zhi Liu.                                            In Fig. 1, we show the detection accuracy of recent NSI-
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                 2
+
+
+
+SOD methods (PA-KRN [19], SUCA [20], GateNet [21],                       demonstrate that the proposed CorrNet achieves better
+EGNet [22]) and ORSI-SOD methods (DAFNet [13],                           or competitive performance compared with previously
+EMFINet [16], MJRBM [17], SARNet [18]) on an ORSI-                       proposed large CNN-based methods.
+SOD dataset, namely EORSSD [13]. We also report their                  We organize the rest of this paper as follows. In Sec. II,
+parameters and inference speed in Fig. 1. Although these            we review the related work of ORSI-SOD. In Sec. III, we
+methods show good performance, their parameters are amaz-           elaborate our CorrNet. In Sec. IV, we conduct experiments and
+ing and inference speeds are slow, for example, PA-KRN              ablation studies. Finally, in Sec. V, we draw the conclusion.
+has 141.06M parameters with only 16 fps and EMFINet
+has 107.26M parameters with 25 fps. And the performance
+                                                                                         II. R ELATED W ORK
+of the two lightweight NSI-SOD methods (CSNet [23] and
+SAMNet [24]) is slightly inferior. Considering the application      A. Lightweight Methods for NSI-SOD
+scenarios of ORSI-SOD, we believe that ORSI-SOD is in                  The lightweight NSI-SOD task is an emerging direction
+urgent need of a lightweight solution with fewer parameters,        in NSI-SOD, which aims to propose a solution suitable
+faster speed and good accuracy.                                     for edge computing devices. Gao et al. [23] proposed an
+   Inspired by the above observations, in this paper, we pro-       extremely lightweight network with only about 100K pa-
+pose a novel lightweight solution for ORSI-SOD, namely              rameters and 95.3ms run-time on a single core i7-8700K
+CorrNet, which is the first lightweight ORSI-SOD model              CPU. Liu et al. [24] constructed a stereoscopic attention
+as we know. In CorrNet, we mainly realize the lightweight           mechanism based backbone for lightweight NSI-SOD. In [29],
+framework from two aspects: 1) lightening the backbone,             Liu et al. imitated the primate visual hierarchies, and proposed
+and 2) designing lightweight modules. For the backbone,             the hierarchical visual perception network for better multiscale
+previous methods [13], [16]–[18] usually adopt the pre-trained      learning. However, lightweight ORSI-SOD is still a desert.
+VGG [25] or ResNet [26] as the backbone, but such back-             In this paper, we propose an effective and efficient solution
+bones suffer from a large number of parameters despite their        for lightweight ORSI-SOD for the first time. Different from
+powerful feature extraction capabilities. To achieve a balance      the above lightweight NSI-SOD methods which focus on
+between the feature extraction capabilities and the amount          designing lightweight backbones, we focus on lightening the
+of parameters, we modify the vanilla VGG [25] and build             existing backbone (i.e., VGG-16) and proposing effective and
+a lightweight but powerful backbone for feature extraction.         lightweight modules.
+For the lightweight modules, we use the depthwise separable
+convolution [27], [28] instead of the regular one, which can
+reduce the parameters of regular convolution by about 90%.          B. Traditional Methods for ORSI-SOD
+In this way, our CorrNet has only 4.09M parameters.                    Similar to traditional NSI-SOD methods [14], traditional
+   Moreover, to keep a good detection accuracy of CorrNet,          ORSI-SOD methods also mainly rely on hand-crafted features.
+we implement it following the coarse-to-fine strategy with two      Faur et al. [30] presented a rate distortion-based estimation
+novel modules. For the coarse part, we explore the object loca-     method and considered the mean-shift algorithm to segment
+tion information among two groups of high-level semantic fea-       the remote sensing images. Zhang et al. [31] applied color
+tures in the Correlation Module, and obtain the initial coarse      information content analysis to ORSIs, and then computed
+saliency map. Then, we refine it with other low-level detailed      the saliency scores of each color channel and fused color
+features in the refinement subnet, which consists of several        components for final results. In [32], Zhao et al. introduced
+Dense Lightweight Refinement Blocks, and obtain the final           the high-level global and background cues for saliency map
+fine saliency map. With all components working together, our        integration. In [33], Zhang et al. combined the super-pixel and
+CorrNet achieves excellent performance in accuracy (86.20%          statistical saliency feature analysis for ORSI-SOD. Based on
+in mean F-measure on the EORSSD dataset [13]), parameters           low-rank matrix recovery, Zhang et al. [34] proposed a self-
+(4.09M) and inference speed (100fps), as shown in Fig. 1.           adaptive fusion method to fuse color feature, intensity feature,
+   Our main contributions are summarized as follows:                texture, and global contrast for saliency detection in ORSIs.
+   • We explore the lightweight framework of ORSI-SOD for           Huang et al. [35] proposed a contrast-weighted dictionary
+      the first time. To this end, we propose a novel lightweight   learning based method for VHR RSI saliency detection, which
+      CorrNet (only 4.09M parameters) that uses the coarse-         follows the procedure of discriminant dictionary construction,
+      to-fine strategy.                                             saliency measurement and saliency fusion.
+   • We propose a Correlation Module to explore the cross-             In addition to general ORSI-SOD methods, there are some
+      layer correlation of high-level semantic context, generat-    traditional methods for specific scenes of ORSIs. For ship
+      ing an initial coarse saliency map to low-level features      detection, Chen et al. [36] proposed a contour refinement
+      for location guidance.                                        and the improved generalized Hough transform-based method
+   • We propose a Dense Lightweight Refinement Block to             to handle complex harbor scenes. For oil tank detection,
+      merge the enhanced feature embeddings and the refined         Liu et al. [37] constructed a color Markov chain in the CIE
+      features for finely sculpting salient objects, gradually      Lab space to generate a bottom-up latent saliency map. For
+      producing the final fine saliency map.                        airport detection, Zhang et al. [38] proposed a complementary
+   • We evaluate the proposed CorrNet against 26 state-of-          saliency analysis and saliency-oriented active contour model.
+      the-art methods on two ORSI-SOD datasets. Experiments         For residential areas extraction, based on complementarities,
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                                            3
+
+
+
+                                                               Lightweight Feature Extraction Subnet
+                              E1                         E2                          E3                      DS-E4                           DS-E5
+                        64 × 256 × 256            128 × 128 × 128              256 × 64 × 64              512 × 32 × 32                  512 × 16 × 16
+
+     ORSI                                                                                                                                    ↑
+ 3 × 256 × 256
+                              CA                         CA
+                                                                                                                            Correlation
+                              ⨀                          ⨀
+                                                                                                      S4: 32 × 32            G       G
+                              SA                         SA                                         Coarse Map
+                            ⊗                          ⊗                                                                         ⊚
+                         FEM                        FEM                                                                              CorrM
+                            ⊕                          ⊕                             ⊕      ⊗ ↑                                  S
+                                   Refinement Subnet
+
+                              ⊚     ↑                    ⊚     ↑                                    ⊙/⊗        Channel-/Element-wise Multiplication
+               DLRB-1                     DLRB-2                      DLRB-3
+                                                                                                  ⊕ Element-wise Summation               ⊚ Concatenation
+                                                                                                        Depthwise Separable Conv.            Conv.
+                                          Training
+                                                                                                 CA     Channel Attention                G   Polishing Gate
+
+                                                                                                 SA Spatial Attention                    S   Sigmoid
+
+  Fine Map                                                                                        ↑     Upsampling                           Supervision
+                         S2: 256 × 256               S3: 128 × 128             GT
+ S1: 256 × 256
+
+Fig. 2. The overall framework of the proposed CorrNet. First, we adopt a lightweight feature extraction subnet, which is a variant of classic VGG-16 [25],
+to extract the basic feature embeddings. Then, we model the cross-layer correlation between two groups of high-level semantic features in the Correlation
+Module (CorrM), and generate the initial coarse saliency map S4 . Meanwhile, the low-level detailed features are enhanced in the general Feature Enhancement
+Module (FEM). Finally, we refine the coarse saliency map with the enhanced features in the refinement subnet, which consists of three Dense Lightweight
+Refinement Blocks (DLRBs), and generate the final fine saliency map S1 . Notably, in the training phase, we adopt the deep supervision.
+
+
+
+Zhang et al. [39] merged two global maps and one local map                     and the global image-level content to explore the comple-
+to achieve complete residential areas.                                         mentarity of multiple content. Differently, Zhang et al. [41]
+   Since hand-crafted features are usually accompanied by                      solved this problem based on the weakly supervised learning.
+a large amount of computational consumption and memory                         In [42], Li et al. focused on cross-level feature fusion, and
+burden, the above traditional methods are not efficient enough                 inferred saliency map from a parallel down-up fusion network.
+for practical applications.                                                    Huang et al. [18] used the high-level features as a guide for
+                                                                               locating multi-scale objects, and combined cross-level features
+                                                                               and semantic information to refine the objects.
+C. CNN-based Methods for ORSI-SOD
+                                                                                  The above mentioned existing methods have achieved high
+   Taking the advantage of the powerful feature representation                 detection accuracy on the ORSSD and EORSSD datasets.
+capabilities of CNNs, many CNN-based ORSI-SOD methods                          However, these methods neglect the parameter and computa-
+have shown good performance. In order to meet the data                         tional complexity of models, which prevents them from being
+requirements of CNN-based methods, Li et al. [12] and                          deployed into practical systems. By contrast, in this paper, we
+Zhang et al. [13] constructed two challenging datasets for                     no longer focus on improving detection accuracy blindly, but
+ORSI-SOD, namely ORSSD and EORSSD. Based on these                              open up a new direction for ORSI-SOD, that is, lightweight
+two datasets, a large number of CNN-based methods have                         ORSI-SOD, which is to achieve a balance among accuracy,
+emerged.                                                                       parameters, and computational complexity. To this end, we
+   In [12], Li et al. constructed a L-shape module (i.e., the                  propose the first lightweight framework, namely CorrNet, for
+two-stream pyramid module) and a V-shape module (i.e., the                     ORSI-SOD. In CorrNet, we implement all components in a
+encoder-decoder module with nested connections) based                          lightweight manner while maintaining competitive or even
+on features extracted from five different-resolution ORSIs.                    better performance.
+Zhou et al. [16] followed the multi-input strategy, and in-
+troduced edge features to complete salient regions in feature
+                                                                                                      III. P ROPOSED M ETHOD
+level. Edge information plays an important role in ORSI-
+SOD. In [13], Zhang et al. additionally introduced the edge                      In this section, we elaborate the proposed CorrNet. In
+supervision for network training and constructed a multi-task                  Sec. III-A, we depict the network overview of our CorrNet.
+framework. Tu et al. [17] extracted edge features from the                     In Sec. III-B, we show how to lighten the backbone. In
+local cues and the global information, and embed the boundary                  Sec. III-C and Sec. III-D, we elaborate the Correlation Module
+features into region features. In addition to edge information,                and the Dense Lightweight Refinement Block, respectively. In
+Li et al. [40] additionally introduced foreground, background                  Sec. III-E, we formulate the loss function.
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                            4
+
+
+
+                          TABLE I                                            i.e., the last four layers (i.e., one max-pooling layer and
+     PARAMETERS COMPARISON ( INCLUDING THE PARAMETERS OF                     three fully connected layers) are abandoned. However, the
+    CONVOLUTIONAL LAYER AND BATCH NORMALIZATION LAYER ) OF
+               VANILLA -VGG AND OUR LFE-VGG.                                 amount of parameters of the modified vanilla VGG is still
+                                                                             large, which is not suitable as the backbone of a lightweight
+                        Vanilla-VGG                  LFE-VGG                 model. Therefore, in this paper, we propose a convenient way
+      Block
+                  #Param(M)        Ratio      #Param(M)       Ratio          to lighten the vanilla VGG without compromising its feature
+       E1             0.04        0.27%          0.04         1.24%
+                                                                             extraction ability.
+       E2             0.22        1.50%          0.22         6.83%
+                                                                                In Tab. I, we present the amount of parameters (including
+       E3             1.48        10.05%         1.48        45.96%
+                                                                             the parameters of convolution layer and batch normalization
+                                                                             layer [45]) of each convolution block in the vanilla VGG.
+    E4 /DS-E4         5.90        40.08%         0.67        20.81%
+                                                                             We observe that the last two convolution blocks of the vanilla
+    E5 /DS-E5         7.08        48.10%         0.81        25.16%
+                                                                             VGG (i.e., E4 and E5 ) have 12.98M parameters, which account
+      Total          14.72       100.00%         3.22        100.00%
+                                                                             for about 88.18% of all parameters. Recently, MobileNets [27],
+                                                                             [28] use the depthwise separable convolution (DSConv) to
+                                                                             replace the regular convolution. The DSConv can significantly
+A. Network Overview                                                          reduce the parameters without weakening the feature repre-
+    We present the overall framework of the proposed CorrNet                 sentation ability. Motivated by [27], [28], we adopt DSConvs
+in Fig. 2. CorrNet is comprised of three main components:                    instead of regular convolutions in E4 and E5 , and get the
+a lightweight feature extraction subnet (equipped with the                   redefined convolution blocks DS-E4 and DS-E5 . There are
+general Feature Enhancement Module), a Correlation Module                    two reasons why we only redefine E4 and E5 . First, according
+and a refinement subnet (equipped with the Dense Lightweight                 to the above analysis, E4 and E5 occupy the largest amount
+Refinement Block). It follows the coarse-to-fine strategy, that              of parameters. Second, we hope to use as many pre-trained
+is, first generating a coarse saliency map and then sculpting it             parameters of the vanilla VGG as possible to inherit powerful
+to generate a fine saliency map.                                             feature extraction ability.
+    For feature extraction, we modify the classic vanilla VGG-                  In this way, we construct our Lightweight Feature Extraction
+16 [25] and construct a lightweight feature extraction subnet,               Subnet, named LFE-VGG. As presented in Tab. I, the amount
+named LFE-VGG. There are five convolution blocks in LFE-                     of parameters of E4 is reduced from 5.90M to 0.67M, and that
+VGG. The first three convolution blocks are denoted as Et                    of E5 is reduced from 7.08M to 0.81M. Overall, our LFE-VGG
+(t = 1, 2, 3) and their output features as fet ∈ Rct×ht×wt . The             reduces 11.50M parameters compared to the vanilla VGG,
+last two convolution blocks are denoted as DS-Et (t = 4, 5),                 and only has 3.22M parameters in total, which is a qualified
+                                t
+and their output features as fdse    ∈ Rct×ht×wt . The size of input         lightweight backbone. We will assess the effectiveness and
+is I ∈ R3×256×256 , so ht is 2256             256
+                                 t−1 , wt is 2t−1 , and ct belongs
+                                                                             efficiency of LFE-VGG in Sec. IV-C.
+to {64, 128, 256, 512, 512}. Then, we apply the channel and
+spatial attentions1 [43], [44] to fe1 and fe2 in the Feature En-             C. Correlation Module
+hancement Module (FEM), and get the enhanced features fˆe1                      In video object segmentation, the target objects usually exist
+and fˆe2 . To reduce parameters and computational complexity,                in consecutive video frames with small differences. To accu-
+                                   4         5
+we compress the channel of fdse        and fdse   (i.e., 512) to 128,        rately segment the target objects, Lu et al. [46] employed the
+                        5                               4
+and then upsample fdse to be the same size as fdse         . This way,       co-attention mechanism [47] to effectively mine the inherent
+we get fˆdse and fˆdse , which belong to R 4 4 4 (ĉ4 is 128).
+           4          5                       ĉ ×h  ×w                      correlation among consecutive video frames. Inspired by [46],
+    Next, we model the feature correlation among fˆdse    4
+                                                              and fˆdse
+                                                                    5        considering that the salient regions also exist in consecutive
+in the Correlation Module (CorrM), aiming to mine the object                 features of an ORSI, we make an attempt to explore the cross-
+location information of high-level semantic context. In this                 layer correlation of continuous high-level semantic features
+way, we get an initial coarse saliency map S4 . As shown in                  and propose the Correlation Module. Different from [46],
+Fig. 2, the coarse saliency map S4 can accurately locate the                 which generates corresponding segmentation maps of different
+salient objects. It is used to modulate fe3 to focus on the salient          video frames, we focus on generating an initial coarse saliency
+regions, generating the modulated features fˆe3 . Finally, fˆe1 ,            map from the continuous semantic features for location guid-
+fˆe2 and fˆe3 are fed to the refinement subnet to generate the               ance of low-level features.
+final fine saliency map S1 through three Dense Lightweight                      We illustrate the Correlation Module (CorrM) in Fig. 3. It
+Refinement Blocks (DLRBs).                                                   has three main components: cross-layer correlation operator,
+                                                                             polishing gate, and initial coarse saliency map generation. In
+                                                                             the following, we elaborate CorrM based on these three parts,
+B. Lightweight Feature Extraction Subnet                                     and we also present the feature modulation process based on
+  Previous ORSI-SOD methods [13], [16], [40] generally                       the coarse saliency map.
+adapt the vanilla VGG-16 [25] for basic feature extraction,                     1) Cross-layer Correlation. As shown in Fig. 3, we perform
+                                                                             the cross-layer correlation operator on fˆdse
+                                                                                                                       4
+                                                                                                                           and fˆdse
+                                                                                                                                  5
+                                                                                                                                     (i.e., the
+  1 Channel attention is implemented by a spatial-wise global max pooling
+                                                                             continuous high-level semantic features), both belonging to
+(GMP) and two fully connected layers (the first one is with ReLU and
+the second one is with sigmoid); and spatial attention is implemented by a   Rĉ4×h4×w4 . Here, we simplify refer their sizes ĉ4 ×h4 ×w4 as
+channel-wise GMP and a one-channel regular convolution layer with sigmoid.   C ×H ×W for notation conciseness.
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                    5
+
+
+
+
+                 𝒇෠ 4dse                                  𝒇෠ 5dse       2) Polishing Gate. The above cross-layer correlation opera-
+                                                                                                                      4         5
+               C×H×W                                     C×H×W       tor may leave some redundant information in fcorr    and fcorr .
+                                                                     To address this issue, we introduce a simple but effective gate
+                                                                                              4         5
+                                                                     mechanism to polish fcorr   and fcorr , and achieve more pure
+                                                         Reshape     location information.
+               Reshape                            C×HW
+                     C×HW       Cross-layer           Transpose
+                                                                        In order to reduce the module parameters, here, we adopt the
+                                Correlation                          regular 1×1 convolution layer to separately produce a response
+                                                  HW×C                                                         4
+                                                                     map (which belongs to [0, 1]1×H×W ) for fcorr       5
+                                                                                                                   and fcorr . Based
+                                                Wc          ⊛
+                                                C×C                  on the two response maps, we filter the redundant information
+                                       ⊛              HW×C                4
+                                                                     of fcorr         5
+                                                                               and fcorr . We formulate the above gate mechanism
+                             HW× HW
+                                             Transpose               as follows:
+                  ⊛        Softmax            Softmax       ⊛
+                                                                                  4                          4        4
+                                                                                                                 
+            C×HW                                              C×HW              fgate = sigmoid conv1×1 (fcorr  ) ⊗ fcorr ,
+                                                                                  5                          5
+                                                                                                                     5
+                                                                                                                                  (4)
+               Reshape                                   Reshape                fgate = sigmoid conv1×1 (fcorr ) ⊗ fcorr  ,
+                     C×H×W                       C×H×W
+                                                                                4      5
+                                                                     where {fgate   , fgate } ∈ RC×H×W are the polished features,
+                 1 1                                      1 1
+                                                                     conv1×1 (·) is the regular 1×1 convolution operator, and ⊗
+                   S Gate                            Gate S
+                                 CorrM                               is the element-wise multiplication. Moreover, we adopt the
+                  ⊗                                      ⊗           residual connection to merge fgate4
+                                                                                                           and fˆdse
+                                                                                                                 4          5
+                                                                                                                     , and fgate and
+                                                                      ˆ5                            ˆ4        ˆ5
+                                                                     fdse , respectively, producing fgate and fgate as follows:
+                  ⊕                    ⊚                   ⊕
+
+                                       1 1                                           fˆgate
+                                                                                       4              4
+                                                                                            = DSconv(fgate ⊕ fˆdse
+                                                                                                               4
+                                                                                                                   ),
+                                                                                                                                   (5)
+                                       S                                              ˆ5              5       ˆ5
+                                                                                     fgate = DSconv(fgate ⊕ fdse ),
+             ⊛ Matrix Multiplication           1 1       1×1Conv.
+                                                                     where DSconv(·) is the 3×3 DSConv and ⊕ is the element-
+                                                                     wise summation. This original content preservation mode
+Fig. 3.   Illustration of the Correlation Module (CorrM).
+                                                                     (i.e., the residual connection) is good for feature represen-
+                                                                     tation.
+   First, we reshape fˆdse
+                         4
+                             to RC×(HW ) , and reshape and              3) Initial Coarse Saliency Map Generation. Thanks to the
+            ˆ5
+transpose fdse to R   (HW )×C
+                              . Then, we define a learnable          above two effective parts of CorrM, the generated fˆgate
+                                                                                                                           4
+                                                                                                                               and
+weight matrix Wc ∈ RC×C for fˆdse 5
+                                      , and construct a learning      ˆ5
+                                                                     fgate are very informative. Based on them, we introduce the
+process for the cross-layer correlation operator, which makes        last part of our CorrM as follows:
+our CorrM robust. Next, we compute the feature correlation                                                               
+via matrix multiplication to capture similarity between each              S4 = sigmoid conv1×1 DSconv(fˆgate4
+                                                                                                                } fˆgate
+                                                                                                                    5
+                                                                                                                         ) , (6)
+row of the reshaped and transposed fˆdse 5
+                                            and each column of
+               ˆ4
+the reshaped fdse . We formulate the above process as follows:       where S4 ∈ [0, 1]1×32×32 is the initial coarse saliency map and
+                            >                                       } is the concatenation. In this way, we completely extract the
+           r = rshp(fˆdse
+                        5
+                           ) ~ Wc ~ rshp(fˆdse   4
+                                                   ),        (1)     location information of fˆgate
+                                                                                               4
+                                                                                                    and fˆgate
+                                                                                                          5
+                                                                                                               , accurately determining
+                                                                                                          4
+                                                                     the salient regions in ORSIs, as S shown in Fig. 2.
+where r ∈ R(HW )×(HW ) is the cross-layer correlation matrix,
+                                                                        4) Feature Modulation. Further, we migrate location infor-
+rshp(·) is the reshape operation, > is the matrix transpose
+                                                                     mation to the basic features fe3 as follows:
+operation, and ~ is the matrix multiplication.
+  After obtaining the cross-layer correlation matrix r, we                              fˆe3 = Up(S4 ) ⊗ fe3 ⊕ fe3 ,               (7)
+use the softmax function to normalize it along the rows and
+columns respectively, and exploit it to determine the location       where fˆe3 ∈ Rc3×h3×w3 is the modulated features and Up(·) is
+of salient regions of high-level semantic features, which can        the upsampling operation. This direct feature modulation mode
+be formulated as follows:                                            provides accurate location information for the subsequent
+                                                                     object refinement process, laying a solid foundation for the
+             4
+                 = rshp rshp(fˆdse
+                                4
+                                                  
+           fcorr                   ) ~ softmax(r) ,        (2)       final fine saliency map.
+            5
+                = rshp rshp(fˆdse
+                               5
+                                  ) ~ softmax(r > ) ,                   In summary, our CorrM balances effectiveness and effi-
+                                                   
+          fcorr                                            (3)
+                                                                     ciency, that is, predicting a momentous coarse saliency map
+          4       5
+where {fcorr  , fcorr } ∈ RC×H×W are features containing rich        with few parameters. We will evaluate the importance of our
+location information.                                                CorrM in Sec. IV-C.
+   Since we perform the matrix-based cross-layer correlation
+operator on fˆdse
+                4
+                    and fˆdse
+                          5
+                              , whose sizes are 128×32×32, its
+computational cost is limited. Besides, only the parameters          D. Dense Lightweight Refinement Block
+of the weight matrix Wc need to be learned. Therefore, the             The widely used refinement block usually follows a cas-
+cross-layer correlation operator is with few parameters and          caded structure, i.e., several regular convolution layers are
+low computational cost, but has strong capabilities to locate        connected one by one. However, there are some challenging
+salient objects in ORSIs.                                            scenarios in ORSIs, such as multiple objects and small objects.
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                          6
+
+
+
+                                                                           where G is the ground truth, and `bce (·) and `iou (·) are BCE
+                                                                           loss and IoU loss, respectively.
+
+
+          1                  1                   1                                               IV. E XPERIMENTS
+                   r=6
+
+
+
+
+                                       r=4
+
+
+
+
+                                                           r=2
+          × ⊕                × ⊕                 ×   ⊕
+          1                  1                   1                         A. Implementation Details and Evaluation Metrics
+                Dense Lightweight Refinement Block                            1) Implementation Details. We train and test CorrNet on
+                                                                           the ORSSD and EORSSD datasets, respectively. There are
+                             r        Dilated DSConv.
+                                                                           800 ORSIs with corresponding ground truths in the ORSSD
+Fig. 4.   Illustration of the Dense Lightweight Refinement Block (DLRB).   dataset [12], in which 600 images are used for training and
+                                                                           200 images for testing. And there are 2,000 ORSIs with corre-
+                                                                           sponding ground truths in the EORSSD dataset [13], in which
+The cascaded structure is not conducive to capturing multi-                1,400 images are used for training and 600 images for testing.
+scale information and is a suboptimal way for objects refine-              We adopt the flipping and rotation for data augmentation,
+ment in ORSIs. Besides, the cascaded refinement block is usu-              generating 4,800 training pairs for ORSSD and 11,200 training
+ally implemented by regular convolution layers, bringing lots              pairs for EORSSD. All the experiments are conducted on the
+of parameters. Inspired by DenseNet [48] and DSConv [27],                  PyTorch [64] platform with an NVIDIA Titan X GPU (12GB
+[28], we implement a refinement block with the dense structure             memory). In the training phase, we resized the training pairs
+and DSConvs, constructing a Dense Lightweight Refinement                   to 256×256, and adopt the Adam optimization strategy [65]
+Block (DLRB) for objects refinement in ORSIs, as shown in                  with the batch size 8 and the initial learning rate 1e−4 ,
+Fig. 4.                                                                    which will be divided by 10 after 30 epochs. We initialize
+   For each DLRB, there are three dilated DSConvs with                     the first three blocks of LFE-VGG by the pre-trained VGG-
+progressive dilation rates {2,4,6} and three 1×1 convolution               16 model [25], and initialize other newly added DSConvs
+layers. Dilated DSConvs enlarge the receptive field, capturing             and 1×1 convolution layers by the normal distribution [66].
+multi-scale features comprehensively. And 1×1 convolution                  Notably, on the ORSSD dataset, we train our CorrNet for 44
+layers are in charge of merging the captured features. The                 epochs; and on the EORSSD dataset, we train our CorrNet for
+                                               t
+output feature of DLRB-t is denoted as fdlrb       . Here, we take         34 epochs.
+DLRB-3 as an example. In DLRB-3, its input is fˆe3 , and we                   2) Evaluation Metrics. We employ five quantitative eval-
+decompose its dense structure into three stages, which are                 uation metrics to evaluate our method and other compared
+formulated as follows:                                                     methods, including S-measure (Sα , α = 0.5) [67], (maximum,
+              3,1                                                          mean and adaptive) F-measure (Fβ , β 2 = 0.3) [68], (maximum,
+                   = conv1×1 DSconv2 (fˆe3 ) ⊕ fˆe3 ,
+                                                      
+             fdlrb                                                 (8)
+                                                                           mean and adaptive) E-measure (Eξ ) [69], Mean Absolute Error
+         3,2                           3,1       3,1
+                                                      ⊕ fˆe3 , (9)
+                                                            
+       fdlrb = conv1×1 DSconv4 (fdlrb      ) ⊕ fdlrb                       (MAE, M), and Precision-Recall (PR) curve. The first three
+    3,3                           3,2        3,2      3,1                  evaluation metrics are the bigger the better. MAE is the smaller
+                                                           ⊕ fˆe3 ,
+                                                                 
+  fdlrb  = conv1×1 DSconv6 (fdlrb     ) ⊕ fdlrb  ⊕ fdlrb                   the better. And PR curve is closer to the upper right, the better.
+                                                                 (10)
+where DSconvr (·) is the dilated 3×3 DSConv with dilation
+               3,3                                               3         B. Comparison with State-of-the-art Methods
+rate r, and fdlrb  is the output feature of DLRB-3, i.e., fdlrb      .
+   In this way, our DLRB can perceive multi-scale information                 We conduct a comprehensive comparison with 26 state-of-
+and bring powerful feature representation during the refine-               the-art NSI-SOD and ORSI-SOD methods, including eight
+ment phase, which will facilitate the carving of salient objects           traditional methods (RRWR [49], HDCT [50], DSG [51],
+in ORSIs and lead to good performance. We will evaluate the                SMD [52], RCRR [53], VOS [38], CMC [37], and
+effectiveness of our DLRB in Sec. IV-C.                                    SMFF [34]), sixteen CNN-based methods (DSS [54],
+                                                                           RADF [55], R3Net [56], PoolNet [57], EGNet [22],
+E. Loss Function                                                           GCPA [58], MINet [59], ITSD [60], GateNet [21], SUCA [20],
+   To effectively train CorrNet, we combine the classic BCE                PA-KRN [19], LVNet [12], DAFNet [13], MJRBM [17], SAR-
+loss and IoU loss to construct a comprehensive loss function               Net [18], and EMFINet [16]), and two lightweight methods
+for network training, which is the same as previous SOD                    (CSNet [23] and SAMNet [24]). Since some methods have
+methods [40], [61], [62]. Moreover, we also adopt the deep                 different backbone versions, we only report their performance
+supervision [54], [63] in the training phase to supervise two              based on VGG backbone. For a fair comparison, we retain
+intermediate saliency maps of the refinement subnet as well                CNN-based NSI-SOD methods with their default parameter
+as the coarse and fine saliency maps, as shown in Fig. 2.                  settings on the same training set as our method. And the
+The intermediate saliency maps and fine saliency map are                   saliency maps of other methods are provided by the authors
+generated by the 1×1 convolution layer. We formulate the                   or generated by public source codes.
+total loss function Ltotal as:                                                1) Computational Complexity Comparison. In Tab. II, we
+             X4                                                         report the inference speed with batch size of 1 (without
+                      `bce Up(St ), G + `iou Up(St ), G ,
+                                     
+   Ltotal =                                                                I/O time), parameter amount (#Param) and FLOPs of our
+                t=1
+                                                          (11)             method and most compared methods. Notably, our method
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                                                                                                                  7
+
+
+
+                                                                       TABLE II
+        Q UANTITATIVE COMPARISONS WITH 26 STATE - OF - THE - ART METHODS , INCLUDING FIVE TRADITIONAL NSI-SOD METHODS , THREE TRADITIONAL
+       ORSI-SOD METHODS , ELEVEN CNN- BASED NSI-SOD METHODS , FIVE CNN- BASED ORSI-SOD METHODS , AND TWO LIGHTWEIGHT METHODS , ON
+                 EORSSD AND ORSSD DATASETS . T HE TOP THREE RESULTS ARE HIGHLIGHTED IN RED , BLUE AND GREEN , RESPECTIVELY.
+
+                                          Input    Speed #Param FLOPs                                                       EORSSD [13]                                                       ORSSD [12]
+                      Methods Type
+                                          size     (fps)↑    (M)↓                   (G)↓        Sα ↑ Fβmax ↑ Fβmean ↑ Fβadp ↑ Eξmax ↑ Eξmean ↑ Eξadp ↑ M ↓ Sα ↑ Fβmax ↑ Fβmean ↑ Fβadp ↑ Eξmax ↑ Eξmean ↑ Eξadp ↑ M ↓
+
+             RRWR15 [49] T.N.               -       0.3           -                      -      .5992 .3993       .3686         .3344       .6894   .5943   .5639 .1677 .6835 .5590   .5125   .4874   .7649   .7017   .6949 .1324
+             HDCT16 [50] T.N.               -           7         -                      -      .5971 .5407       .4018         .2658       .7861   .6376   .5192 .1088 .6197 .5257   .4235   .3722   .7719   .6495   .6291 .1309
+                  DSG17 [51] T.N.           -       0.6           -                      -      .6420 .5232       .4597         .4012       .7260   .6594   .6188 .1246 .7195 .6238   .5747   .5657   .7912   .7337   .7532 .1041
+                  SMD17 [52] T.N.           -           -         -                      -      .7101 .5884       .5473         .4081       .7697   .7286   .6416 .0771 .7640 .6692   .6214   .5568   .8230   .7745   .7682 .0715
+             RCRR18 [53] T.N.               -       0.3           -                      -      .6007 .3995       .3685         .3347       .6882   .5946   .5636 .1644 .6849 .5591   .5126   .4876   .7651   .7021   .6950 .1277
+                  VOS18 [38] T.R.           -           -         -                      -      .5082 .2765       .2107         .1836       .5982   .4886   .4767 .2096 .5366 .3471   .2717   .2633   .6514   .5352   .5826 .2151
+              SMFF19 [34] T.R.              -           -         -                      -      .5401 .5176       .2992         .2083       .7744   .5197   .5014 .1434 .5312 .4417   .2684   .2496   .7402   .4920   .5676 .1854
+              CMC19 [37] T.R.               -           -         -                      -      .5798 .3268       .2692         .2007       .6803    5894   .4890 .1057 .6033 .3913   .3454   .3108   .7064   .6417   .5996 .1267
+                  DSS17 [54] C.N.      400×300          8    62.23                  114.6 .7868 .6849             .5801         .4597       .9186   .7631   .6933 .0186 .8262 .7467   .6962   .6206   .8860   .8362   .8085 .0363
+             RADF18 [55] C.N.          400×400          7    62.54                  214.2 .8179 .7446             .6582         .4933       .9140   .8567   .7162 .0168 .8259 .7619   .6856   .5730   .9130   .8298   .7678 .0382
+              R3Net18 [56] C.N.        300×300          2    56.16                      47.5    .8184 .7498       .6302         .4165       .9483   .8294   .6462 .0171 .8141 .7456   .7383   .7379   .8913   .8681   .8887 .0399
+            PoolNet19 [57] C.N.        400×300          25   53.63                  123.4 .8207 .7545             .6406         .4611       .9292   .8193   .6836 .0210 .8403 .7706   .6999   .6166   .9343   .8650   .8124 .0358
+             EGNet19 [22] C.N. ∼380×320                 9    108.07 291.9 .8601 .7880                             .6967         .5379       .9570   .8775   .7566 .0110 .8721 .8332   .7500   .6452   .9731   .9013   .8226 .0216
+              GCPA20 [58] C.N.         320×320          23   67.06                      54.3    .8869 .8347       .7905         .6723       .9524   .9167   .8647 .0102 .9026 .8687   .8433   .7861   .9509   .9341   .9205 .0168
+             MINet20 [59] C.N.         320×320          12   47.56                  146.3 .9040 .8344             .8174         .7705       .9442   .9346   .9243 .0093 .9040 .8761   .8574   .8251   .9545   .9454   .9423 .0144
+              ITSD20 [60] C.N.         288×288          16   17.08                      54.5    .9050 .8523       .8221         .7421       .9556   .9407   .9103 .0106 .9050 .8735   .8502   .8068   .9601   .9482   .9335 .0165
+            GateNet20 [21] C.N.        384×384          25   100.02 108.3 .9114 .8566                             .8228         .7109       .9610   .9385   .8909 .0095 .9186 .8871   .8679   .8229   .9664   .9538   .9428 .0137
+             SUCA21 [20] C.N.          256×256          24   117.71                     56.4    .8988 .8229       .7949         .7260       .9520   .9277   .9082 .0097 .8989 .8484   .8237   .7748   .9584   .9400   .9194 .0145
+        PA-KRN21 [19] C.N.             600×600          16   141.06 617.7 .9192 .8639                             .8358         .7993       .9616   .9536   .9416 .0104 .9239 .8890   .8727   .8548   .9680   .9620   .9579 .0139
+             LVNet19 [12] C.R.         128×128      1.4           -                      -      .8630 .7794       .7328         .6284       .9254   .8801   .8445 .0146 .8815 .8263   .7995   .7506   .9456   .9259   .9195 .0207
+            DAFNet21 [13] C.R.         128×128          26   29.35                  68.51 .9166 .8614             .7845         .6427       .9861   .9291   .8446 .0060 .9191 .8928   .8511   .7876   .9771   .9539   .9360 .0113
+            MJRBM21 [17] C.R.          352×352          32   43.54                      95.7    .9197 .8656       .8239         .7066       .9646   .9350   .8897 .0099 .9204 .8842   .8566   .8022   .9623   .9415   .9328 .0163
+            SARNet21 [18] C.R.         336×336          47   25.91                  129.7 .9240 .8719             .8541         .8304       .9620   .9555   .9536 .0099 .9134 .8850   .8619   .8512   .9557   .9477   .9464 .0187
+     EMFINet21 [16] C.R.               256×256          25   107.26 480.9 .9290 .8720                             .8486         .7984       .9711   .9604   .9501 .0084 .9366 .9002   .8856   .8617   .9737   .9671   .9663 .0109
+             CSNet20 [23] L.W.         224×224          38       0.14                   0.7     .8364 .8341       .7656         .6319       .9535   .8929   .8339 .0169 .8910 .8790   .8285   .7615   .9628   .9171   .9068 .0186
+        SAMNet21 [24] L.W.             336×336          44       1.33                   0.5     .8622 .7813       .7214         .6114       .9421   .8700   .8284 .0132 .8761 .8137   .7531   .6843   .9478   .8818   .8656 .0217
+                         Ours L.W.     256×256      100          4.09               21.09 .9289 .8778             .8620         .8311       .9696   .9646   .9593 .0083 .9380 .9129   .9002   .8875   .9790   .9746   .9721 .0098
+
+     T.N.: Traditional NSI-SOD method, T.R.: Traditional ORSI-SOD method, C.N.: CNN-based NSI-SOD method, C.R.: CNN-based ORSI-SOD method, L.W.: Lightweight method.
+
+
+
+             1                                                                 1
+                                                                                                                                               curves of our method and all compared methods on EORSSD
+            0.9                                                               0.9
+                                                                                                                                               and ORSSD. As visible, our method (i.e., the red one) is
+                                                                                                                                               closest to the upper right than other methods on both datasets,
+Precision
+
+
+
+
+                                                                  Precision
+
+
+
+
+            0.8        PA-KRN                                                 0.8             PA-KRN                                           showing a competitive performance.
+                       MJRBM                                                                  GateNet
+            0.7        EMFINet                                                0.7             DAFNet                                              We report the quantitative performance of our method and
+                       SARNet                                                                 EMFINet                                          all compared methods on EORSSD and ORSSD in Tab. II.
+                       Ours                                                                   Ours
+            0.6
+                  0      0.2      0.4     0.6     0.8        1
+                                                                              0.6
+                                                                                    0          0.2      0.4     0.6       0.8           1
+                                                                                                                                               On the EORSSD dataset, our method ranks first in five out
+                                     Recall                                                                Recall                              of all eight metrics. Compared with EMFINet with similar
+                               (a) EORSSD [13]                                                       (b) ORSSD [12]
+                                                                                                                                               performance, our method has 4× faster inference speed,
+Fig. 5. Quantitative comparison in terms of PR curve on two datasets. The
+top five methods are shown in different colors, while the other compared
+                                                                                                                                               26× fewer parameters, and 23× fewer FLOPs than it. On
+methods are shown in gray. Please zoom-in for better visualization of details.                                                                 the ORSSD dataset, our method outperforms all compared
+                                                                                                                                               methods in all eight metrics. Specifically, in Fβmax , Fβmean
+                                                                                                                                               and Fβapt , our method is 1.27%, 1.46% and 2.58% higher
+achieves competitive performance in these three computa-                                                                                       than the second-placed method EMFINet respectively. Com-
+tional complexity metrics. Our method (i.e., 100 fps) has                                                                                      pared with the lightweight methods, i.e., CSNet and SAMNet,
+2.1× faster inference speed than the second-placed method                                                                                      the performance of our method is significantly better than
+SARNet (i.e., 47 fps). Compared with CNN-based methods,                                                                                        them. Moreover, we observe that the performance of CNN-
+the parameter amount and FLOPs of our method are smaller                                                                                       based ORSI-SOD methods is generally better than that of
+than them. While compared with two lightweight methods,                                                                                        the retrained CNN-based NSI-SOD methods, which indicates
+i.e., CSNet and SAMNet, our method is slightly inferior, but                                                                                   that the ORSI scenes are extremely challenging. Overall,
+it is still good as the first lightweight ORSI-SOD solution.                                                                                   the above analysis clearly demonstrates that our lightweight
+Therefore, we believe that our method is an efficient and                                                                                      CorrNet achieves a favorable trade-off between effectiveness
+promising lightweight ORSI-SOD framework.                                                                                                      and efficiency.
+   2) Quantitative Comparison. In Fig. 5, we plot the PR                                                                                            3) Visual Comparison. We present the visual comparison of
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                                         8
+
+
+
+
+    ORSI          GT          Ours      EMFINet       SARNet       MJRBM        DAFNet        LVNet      PA-KRN          SUCA       CMC           RCRR
+Fig. 6. Visual comparisons with nine representative state-of-the-art methods. Please zoom-in for the best view.
+
+
+
+our method and nine representative state-of-the-art methods                                                 TABLE III
+on some challenging ORSI scenes in Fig. 6. As the first                               A BLATION RESULTS OF EVALUATING THE EFFICIENCY OF THE
+                                                                                            LIGHTWEIGHT FEATURE EXTRACTION SUBNET.
+four rows of Fig. 6, the first scene is low contrast. In these
+four cases, only our method can clearly highlight all salient                                         #Param FLOPs               EORSSD [13]
+objects. Other compared methods are interfered by similar                              Models
+                                                                                                       (M)↓       (G)↓   Sα ↑ Fβmax ↑ Eξmax ↑ M ↓
+backgrounds and fail in individual cases, such as EMFINet
+fails in the second case and MJRBM fails in the first and                            Vanilla-VGG       15.59      28.1   .9292   .8789    .9718    .0083
+third cases. As the fifth and sixth rows of Fig. 6, the second                         DS-VGG          2.55       10.4   .9063   .8447    .9512    .0108
+scene is multiple objects, which is a difficult scene in ORSI-                    LFE-VGG (Ours)       4.09       21.1   .9289   .8778    .9696    .0083
+SOD. Our method can accurately locate all salient objects                         Vanilla-VGG: VGG-16 with regular convs.
+with fine details, while some models occasionally miss objects
+                                                                                  DS-VGG: VGG-16 with DSConvs.
+(such as SARNet and LVNet) or fail to outline details (such
+as DAFNet and SUCA). As the seventh row of Fig. 6, the
+third scene is the big object. In this scene, due to the large
+span of the bridge, most methods only segment its middle part                  For each variant experiment, we rigorously retrain it with the
+and ignore its two ends. As the last two rows of Fig. 6, the                   same parameter settings and datasets as in Sec. IV-A.
+fourth scene is cluttered background. The cluttered background                    1) The efficiency of the lightweight feature extraction subnet.
+confuses some methods, causing them to incorrectly include                     To evaluate the efficiency of the lightweight feature extraction
+background or miss objects in their saliency maps. Overall,                    subnet (i.e., LFE-VGG), we replace it with two backbones,
+our method shows strong scene adaptability and overcomes                       i.e., Vanilla-VGG and DS-VGG. Vanilla-VGG is all convolu-
+the above scenes.                                                              tion layers of VGG-16 are regular convolution layers, and DS-
+                                                                               VGG is all convolution layers of VGG-16 are DSConvs. We
+                                                                               report the quantitative results in Tab. III.
+C. Ablation Studies
+                                                                                  The complete Vanilla-VGG does improve performance, but
+   Here, we conduct comprehensive experiments to evaluate                      the improvement is limited, e.g., Fβmax is increased by 0.11%
+the effectiveness of important components of our CorrNet                       and Eξmax is increased by 0.22%. However, along with im-
+on EORSSD dataset. In particular, we investigate 1) the                        proved performance comes a massive increase in parameters,
+efficiency of the lightweight feature extraction subnet, 2) the                e.g., #Param increases sharply from 4.09M to 15.59M. This
+effectiveness of the coarse-to-fine strategy, 3) the individual                means that our LFE-VGG is effective and efficient, and our
+contribution of each module in CorrNet, 4) the importance of                   modification is reasonable. As for DS-VGG, its performance
+cross-layer correlation and polishing gate in CorrM, and 5)                    is obviously degraded, e.g., Fβmax is reduced by 3.31% and
+the rationality of dilated DSConvs’ dilation rates in DLRB.                    Eξmax is reduced by 1.84%, and its parameter reduction is also
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                    9
+
+
+
+                               TABLE IV                                                          TABLE VI
+   A BLATION RESULTS OF EVALUATING THE EFFECTIVENESS OF THE            A BLATION RESULTS OF EVALUATING THE IMPORTANCE OF CROSS - LAYER
+ COARSE - TO - FINE STRATEGY. T HE BEST ONE IN EACH COLUMN IS BOLD .   CORRELATION AND POLISHING GATE IN C ORR M AND THE RATIONALITY
+                                                                        OF DILATED DS CONVS IN DLRB. T HE BEST ONE IN EACH COLUMN IS
+                                                                                                   BOLD .
+                                   EORSSD [13]
+             Models
+                       Sα ↑     Fβmax ↑      Eξmax ↑   M↓
+                                                                                                           EORSSD [13]
+                                                                                  Models
+              S4       .8741     .7800        .9578    .0126                                     Sα ↑    Fβmax ↑   Eξmax ↑   M↓
+              S3       .9138     .8560        .9667    .0094
+                                                                              CorrNet (Ours)     .9289    .8778     .9696    .0083
+              S2       .9265     .8755        .9698    .0083
+                                                                              w/o Correlation    .9232    .8690     .9649    .0085
+          S1 (Ours)    .9289     .8778        .9696    .0083
+                                                                                 w/o Gate        .9253    .8728     .9661    .0086
+                                                                             w/o dilation rate   .9254    .8718     .9663    .0089
+                             TABLE V                                             w/ 1-3-5        .9262    .8727     .9662    .0087
+A BLATION RESULTS OF EVALUATING THE INDIVIDUAL CONTRIBUTION OF                   w/ 3-5-7        .9272    .8743     .9666    .0077
+EACH MODULE IN C ORR N ET. T HE BEST ONE IN EACH COLUMN IS BOLD .
+
+
+                                               EORSSD [13]
+ No. Baseline FEM DLRB CorrM
+                                     Sα ↑ Fβmax ↑ Eξmax ↑ M ↓          Eξmax and M, respectively. As the key roles of CorrNet,
+  1      !                           .9146     .8548   .9535   .0113   DLRB improves Fβmax and Eξmax of Baseline+FEM by 0.88%
+  2      !         !                 .9160     .8591   .9541   .0106   and 0.66%, respectively, and CorrM improves Fβmax and Eξmax
+                                                                       of Baseline+FEM by 1.27% and 0.98%, respectively. With the
+  3      !         !   !             .9231     .8679   .9607   .0086
+                                                                       cooperation of DLRB and CorrM, the full CorrNet improves
+  4      !         !           !     .9232     .8718   .9639   .0086
+                                                                       Fβmax and Eξmax of Baseline+FEM by 1.87% and 1.55%,
+  5      !         !   !       !     .9289     .8778   .9696   .0083   respectively. Therefore, the above analysis verifies that each
+                                                                       module in CorrNet is effective for ORSI-SOD.
+                                                                          4) The importance of cross-layer correlation and polishing
+limited, e.g., #Param is reduced by 1.54M. We think that the           gate in CorrM. To evaluate the importance of cross-layer
+reason for the performance degradation of DS-VGG is because            correlation and polishing gate in CorrM, we provide two vari-
+its parameters are initialized by the normal distribution [66],        ants in Tab. VI: 1) deleting cross-layer correlation operator in
+losing the benefits of pre-trained parameters. Overall, our LFE-       CorrM, namely w/o Correlation, and 2) deleting two polishing
+VGG maintains the powerful feature extraction ability of E1 ,          gates in CorrM, namely w/o Gate. For w/o Correlation, there
+E2 and E3 , and greatly reduces the parameters of DS-E4 and            is no cross-layer correlation operator to capture the feature
+DS-E5 , so it is a qualified lightweight backbone.                     correlation among the high-level semantic context, the object
+   2) The effectiveness of the coarse-to-fine strategy. To evalu-      localization capabilities of CorrM are greatly weakened, and
+ate the effectiveness of the coarse-to-fine strategy, we quanti-       Sα and Fβmax drop to 92.32% and 86.90%, respectively. w/o
+tatively measure the performance of the initial coarse saliency        Gate can capture the object location information with some
+map (S4 ), two intermediate saliency maps (S3 and S2 ) and             redundant information, and obtain slightly better results than
+the final fine saliency map (S1 ). As reported in Tab. IV, the         w/o Correlation, i.e., 92.53% of Sα and 87.28% of Fβmax .
+quantitative performance is generally incremental, e.g., Fβmax :       The above variants verify that the cross-layer correlation and
+78.00% → 85.60% → 87.55% → 87.78%. And compared with                   polishing gate are important to CorrM.
+S4 , the improvement of S1 is greatly significant in all metrics,         5) The rationality of dilated DSConvs’ dilation rates in
+i.e., Sα , Fβmax , Eξmax and M are improved by 5.48%, 9.78%,           DLRB. To evaluate the rationality of dilated DSConvs’ dilation
+1.18% and 0.0043, respectively. This confirms that the coarse-         rates in DLRB, we provide three variants in Tab. VI: 1)
+to-fine manner is useful in our CorrM, and the refinement              replacing three dilated DSConvs with three regular DSConvs
+subnet demonstrates powerful refinement capabilities.                  in DLRB, namely w/o dilation rate, 2) changing the original
+   3) The individual contribution of each module in Corr-              dilation rates {2,4,6} to {1,3,5}, namely w/ 1-3-5, and 3)
+Net. To evaluate the individual contribution of each mod-              changing the original dilation rates {2,4,6} to {3,5,7}, namely
+ule, i.e., FEM, DLRB and CorrM, we design four variants                w/ 3-5-7. Based on the quantitative performance of w/o dila-
+of the full CorrNet (i.e., No.5) in Tab. V: 1) Baseline,               tion rate and w/ 1-3-5, we observe that the relatively large
+2) Baseline+FEM, 3) Baseline+FEM+DLRB, and 4) Base-                    receptive fields can capture more complementary multi-scale
+line+FEM+CorrM. For Baseline, we directly remove FEMs,                 information, which is very important for objects refinement in
+replace CorrM with concatenation-convolution operation to              ORSI-SOD. However, when we continue to expand the recep-
+generate the coarse saliency map, and replace DLRB with                tive fields to {3,5,7}, we observe the performance degradation
+three cascaded regular DSConvs.                                        of w/ 3-5-7, possibly due to that excessively large receptive
+   According to the quantitative performance in Tab. V, we ob-         fields make DLRB impossible to accurately capture the salient
+serve that each module of CorrNet contributes to the ultimate          objects with variable scales in ORSIs. Thus, we can come to a
+excellent performance. Our full CorrNet boosts the primitive           conclusion that the dilated DSConvs with dilation rates {2,4,6}
+Baseline by 1.43%, 2.30%, 1.61%, and 0.0030 on Sα , Fβmax ,            are rational and exactly appropriate in DLRB.
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                                          10
+
+
+
+D. Discussion                                                                     [7] G. Li, Z. Liu, R. Shi, and W. Wei, “Constrained fixation point based
+                                                                                      segmentation via deep neural network,” Neurocomputing, vol. 368, pp.
+   Here, we discuss the weaknesses of our method and our                              180–187, Nov. 2019.
+future works. For weaknesses, we summarize as follows: 1)                         [8] G. Li, Z. Liu, R. Shi, Z. Hu, W. Wei, Y. Wu, M. Huang, and H. Ling,
+since our method is based on GPU, its model size is still                             “Personal fixations-based object segmentation with object localization
+                                                                                      and boundary preservation,” IEEE Trans. Image Process., vol. 30, pp.
+too large for edge computing devices; and 2) although the                             1461–1475, Jan. 2021.
+parameter amount and computations of our method are small                         [9] G. Li, Z. Liu, and H. Ling, “ICNet: Information conversion network for
+as compared with most CNN-based methods, it is still difficult                        RGB-D based salient object detection,” IEEE Trans. Image Process.,
+                                                                                      vol. 29, pp. 4873–4884, Mar. 2020.
+to run on the CPU in real time.                                                  [10] G. Li, Z. Liu, L. Ye, Y. Wang, and H. Ling, “Cross-modal weighting
+   Therefore, in future works, we will work in the following                          network for RGB-D salient object detection,” in Proc. ECCV, Aug. 2020,
+two directions: 1) similar to the lightweight ORSI-SOD meth-                          pp. 665–681.
+                                                                                 [11] Z. Bai, Z. Liu, G. Li, and Y. Wang, “Adaptive group-wise consistency
+ods, we will focus on developing a lightweight backbone with                          network for co-saliency detection,” IEEE Trans. Multimedia, 2021.
+smaller model size for ORSI-SOD; and 2) we will introduce                             [Online]. Available: 10.1109/TMM.2021.3138246
+the model pruning technology into our model to remove                            [12] C. Li, R. Cong, J. Hou, S. Zhang, Y. Qian, and S. Kwong, “Nested
+                                                                                      network with two-stream pyramid for salient object detection in optical
+redundant layers and to further accelerate our model.                                 remote sensing images,” IEEE Trans. Geosci. Remote Sens., vol. 57,
+                                                                                      no. 11, pp. 9156–9166, Nov. 2019.
+                                                                                 [13] Q. Zhang, R. Cong, C. Li, M.-M. Cheng, Y. Fang, X. Cao, Y. Zhao, and
+                           V. C ONCLUSION                                             S. Kwong, “Dense attention fluid network for salient object detection in
+   In this paper, we propose an effective lightweight frame-                          optical remote sensing images,” IEEE Trans. Image Process., vol. 30,
+                                                                                      pp. 1305–1317, 2021.
+work, namely CorrNet, for ORSI-SOD. In CorrNet, we first                         [14] A. Borji, M.-M. Cheng, H. Jiang, and J. Li, “Salient object detection:
+lighten the vanilla VGG and propose a lightweight feature                             A benchmark,” IEEE Trans. Image Process., vol. 24, no. 12, pp. 5706–
+extraction subnet, namely LFE-VGG. Then, we lighten other                             5722, Dec. 2015.
+                                                                                 [15] Y. LeCun, B. Boser, J. S. Denker, D. Henderson, R. E. Howard,
+modules of CorrNet, that is, we use DSConvs instead of                                W. Hubbard, and L. D. Jackel, “Backpropagation applied to handwritten
+regular convolution layers in the modules. In addition, in order                      zip code recognition,” Neural Comput., vol. 1, no. 4, pp. 541–551, Dec.
+to obtain a good performance, CorrNet follows the coarse-to-                          1989.
+                                                                                 [16] X. Zhou, K. Shen, Z. Liu, C. Gong, J. Zhang, and C. Yan, “Edge-aware
+fine strategy. It first generates an initial coarse saliency map                      multiscale feature integration network for salient object detection in
+from high-level semantic features via the Correlation Module,                         optical remote sensing images,” IEEE Trans. Geosci. Remote Sens.,
+and then refines the salient objects via the refinement subnet                        2021. [Online]. Available: 10.1109/TGRS.2021.3091312
+                                                                                 [17] Z. Tu, C. Wang, C. Li, M. Fan, H. Zhao, and B. Luo, “ORSI
+equipped with Dense Lightweight Refinement Blocks, produc-                            salient object detection via multiscale joint region and boundary
+ing the final fine saliency map. Experimental evaluations on                          model,” IEEE Trans. Geosci. Remote Sens., 2021. [Online]. Available:
+two ORSI-SOD datasets demonstrate that though our CorrNet                             10.1109/TGRS.2021.3101359
+                                                                                 [18] Z. Huang, H. Chen, B. Liu, and Z. Wang, “Semantic-guided attention
+only has 4.09M parameters and 21.09G FLOPs, it achieves                               refinement network for salient object detection in optical remote sensing
+competitive or even better performance than large CNN-based                           images,” Remote Sens., vol. 13, no. 11, p. 2163, May 2021.
+methods and runs at 100 fps. The success of our CorrNet                          [19] B. Xu, H. Liang, R. Liang, and P. Chen, “Locate globally, segment
+                                                                                      locally: A progressive architecture with knowledge review network for
+comes from three aspects: 1) the matrix-based cross-layer                             salient object detection,” in Proc. AAAI, Feb. 2021, pp. 3004–3012.
+correlation operation that extracts salient regions effectively                  [20] J. Li, Z. Pan, Q. Liu, and Z. Wang, “Stacked U-shape network with
+and only contains a few parameters, 2) the DSConv that                                channel-wise attention for salient object detection,” IEEE Trans. Multi-
+                                                                                      media, vol. 23, pp. 1397–1409, 2021.
+maintains powerful feature representation capabilities and only
+                                                                                 [21] X. Zhao, Y. Pang, L. Zhang, H. Lu, and L. Zhang, “Suppress and
+has about 10% of the parameters of the regular convolution                            balance: A simple gated network for salient object detection,” in Proc.
+layer, and 3) the coarse-to-fine strategy that lays a high-                           ECCV, Aug. 2020, pp. 35–51.
+accuracy foundation.                                                             [22] J. Zhao, J.-J. Liu, D.-P. Fan, Y. Cao, J. Yang, and M.-M. Cheng, “EGNet:
+                                                                                      Edge guidance network for salient object detection,” in Proc. IEEE
+                                                                                      ICCV, Oct. 2019, pp. 8779–8788.
+                              R EFERENCES                                        [23] S.-H. Gao, Y.-Q. Tan, M.-M. Cheng, C. Lu, Y. Chen, and S. Yan, “Highly
+                                                                                      efficient salient object detection with 100k parameters,” in Proc. ECCV,
+ [1] W. Wang, Q. Lai, H. Fu, J. Shen, H. Ling, and R. Yang, “Salient                  Aug. 2020, pp. 702–721.
+     object detection in the deep learning era: An in-depth survey,”             [24] Y. Liu, X.-Y. Zhang, J.-W. Bian, L. Zhang, and M.-M. Cheng, “SAMNet:
+     IEEE Trans. Pattern Anal. Mach. Intell., 2021. [Online]. Available:              Stereoscopically attentive multi-scale network for lightweight salient
+     10.1109/TPAMI.2021.3051099                                                       object detection,” IEEE Trans. Image Process., vol. 30, pp. 3804–3814,
+ [2] W. Wang, J. Shen, J. Xie, M.-M. Cheng, H. Ling, and A. Borji,                    2021.
+     “Revisiting video saliency prediction in the deep learning era,” IEEE       [25] K. Simonyan and A. Zisserman, “Very deep convolutional networks for
+     Trans. Pattern Anal. Mach. Intell., vol. 43, no. 1, pp. 220–237, Jan.            large-scale image recognition,” in Proc. ICLR, May 2015, pp. 1–14.
+     2021.                                                                       [26] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning for image
+ [3] R. Cong, J. Lei, H. Fu, M.-M. Cheng, W. Lin, and Q. Huang, “Review of            recognition,” in Proc. IEEE CVPR, Jun. 2016, pp. 770–778.
+     visual saliency detection with comprehensive information,” IEEE Trans.      [27] A. G. Howard, M. Zhu, B. Chen, D. Kalenichenko, W. Wang,
+     Circuits Syst. Video Technol., vol. 29, no. 10, pp. 2941–2959, Oct. 2019.        T. Weyand, M. Andreetto, and H. Adam, “MobileNets: Efficient convo-
+ [4] Y. Fang, Z. Chen, W. Lin, and C.-W. Lin, “Saliency detection in the              lutional neural networks for mobile vision applications,” arXiv preprint
+     compressed domain for adaptive image retargeting,” IEEE Trans. Image             arXiv:1704.04861, 2017.
+     Process., vol. 21, no. 9, pp. 3888–3901, Sept. 2012.                        [28] M. Sandler, A. Howard, M. Zhu, A. Zhmoginov, and L.-C. Chen,
+ [5] K. Gu, S. Wang, H. Yang, W. Lin, G. Zhai, X. Yang, and W. Zhang,                 “MobileNetV2: Inverted residuals and linear bottlenecks,” in Proc. IEEE
+     “Saliency-guided quality assessment of screen content images,” IEEE              CVPR, Jun. 2018, pp. 4510–4520.
+     Trans. Multimedia, vol. 18, no. 6, pp. 1098–1110, Jun. 2016.                [29] Y. Liu, Y.-C. Gu, X.-Y. Zhang, W. Wang, and M.-M. Cheng,
+ [6] S. Yang, Q. Jiang, W. Lin, and Y. Wang, “SGDNet: An end-to-end                   “Lightweight salient object detection via hierarchical visual perception
+     saliency-guided deep neural network for no-reference image quality               learning,” IEEE Trans. Cybern., 2020. [Online]. Available: 10.1109/
+     assessment,” in Proc. ACM MM, Oct. 2019, pp. 1383–1391.                          TCYB.2020.3035613
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING                                                                                                            11
+
+
+
+[30] D. Faur, I. Gavat, and M. Datcu, “Salient remote sensing image                [53] Y. Yuan, C. Li, J. Kim, W. Cai, and D. D. Feng, “Reversion correction
+     segmentation based on rate-distortion measure,” IEEE Geosci. Remote                and regularized random walk ranking for saliency detection,” IEEE
+     Sens. Lett., vol. 6, no. 4, pp. 855–859, Oct. 2009.                                Trans. Image Process., vol. 27, no. 3, pp. 1311–1322, Mar. 2018.
+[31] L. Zhang, S. Wang, and X. Li, “Salient region detection in remote             [54] Q. Hou, M.-M. Cheng, X. Hu, A. Borji, Z. Tu, and P. Torr, “Deeply
+     sensing images based on color information content,” in Proc. IEEE                  supervised salient object detection with short connections,” in Proc.
+     IGARSS, Jul. 2015, pp. 1877–1880.                                                  IEEE CVPR, Jul. 2017, pp. 5300–5309.
+[32] D. Zhao, J. Wang, J. Shi, and Z. Jiang, “Sparsity-guided saliency             [55] X. Hu, L. Zhu, J. Qin, C.-W. Fu, and P.-A. Heng, “Recurrently
+     detection for remote sensing images,” J. Appl. Remote Sens., vol. 9,               aggregating deep features for salient object detection,” in Proc. AAAI,
+     no. 1, pp. 1–14, Sept. 2015.                                                       Feb. 2018, pp. 6943–6950.
+[33] L. Zhang, Y. Wang, and Y. Sun, “Salient target detection based on the         [56] Z. Deng, X. Hu, L. Zhu, X. Xu, J. Qin, G. Han, and P.-A. Heng, “R3 Net:
+     combination of super-pixel and statistical saliency feature analysis for           Recurrent residual refinement network for saliency detection,” in Proc.
+     remote sensing images,” in Proc. IEEE ICIP, Oct. 2018, pp. 2336–2340.              IJCAI, Jul. 2018, pp. 684–690.
+[34] L. Zhang, Y. Liu, and J. Zhang, “Saliency detection based on self-            [57] J.-J. Liu, Q. Hou, M.-M. Cheng, J. Feng, and J. Jiang, “A simple pooling-
+     adaptive multiple feature fusion for remote sensing images,” Int. J.               based design for real-time salient object detection,” in Proc. IEEE CVPR,
+     Remote Sens., vol. 40, no. 22, pp. 8270–8297, May 2019.                            Jun. 2019, pp. 3912–3921.
+[35] Z. Huang, H.-X. Chen, T. Zhou, Y.-Z. Yang, C.-Y. Wang, and B.-Y.              [58] Z. Chen, Q. Xu, R. Cong, and Q. Huang, “Global context-aware
+     Liu, “Contrast-weighted dictionary learning based saliency detection for           progressive aggregation network for salient object detection,” in Proc.
+     VHR optical remote sensing images,” Pattern Recognit., vol. 113, p.                AAAI, Feb. 2020, pp. 10 599–10 606.
+     107757, 2021.                                                                 [59] Y. Pang, X. Zhao, L. Zhang, and H. Lu, “Multi-scale interactive network
+[36] H. Chen, T. Gao, W. Chen, Y. Zhang, and J. Zhao, “Contour refinement               for salient object detection,” in Proc. IEEE CVPR, Jun. 2020, pp. 9410–
+     and EG-GHT-based inshore ship detection in optical remote sensing                  9419.
+     image,” IEEE Trans. Geosci. Remote Sens., vol. 57, no. 11, pp. 8458–          [60] H. Zhou, X. Xie, J.-H. Lai, Z. Chen, and L. Yang, “Interactive two-
+     8478, Nov. 2019.                                                                   stream decoder for accurate and fast saliency detection,” in Proc. IEEE
+[37] Z. Liu, D. Zhao, Z. Shi, and Z. Jiang, “Unsupervised saliency model                CVPR, Jun. 2020, pp. 9138–9147.
+     with color Markov chain for oil tank detection,” Remote Sens., vol. 11,       [61] G. Li, Z. Liu, M. Chen, Z. Bai, W. Lin, and H. Ling, “Hierarchical
+     no. 9, pp. 1–18, May 2019.                                                         alternate interaction network for RGB-D salient object detection,” IEEE
+[38] Q. Zhang, L. Zhang, W. Shi, and Y. Liu, “Airport extraction via                    Trans. Image Process., vol. 30, pp. 3528–3542, Mar. 2021.
+     complementary saliency analysis and saliency-oriented active contour          [62] X. Qin, Z. Zhang, C. Huang, C. Gao, M. Dehghan, and M. Jagersand,
+     model,” IEEE Geosci. Remote Sens. Lett., vol. 15, no. 7, pp. 1085–1089,            “BASNet: Boundary-aware salient object detection,” in Proc. IEEE
+     Jul. 2018.                                                                         CVPR, Jun. 2019, pp. 7479–7489.
+[39] L. Zhang, A. Li, Z. Zhang, and K. Yang, “Global and local saliency            [63] S. Xie and Z. Tu, “Holistically-nested edge detection,” in Proc. IEEE
+     analysis for the extraction of residential areas in high-spatial-resolution        ICCV, Dec. 2015, pp. 1395–1403.
+     remote sensing image,” IEEE Trans. Geosci. Remote Sens., vol. 54, no. 7,      [64] A. Paszke, S. Gross, F. Massa, A. Lerer, J. Bradbury, G. Chanan,
+     pp. 3750–3763, Jul. 2016.                                                          T. Killeen, Z. Lin, N. Gimelshein, L. Antiga, A. Desmaison, A. Kopf,
+                                                                                        E. Yang, Z. DeVito, M. Raison, A. Tejani, S. Chilamkurthy, B. Steiner,
+[40] G. Li, Z. Liu, W. Lin, and H. Ling, “Multi-content complementation
+                                                                                        L. Fang, J. Bai, and S. Chintala, “PyTorch: An imperative style, high-
+     network for salient object detection in optical remote sensing
+                                                                                        performance deep learning library,” in Proc. NeurIPS, Dec. 2019, pp.
+     images,” IEEE Trans. Geosci. Remote Sens., 2021. [Online]. Available:
+                                                                                        8024–8035.
+     10.1109/TGRS.2021.3131221
+                                                                                   [65] D. P. Kingma and J. L. Ba, “Adam: A method for stochastic optimiza-
+[41] L. Zhang and J. Ma, “Salient object detection based on progressively
+                                                                                        tion,” in Proc. ICLR, May 2015, pp. 1–15.
+     supervised learning for remote sensing images,” IEEE Trans. Geosci.
+                                                                                   [66] K. He, X. Zhang, S. Ren, and J. Sun, “Delving deep into rectifiers:
+     Remote Sens., 2021. [Online]. Available: 10.1109/TGRS.2020.3045708
+                                                                                        Surpassing human-level performance on ImageNet classification,” in
+[42] C. Li, R. Cong, C. Guo, H. Li, C. Zhang, F. Zheng, and Y. Zhao, “A
+                                                                                        Proc. IEEE ICCV, Dec. 2015, pp. 1026–1034.
+     parallel down-up fusion network for salient object detection in optical
+                                                                                   [67] D.-P. Fan, M.-M. Cheng, Y. Liu, T. Li, and A. Borji, “Structure-measure:
+     remote sensing images,” Neurocomputing, vol. 415, pp. 411–120, Nov.
+                                                                                        A new way to evaluate foreground maps,” in Proc. IEEE ICCV, Oct.
+     2020.
+                                                                                        2017, pp. 4548–4557.
+[43] J. Hu, L. Shen, S. Albanie, G. Sun, and E. Wu, “Squeeze-and-excitation        [68] R. Achanta, S. Hemami, F. Estrada, and S. Susstrunk, “Frequency-tuned
+     networks,” IEEE Trans. Pattern Anal. Mach. Intell., vol. 42, no. 8, pp.            salient region detection,” in Proc. IEEE CVPR, Jun. 2009, pp. 1597–
+     2011–2023, Aug. 2020.                                                              1604.
+[44] S. Woo, J. Park, J.-Y. Lee, and I. S. Kweon, “CBAM: Convolutional             [69] D.-P. Fan, C. Gong, Y. Cao, B. Ren, M.-M. Cheng, and A. Borji,
+     block attention module,” in Proc. ECCV, Sept. 2018, pp. 3–19.                      “Enhanced-alignment measure for binary foreground map evaluation,”
+[45] S. Ioffe and C. Szegedy, “Batch Normalization: Accelerating deep                   in Proc. IJCAI, Jul. 2018, pp. 698–704.
+     network training by reducing internal covariate shift,” in Proc. ICML,
+     vol. 37, Jul. 2015, pp. 448–456.
+[46] X. Lu, W. Wang, J. Shen, D. Crandall, and J. Luo, “Zero-
+     shot video object segmentation with co-attention siamese networks,”
+     IEEE Trans. Pattern Anal. Mach. Intell., 2020. [Online]. Available:
+     10.1109/TPAMI.2020.3040258
+[47] J. Lu, J. Yang, D. Batra, and D. Parikh, “Hierarchical question-image co-
+     attention for visual question answering,” in Proc. NeurIPS, Dec. 2016,
+     pp. 289–297.
+[48] G. Huang, Z. Liu, L. V. D. Maaten, and K. Q. Weinberger, “Densely
+     connected convolutional networks,” in Proc. IEEE CVPR, Jul. 2017, pp.
+     2261–2269.
+[49] C. Li, Y. Yuan, W. Cai, Y. Xia, and D. D. Feng, “Robust saliency
+     detection via regularized random walks ranking,” in Proc. IEEE CVPR,
+     Jun. 2015, pp. 2710–2717.
+[50] J. Kim, D. Han, Y.-W. Tai, and J. Kim, “Salient region detection via
+     high-dimensional color transform and local spatial support,” IEEE Trans.
+     Image Process., vol. 25, no. 1, pp. 9–23, Jan. 2016.
+[51] L. Zhou, Z. Yang, Z. Zhou, and D. Hu, “Salient region detection using
+     diffusion process on a two-layer sparse graph,” IEEE Trans. Image
+     Process., vol. 26, no. 12, pp. 5882–5894, Dec. 2017.
+[52] H. Peng, B. Li, H. Ling, W. Hu, W. Xiong, and S. J. Maybank,
+     “Salient object detection via structured matrix decomposition,” IEEE
+     Trans. Pattern Anal. Mach. Intell., vol. 39, no. 4, pp. 818–832, Apr.
+     2017.
+

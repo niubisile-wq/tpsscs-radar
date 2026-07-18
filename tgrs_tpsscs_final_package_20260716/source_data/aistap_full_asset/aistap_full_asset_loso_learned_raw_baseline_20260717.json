@@ -1,0 +1,55 @@
+{
+  "learned_method": "loso_supervised_raw_feature_logreg",
+  "proposed_method": "tpsscs_finished_detector",
+  "lowrank_method": "low_rank_residual_k30",
+  "assets": [
+    "simMed_test.mat",
+    "simWind_test.mat"
+  ],
+  "heldout_target_bearing_items": 210,
+  "pfa_points": 7,
+  "asset_level_comparisons": 14,
+  "combined_comparisons": 7,
+  "asset_level_wins_vs_learned": 14,
+  "combined_wins_vs_learned": 7,
+  "min_combined_delta_vs_learned": 0.059558644372663894,
+  "min_asset_delta_vs_learned": 0.04478992072162402,
+  "all_pfa_calibrated": true,
+  "passed": true,
+  "date": "20260717",
+  "candidate_date": "20260715",
+  "features": [
+    "log_raw_frame_z",
+    "local_z_5",
+    "local_z_17",
+    "contrast_5",
+    "contrast_17",
+    "gradient_mag"
+  ],
+  "background_per_frame": 2048,
+  "max_iter": 300,
+  "c": 1.0,
+  "bootstrap_replicates": 2000,
+  "train_infos": [
+    {
+      "train_asset": "simMed_test.mat",
+      "test_asset": "simWind_test.mat",
+      "frames_seen": 128,
+      "positive_frames_seen": 105,
+      "positive_pixels": 3943,
+      "background_pixels": 262144,
+      "positive_frames": 105,
+      "evaluated_positive_frames": 105
+    },
+    {
+      "train_asset": "simWind_test.mat",
+      "test_asset": "simMed_test.mat",
+      "frames_seen": 128,
+      "positive_frames_seen": 105,
+      "positive_pixels": 3943,
+      "background_pixels": 262144,
+      "positive_frames": 105,
+      "evaluated_positive_frames": 105
+    }
+  ]
+}

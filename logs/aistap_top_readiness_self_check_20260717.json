@@ -1,0 +1,154 @@
+{
+  "date": "20260717",
+  "overall": "top_ready",
+  "hard_failure_count": 0,
+  "gates": [
+    {
+      "name": "reproducibility_package",
+      "status": "pass",
+      "evidence": "claim_matrix.md, README.md, STATUS.md, logs\\aistap_final_go_no_go_gate_20260713.md, logs\\aistap_top_ready_completion_audit_20260715.md, logs\\aistap_final_comparison_scorecard_20260713.md, logs\\aistap_manuscript_final_draft_20260715.md, logs\\aistap_figure_table_final_pack_20260715.md, logs\\aistap_manuscript_submission_package_20260715.md, results\\aistap_sample\\aistap_operating_surface_20260713.csv",
+      "detail": "all core package artifacts exist",
+      "hard": false
+    },
+    {
+      "name": "deployable_candidate_artifact",
+      "status": "pass",
+      "evidence": "results\\aistap_sample\\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed11.pt",
+      "detail": "saved trainable-gate state exists; this supports reproducibility of the candidate branch",
+      "hard": true
+    },
+    {
+      "name": "target_preservation_frontier",
+      "status": "pass",
+      "evidence": "results\\aistap_sample\\aistap_target_preservation_ablation_ranks5_20_30_alphas0_0.25_0.5_0.75_1_gates50_70_80_90_95_pfas1e-5_3e-5_1e-4_3e-4_1e-3_3e-3_1e-2.csv",
+      "detail": "trainable gate improves the low-rank frontier at pfa=0.01: Pd 1.0000 vs 0.9767, target loss 0.393 vs 3.715 dB",
+      "hard": false
+    },
+    {
+      "name": "top_tier_sample_scale",
+      "status": "pass",
+      "evidence": "logs\\aistap_cross_condition_full_asset_validation_20260715.json",
+      "detail": "210 target-bearing full-asset items evaluated across 2 official assets; top-tier gate requires >=100 or an independent external dataset",
+      "hard": true
+    },
+    {
+      "name": "cross_condition_holdout",
+      "status": "partial",
+      "evidence": "results\\aistap_sample\\aistap_subset_loso_cross_condition_rank30_hidden16_steps150_lr0p02_summary.csv",
+      "detail": "trainable gate finite on 3 holdouts; wins/ties low-rank on 1 holdouts at Pfa=1e-2",
+      "hard": false
+    },
+    {
+      "name": "aistap_external_method_validation",
+      "status": "pass",
+      "evidence": "logs\\aistap_cross_condition_full_asset_validation_20260715.json, results\\aistap_full_asset\\aistap_combined_full_asset_protocol_20260715.json, results\\ipix_external\\ipix_validated_residual_fusion_20260715.json, results\\ipix_external\\ipix_external_detector_transfer_19931107_135603_starea_20260715.json, results\\ssdd_external\\ssdd_external_trainable_gate_20260715.json, results\\ssdd_external\\ssdd_image_level_bootstrap_ci_20260715.json, logs\\ssdd_external_trainable_gate_20260715.md, logs\\ssdd_image_level_bootstrap_ci_20260715.md, logs\\external_access_and_ipix_transfer_audit_20260715.md, logs\\aistap_external_radar_validation_audit_20260713.md, logs\\sevir_year_holdout_external_radar_validation_20260713.md, logs\\nexrad_public_window_leaderboard_20260714.md",
+      "detail": "AISTAP-SIM cross-condition full-asset validation passed on 2 official assets; combined official full-asset protocol passed on 210 target-bearing items (7/7 combined Pfa wins vs raw and low-rank); independent IPIX validated residual-aware fusion passed on 12 held-out recordings (7/7 Pfa wins vs raw); official SSDD SAR external trainable-gate validation passed on 231 test images/545 ship annotations (4 wins, 3 ties, 0 losses vs raw); SSDD image/annotation-level bootstrap CI supplement passed on 231 images/545 annotations; this gives one official in-domain full-asset layer and two independent external radar dataset families",
+      "hard": true
+    },
+    {
+      "name": "local_reference_superiority",
+      "status": "pass",
+      "evidence": "logs\\aistap_cross_paper_scorecard_20260713.md; power_se/STATUS.md; battery/BATTERY_EXTERNAL_VALIDATION_ONE_PAGER_20260713.md; results\\ipix_external\\ipix_validated_residual_fusion_20260715.json; results\\ssdd_external\\ssdd_external_trainable_gate_20260715.json; results\\ssdd_external\\ssdd_image_level_bootstrap_ci_20260715.json",
+      "detail": "AISTAP is ahead on detector operating-policy density and now has two positive independent external radar families: IPIX over 12 disjoint held-out recordings (7/7 Pfa wins vs raw, 7/7 vs low-rank) and official SSDD over 231 test images/545 ship annotations (4 wins, 3 ties, 0 losses vs raw; 7/7 wins vs low-rank). The SSDD image/annotation-level CI supplement also passes. This closes the local reference superiority gate against the selected power and battery packages",
+      "hard": true
+    },
+    {
+      "name": "classical_cfar_baseline_strength",
+      "status": "pass",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_classical_cfar_baselines_20260717.json, results\\aistap_full_asset\\aistap_full_asset_classical_cfar_best_comparison_20260717.csv, logs\\aistap_full_asset_classical_cfar_baselines_20260717.md",
+      "detail": "TP-SSCS wins 7/7 combined and 14/14 asset-level comparisons against the best of 11 global/local CFAR baselines; minimum combined delta 0.0205",
+      "hard": true
+    },
+    {
+      "name": "classical_cfar_parameter_sensitivity",
+      "status": "pass",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_classical_cfar_param_sweep_20260717.json, results\\aistap_full_asset\\aistap_full_asset_classical_cfar_param_sweep_best_comparison_20260717.csv, logs\\aistap_full_asset_classical_cfar_param_sweep_20260717.md",
+      "detail": "TP-SSCS wins 7/7 combined and 14/14 asset-level comparisons against the best of 75 CFAR methods/configurations; training grid [4, 6, 8], guard grid [1, 2], OS percentiles [60.0, 75.0, 90.0]; minimum combined delta 0.0162",
+      "hard": true
+    },
+    {
+      "name": "loso_learned_baseline_strength",
+      "status": "pass",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_loso_learned_raw_baseline_20260717.json, results\\aistap_full_asset\\aistap_full_asset_loso_learned_raw_baseline_comparison_20260717.csv, results\\aistap_full_asset\\aistap_full_asset_loso_learned_raw_baseline_bootstrap_ci_20260717.csv, logs\\aistap_full_asset_loso_learned_raw_baseline_20260717.md",
+      "detail": "TP-SSCS wins 7/7 combined and 14/14 asset-level comparisons against the leave-one-condition-out supervised raw-feature logistic baseline; held-out items 210, minimum combined delta 0.0596, bootstrap CI lower bounds positive=True",
+      "hard": true
+    },
+    {
+      "name": "feature_ensemble_boundary",
+      "status": "partial",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_loso_feature_ensemble_baseline_20260717.json, results\\aistap_full_asset\\aistap_full_asset_loso_tpsscs_feature_ensemble_20260717.json, logs\\aistap_full_asset_loso_feature_ensemble_baseline_20260717.md, logs\\aistap_full_asset_loso_tpsscs_feature_ensemble_20260717.md",
+      "detail": "strong supervised raw/residual HGB beats compact TP-SSCS (0/7 compact wins; minimum compact-minus-HGB delta -0.2876); TP-SSCS-feature HGB improves over compact TP-SSCS and nearly matches the raw/residual HGB (6/7 combined wins vs raw/residual HGB; minimum delta -0.0007)",
+      "hard": false
+    },
+    {
+      "name": "positive_pixel_label_efficiency",
+      "status": "pass",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_loso_low_positive_pixel_hgb_20260717.json, results\\aistap_full_asset\\aistap_full_asset_loso_low_positive_pixel_hgb_comparison_20260717.csv, results\\aistap_full_asset\\aistap_full_asset_loso_low_positive_pixel_hgb_bootstrap_ci_20260717.csv, logs\\aistap_full_asset_loso_low_positive_pixel_hgb_20260717.md",
+      "detail": "compact TP-SSCS beats low-label raw/residual HGB at all seven Pfa points for positive-pixel budgets 1, 2, 4, 8; positive-CI all-Pfa budgets 1, 2, 4, 8; HGB first catches/exceeds compact at any Pfa at budget 16",
+      "hard": false
+    },
+    {
+      "name": "label_cost_pareto",
+      "status": "pass",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_label_cost_pareto_20260717.json, results\\aistap_full_asset\\aistap_full_asset_label_cost_pareto_frame_auc_20260717.csv, results\\aistap_full_asset\\aistap_full_asset_label_cost_pareto_budget_auc_20260717.csv, results\\aistap_full_asset\\aistap_full_asset_label_cost_pareto_points_20260717.csv, logs\\aistap_full_asset_label_cost_pareto_20260717.md",
+      "detail": "210 target-bearing frames; compact TP-SSCS AUC 0.5313 with zero official full-asset positive-target labels and local CPU median 133.66 ms/frame; raw/residual HGB runtime ratio 4.56x and full-label AUC 0.7156; compact Pareto-dominates low-label HGB budgets 1, 2, 4, 8, 16 in AUC/labels/runtime; positive-CI AUC budgets 1, 2, 4, 8, 16; HGB first exceeds compact AUC at budget 64; full-label HGB remains an upper boundary",
+      "hard": false
+    },
+    {
+      "name": "target_free_calibration_boundary",
+      "status": "partial",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_target_free_calibration_20260717.json, results\\aistap_full_asset\\aistap_full_asset_target_free_calibration_comparison_20260717.csv, results\\aistap_full_asset\\aistap_full_asset_target_free_calibration_bootstrap_ci_20260717.csv, logs\\aistap_full_asset_target_free_calibration_20260717.md",
+      "detail": "positive-delta modes=['cross_asset_target_free', 'same_asset_target_free']; fully Pfa-calibrated modes=[]; passed modes=[]; cross_asset_target_free: wins raw 7/7, wins low-rank 7/7, min delta low-rank 0.0519, Pfa calibrated=False; same_asset_target_free: wins raw 7/7, wins low-rank 7/7, min delta low-rank 0.0512, Pfa calibrated=False",
+      "hard": false
+    },
+    {
+      "name": "frame_level_robustness",
+      "status": "pass",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_frame_level_robustness_20260717.json, results\\aistap_full_asset\\aistap_full_asset_frame_level_robustness_summary_20260717.csv, logs\\aistap_full_asset_frame_level_robustness_20260717.md",
+      "detail": "210 target-bearing frames x 7 Pfa points; low-rank nonnegative item-Pfa pairs 1470/1470, low-rank losses 0; raw minimum combined win fraction 0.890, raw-favorable item-Pfa pairs 61; raw comparison remains broad but not universal",
+      "hard": false
+    },
+    {
+      "name": "paired_significance_audit",
+      "status": "pass",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_paired_significance_20260717.json, results\\aistap_full_asset\\aistap_full_asset_paired_significance_20260717.csv, logs\\aistap_full_asset_paired_significance_20260717.md",
+      "detail": "14 combined exact sign tests over 210 target-bearing frames; all combined BH-FDR significant=True, worst combined q=2.945e-29, minimum matched sign effect=0.816; ties are excluded from the sign test and this is not a new dataset",
+      "hard": false
+    },
+    {
+      "name": "log_pfa_auc_surface",
+      "status": "pass",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_log_pfa_auc_20260717.json, results\\aistap_full_asset\\aistap_full_asset_log_pfa_auc_summary_20260717.csv, logs\\aistap_full_asset_log_pfa_auc_20260717.md",
+      "detail": "log-Pfa AUC over 7 checked Pfa points and 210 target-bearing frames; minimum combined AUC delta 0.0553, minimum CI95 low 0.0491, worst combined BH-FDR q=1.464e-55; checked Pfa range only",
+      "hard": false
+    },
+    {
+      "name": "component_attribution_audit",
+      "status": "pass",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_component_attribution_20260717.json, results\\aistap_full_asset\\aistap_full_asset_component_attribution_auc_summary_20260717.csv, results\\aistap_full_asset\\aistap_full_asset_component_attribution_pfa_summary_20260717.csv, logs\\aistap_full_asset_component_attribution_20260717.md",
+      "detail": "component attribution over 210 target-bearing frames: finished-detector AUC delta 0.2228 vs raw and 0.0553 vs low-rank; low-rank losses=0; gate-only boundary present=True with gate-only CI-positive=False",
+      "hard": false
+    },
+    {
+      "name": "runtime_complexity_profile",
+      "status": "pass",
+      "evidence": "results\\aistap_full_asset\\aistap_runtime_profile_20260717.json, results\\aistap_full_asset\\aistap_runtime_profile_summary_20260717.csv, results\\aistap_full_asset\\aistap_runtime_profile_components_20260717.csv, logs\\aistap_runtime_profile_20260717.md",
+      "detail": "local CPU profile over 12 target-bearing frames: compact TP-SSCS median 133.66 ms/frame, raw/residual HGB median 608.99 ms/frame, HGB/compact ratio 4.56x, TP-SSCS parameters 2641; hardware-independent speed claims remain out of scope",
+      "hard": false
+    },
+    {
+      "name": "claim_consistency_audit",
+      "status": "pass",
+      "evidence": "logs\\aistap_claim_consistency_audit_20260717.json, logs\\aistap_claim_consistency_audit_20260717.md",
+      "detail": "verdict=claim_consistent; hard_failure_count=0; warning_count=0",
+      "hard": true
+    },
+    {
+      "name": "finished_detector_result",
+      "status": "pass",
+      "evidence": "logs\\aistap_finished_detector_protocol_20260715.json",
+      "detail": "finished-detector protocol gate passed on 105 target-bearing full-asset items",
+      "hard": true
+    }
+  ]
+}

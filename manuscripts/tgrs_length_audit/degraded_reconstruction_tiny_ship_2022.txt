@@ -1,0 +1,983 @@
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX                                                                            1
+
+
+
+
+ A Degraded Reconstruction Enhancement-based
+Method for Tiny Ship Detection in Remote Sensing
+    Images with A New Large-scale Dataset
+                 Jianqi Chen, Keyan Chen, Hao Chen, Zhengxia Zou and Zhenwei Shi*, Member, IEEE
+
+
+
+    Abstract—The rapid detection of ships within the wide sea                  active because of its content-rich and expression-intuitive fea-
+area is essential for intelligence acquisition. Most modern deep               tures [2]–[6]. Traditional ship detection methods often require
+learning-based ship detection methods focus on locating ships in               complicated hand-craft features extraction, and cannot adapt
+high-resolution (HR) remote sensing (RS) images. Seldom efforts
+have been made on ship detection in medium-resolution (MR)                     to changing environments [7], [8]. Nowadays, deep learning
+RS images. An MR image covers a much wider area than an                        (DL) techniques, especially convolutional neural networks
+HR one of the same size, thus facilitating quick ship detection.               (CNN), have been widely applied in RS image ship detection.
+To this end, we propose a tiny ship detection method namely,                   Compared with traditional methods, DL-based methods can
+Degraded Reconstruction Enhancement Network (DRENet), for                      learn robust multi-level features and classifiers in an end-
+MR RS images. Different from previous methods that mainly
+focus on feature fusion strategies to improve the expression                   to-end manner. Inspired by the great success of DL-based
+ability of the detector, we design an additional network branch,               detectors in the field of computer vision (CV), in recent years,
+i.e., degraded reconstruction enhancer, to learn to regress an                 considerable works have introduced DL techniques into RS
+object-aware blurred version of the input image in the training                ship detection tasks [9]–[17], which confirmed better detection
+phase. Our intuition is that the proposed reconstruction branch                performance in terms of accuracy and stability than traditional
+may guide the backbone to focus more on tiny ship targets
+instead of the vast background. Moreover, we incorporate a                     counterparts.
+CRoss-stage Multi-head Attention module in the detector to                        The existing DL-based ship detection methods are mostly
+further improve the feature discrimination by leveraging the self-             modified based on the object detectors in CV. Recent advances
+attention mechanism. To fill the gap of lacking a large-scale MR               in optical RS ship detection include fusing the ship shape
+ship detection dataset, we introduce Levir-Ship, which contains                priors [18], extracting features from ship prow and stern
+3876 GF-1/GF-6 multi-spectral images and over 3K tiny ship
+instances. Experiments on Levir-Ship validate the effectiveness                [12], and applying the orientation information of ships [19].
+and efficiency of the proposed method. Our method achieves                     However, most of these methods focus on high-resolution
+82.4 AP with 85 FPS, which outperforms many state-of-the-art                   (HR) images, thus benefiting from the rich textures and clear
+ship detection methods. Our code and dataset are available at                  edges.
+https://github.com/WindVChen/DRENet.                                              Despite the great success in ship detection in HR RS images
+   Index Terms—Convolutional neural network (CNN), ship de-                    [19]–[21], seldom efforts have been made in ship detection in
+tection, deep learning, optical image, remote sensing.                         relatively lower resolution RS images, e.g., medium-resolution
+                                                                               (MR, about 16m/pixel) RS images.1 Considering the urgent
+                          I. I NTRODUCTION                                     need for monitoring and early warning over a wide area of
+                                                                               sea in practical applications [22], [23], ship detection in MR
+S    HIP detection in optical remote sensing (RS) images
+     refers to locating ships in RS images and giving their
+positions and sizes automatically. As the main carrier of sea
+                                                                               images is critically important. We argue that MR RS images
+                                                                               are more suitable than HR ones for quick ship detection in
+                                                                               vast sea areas, because an MR image can cover a much wider
+transportation, ship plays a very important role in the military
+                                                                               area than an HR image of the same size. For instance, to
+and civilian fields [1]. The accurate and fast detection of ships
+                                                                               detect ships in a fixed sea area, supposed we need 1 hour in
+in RS images has been a hot research topic.
+                                                                               16m/pixel MR images (GF-1), then it means we need 256
+   With the rapid development of RS technology in recent
+                                                                               hours, about 10 days, to finish the same task in 1m/pixel HR
+years, research on ship detection in optical images is more
+                                                                               images (SkySat-1). The time cost is apparently unbearable,
+  The work was supported in part by the National Key Research and              especially in such a big data era.
+Development Program of China under the Grant 2019YFC1510905, in part by           Ship detection in real-world MR RS images has several
+the National Natural Science Foundation of China under the Grant 62125102,
+and in part by the Beijing Natural Science Foundation under the Grant          challenges. First, ship detection in MR RS images can suffer
+4192034. (Corresponding author: Zhenwei Shi)                                   from scarce textures and hazy edges of ships. For example, in
+  Jianqi Chen, Keyan Chen, Hao Chen and Zhenwei Shi are with the               a GF-1 image (16m/pixel), a ship may only occupy 20 pixels.
+Image Processing Center, School of Astronautics, Beihang University, Beijing
+100191, China, and with the Beijing Key Laboratory of Digital Media,           Second, in the real scenario, an RS image may be covered by
+Beihang University, Beijing 100191, China, and also with the State Key Lab-    massive fractus clouds. The complex imaging conditions may
+oratory of Virtual Reality Technology and Systems, School of Astronautics,
+Beihang University, Beijing 100191, China.                                        1 Please refer to the website (https://doc.arcgis.com/en/imagery/workflows/
+  Zhengxia Zou is with Department of Guidance, Navigation and Control,         resources/managing-medium-resolution-satellite-data.htm) for detailed defini-
+School of Astronautics, Beihang University, Beijing 100191, China.             tions of high resolution and medium resolution.
+2                                                           IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+
+                                                                          (a)
+
+
+
+
+                                                                          (b)
+
+Fig. 1. Samples of 512⇥512 size from different datasets. (a): Samples from Airbus Ship Detection Competition dataset2 with a spatial resolution of 2m and
+higher. (b): Samples from Levir-Ship dataset with a spatial resolution of 16m.
+
+
+
+also induce many false positives in a conventional detector.                    GaoFen-1 and GaoFen-6 satellites with the spatial resolution
+Fig. 1 gives an intuitive comparison of HR images and MR                        of 16m/pixel. We conduct experiments on Levir-Ship and the
+ones. The ships in MR images are difficult to be recognized                     results show the effectiveness and efficiency of our method.
+(zoomed for best view) and also hard to be distinguished from                      The contribution of our work can be summarized as follows:
+fractus clouds. Most detection networks focus on improving                         • We propose an effective method (DRENet) for efficient
+the feature expression ability of the backbone or the neck by                        tiny ship detection. A degraded reconstruction enhancer
+feature fusion [11], [24] and cross-stage connection [21], [25].                     is leveraged to guide the backbone to focus more on
+We argue that such feature enhancing methods are struggling                          the target instead of the background, and the cross-stage
+to extract discriminative features of tiny ship targets.                             multi-head attention is introduced to further improve the
+   To solve the above problems, we propose a degraded recon-                         discrimination ability of the detector.
+struction enhancement ship detection network called DRENet                         • We introduce the Levir-Ship detection dataset, consisting
+- Tiny Ship Detection Based on Degraded Reconstruction                               of 3876 GF-1/GF-6 images (each size of 512⇥512 pixels
+Enhancement in Remote Sensing Images, which contains an                              with the spatial resolution of 16m/pixel) and more than
+efficient backbone to extract robust feature representations, a                      3K tiny ship instances.
+degraded reconstruction enhancer to help the backbone learn to                     • Extensive experiments on the Levir-Ship validate the
+distinguish ships from irrelevant backgrounds, and an object                         effectiveness and efficiency of the proposed method. Our
+detector to locate ships. The pipeline is depicted in Fig. 2.                        method achieves 82.4 AP with 85 FPS, and surpasses
+Different from previous methods that mainly focus on feature                         several state-of-the-art ship detection methods.
+fusion strategies [11], [24] to improve the expression ability                     The rest of the paper are organized as follows. Related
+of the detector, we design an additional network branch, i.e.,                  work is introduced in section II. In section III, we give a
+degraded reconstruction enhancer, to learn to regress an object-                detailed description of our method. Section IV describes Levir-
+aware blurred version of the input image in the training phase.                 Ship dataset and the comparison with other ship detection
+In the enhancer, we design an image processing operation                        datasets. Experimental results are reported in section V, and
+called “Selective Degradation” to blur the background. Our                      the conclusion is drawn in section VI.
+intuition is that the proposed reconstruction branch may guide
+the backbone to focus more on tiny ship targets instead of                                            II. R ELATED W ORK
+the vast background (e.g., fractus clouds). Please note that our
+                                                                                   Ship detection has been extensively studied for decades.
+proposed enhancer is only used in the training phase and is
+                                                                                Generally, traditional methods perform a multi-stage coarse-to-
+computing-free in the inferencing phase. Moreover, we incor-
+                                                                                fine process to obtain detection results [28]–[32]. The detection
+porate a CRoss-stage Multi-head Attention (CRMA) module
+                                                                                process can often be divided into two steps - region proposal
+in the detector to further improve the feature discrimination
+                                                                                and region refining, and make use of hand-craft features.
+by leveraging the self-attention mechanism.
+   To the most of our knowledge, there is still no public dataset               Although achieving some good results in certain scenarios,
+for MR RS image ship detection. Therefore, we propose a                         these methods are vulnerable to complex situations, together
+dataset named “Levir-Ship” to promote our research. Levir-                      with the limitation of heavy reliance on prior and complex
+Ship contains 3876 images of 512 ⇥ 512 pixels collected from                    operating procedures.
+                                                                                   In recent years, benefiting from the development of hard-
+    2 https://www.kaggle.com/c/airbus-ship-detection/overview.                  ware and big data, many effective DL object detection methods
+CHEN et al.: A DEGRADED RECONSTRUCTION ENHANCEMENT-BASED METHOD FOR TINY SHIP DETECTION WITH A NEW LARGE-SCALE DATASET                                                             3
+
+
+
+
+                                                                     Enhancer (Only Work During Training)
+
+
+
+
+                                                                                                                                                          Conv
+
+
+
+
+                                                                                                                                                                          Concat
+                                                                 Selective Degradation
+
+
+                                          64×64
+
+
+
+
+                                                                                                                                                        MHSA
+                                                                                                                                                 Conv
+
+
+                                                                                                                                                        Conv
+
+                                                                                                                                                        Conv
+                                                                                                                             128×128
+                      Backbone
+
+
+
+
+                                                                                                       Upsampling
+                                                                          Conv
+
+
+
+
+                                                                                         Conv
+
+
+
+
+                                                                                                                    Conv
+                                                                RCAB
+                                                                                                                                            CRoss-stage Multi-head Attention
+                                                                                                                                                   Structrue (CRMA)
+     512×512
+
+
+                                          16×16
+                                                                                                                           Detector
+                                                     SPP      CRMA
+                                                                                                                                                                   SHIP
+                                                                             Conv                                                               SHIP
+                                                                                                CRMA
+                                                                         Upsampling
+                                          32×32                              Scale
+
+                                                     Concat
+                                                              CRMA
+                                                                             Conv
+                                                                                                CRMA
+                                         64×64                           Upsampling
+                                                                             Scale
+                                                     Concat
+
+
+
+
+                                                              CRMA
+                                                                                                                                                        512×512
+
+
+
+Fig. 2. The overall structure of DRENet. a) Backbone: A lightweight backbone to enable robust features extraction efficiently. b) Enhancer: The proposed
+degraded reconstruction enhancer to guide the backbone to extract many discriminative features by regressing degraded images. The degraded images come
+from the proposed “Selective Degradation” operation. c) Detector: The detector to display the final detection results. We introduce into the detector a CRoss-
+stage Multi-head Attention (CRMA) module, which can gain a large receptive field to locate ships accurately while saving much computation. (For details of
+RCAB and SPP, please refer to [26] and [27]. The implementations of upsampling layers are aligned with [26] and [27], with nearest-neighbor interpolation
+in the detector while sub-pixel convolution in the enhancer.)
+
+
+
+have been proposed [33]. They are more flexible, unified,                            [24] introduced dilated convolution and attention mechanism
+and strong to deal with the task, and can be divided into                            in YOLOv3, and proposed ImYOLOv3. Also, researchers
+two-stage methods and one-stage methods. Two-stage meth-                             introduce prior information to get high performance. Zhang
+ods are mainly based on the RCNN series [34]–[37]. They                              et al. [18] pre-designed the structure of the candidate object
+often play the idea of obtaining candidate bounding boxes                            according to the ship structure, and then inputted the proposals
+first, and then classifying and regressing the results from                          into CNN to detect the ship. Wu et al. [20] used the promi-
+the candidate. Comparing with two-stage methods, one-stage                           nence of the ship’s head to detect the ship by positioning the
+methods headed by Yolo [27], [38]–[41], SSD [42], RetinaNet                          ship’s bow. Tang et al. [54] extracted the ship by using the
+[43], EfficientDet [44] directly give the detection results. They                    difference in hue, saturation, and value between the ship and
+obtain a higher detection speed expending a little accuracy                          the surrounding. These methods often focus on HR images and
+in general. However, both two-stage and one-stage methods                            utilize the features extracted by clear edges and rich textures
+rely on the setting of anchor boxes, which needs much prior                          to achieve high performance. However, when tackling the tiny
+knowledge and constrains the methods’ generalization. Thus, a                        ship detection problem, they may perform badly. In the paper,
+series of anchor-free methods are proposed, such as CornerNet                        we propose DRENet to address tiny ship detection.
+[45], CenterNet [46], FCOS [47], etc, which prevent anchor
+boxes initialization and also achieve accurate detection results.
+
+   Motivated by the above approaches, many effective RS                                                                        III. M ETHODOLOGY
+image object detection methods have emerged in recent years
+[48]–[53]. For example, Wang et al. [49] proposed a one-                                The DRENet, shown in Fig. 2, consists of an efficient
+stage method, Zhang et al. [50] proposed an anchor-free                              backbone, a Degraded Reconstruction Enhancer (DRE), and
+method, and Huang et al. [52] proposed an object-adaptation                          a ship detector. We follow YOLOv5s (a small version of
+label assignment, which achieve many good results. While                             YOLOv5) [27] as the backbone to efficiently extract multi-
+more specific to ship target, many methods have made great                           scale image features. The degraded reconstruction enhancer is
+contributions to ship detection in RS images with DL technol-                        designed to guide the backbone to acquire many discriminative
+ogy. Li et al. [11] proposed a hierarchical selective filtering                      features by regressing an object-aware blurred version of the
+layer structure based on Faster-RCNN adapting to different                           input image in the training phase. The supervision of the
+scales of ships. Tian et al. [12] added atrous spatial pyramid                       enhancer comes from a “Selective Degradation” operation we
+pooling on the basis of Mask-RCNN, and used dense layer                              propose. In the detector, we introduce a CRoss-stage Multi-
+jump connections to use feature information in the backbone                          head Attention (CRMA) module to better locate ships within
+effectively achieving high detection accuracy. Chen et al.                           the input image. Details will be introduced as follows.
+4                                               IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+
+Algorithm 1 Selective Degradation for obtaining DRE super-                                   𝑫𝒎𝒊𝒏 = 𝒎𝒊𝒏(𝑫𝟏, 𝑫𝟐, … )
+vision information                                                                           K𝒆𝒓𝒏𝒆𝒍𝑺𝒊𝒛𝒆 = 𝑭(𝑫𝒎𝒊𝒏 )
+                                                                                                                                           K𝑒𝑟𝑛𝑒𝑙𝑆𝑖𝑧𝑒
+Input: I, the input image                                                 D1
+                                                                                        D2
+
+
+
+Input: G, all the ground-truth boxes set in I
+Define F (·), an increasing function to adjust the mean kernel                                                                  Apply the mean filter
+     size
+Define Center(·), a function to get the box’s central coordi-                                 Repeat at all coordinates
+     nate
+Define Distance(·, ·), a function to compute the Euclidean
+     Distance between two inputs
+Define EvenInt(·), a function to return the nearest even
+     number that is less than the input
+Define Resize(·), a function to resize the image by nearest       Fig. 3. The specific operation of Selective Degradation: calculate the mean
+                                                                  filter kernel size at each point. D1 and D2 represent the distance from the
+     neighbor interpolation                                       current pixel position to each ship target, while F (·) is an increasing function
+Output: I, ˆ the label of I in DRE                                to adjust the mean kernel size, where the output, i.e. the mean kernel size
+ 1: for i = 0; i < H; i + + do                                    will increase as Dmin increases.
+ 2:      for j = 0; j < W ; j + + do
+ 3:          k     +1                                             to reconstruct the degraded label with a shape of 128 ⇥ 128,
+ 4:          for each g 2 G do                                    leveraging the performance and convenience. We refer to the
+ 5:              c     Center(g)                                  existing super-resolution method [26] to design the structure
+ 6:              t     Distance((i, j), c)                        of DRE, but there are some differences. In [26], as the goal
+ 7:              if t < k then                                    is to improve the quality of the super-resolution image, the
+ 8:                   k=t                                         network is actually complex and deep. However, instead of
+ 9:              end if                                           reconstructing perfect Selective Degradation labels, our goal
+10:          end for                                              is to acquire a discriminative feature representation of the
+11:          k = F (k)                                            backbone. Therefore, we make a relatively shallow enhancer
+12:          k     EvenInt(k)                                     network, with just a single RCAB (Residual Channel Attention
+             ˆ            1
+                               Pm=i+ k2 ,n=j+ k2
+13:          I(i, j) = (k+1) 2
+                                m=i k          k I(m, n)          Block, a component module in [26]) used, to concentrate more
+                                       2 ,n=j  2
+14:      end for                                                  on the training of the backbone. Based on the mechanism of
+15: end for                                                       “Selective Degradation”, the labels of the enhancer focus on
+16: Iˆ = Resize(I)  ˆ                                             the ship target and omit the complex background. Thus, the
+17: return Iˆ                                                     enhancer provides a tendency to obtain robust feature repre-
+                                                                  sentations in the backbone, and classify ships more exactly.
+                                                                     Compared with the existing super-resolution methods [26],
+                                                                  [55], [56], the proposed DRE focuses more on improving the
+A. Degraded Reconstruction Enhancer                               detection results of tiny ships. The supervision of DRE is an
+   The degraded reconstruction Enhancer (DRE) utilizes the        object-aware blurred version of the input image (different from
+features extracted by the backbone to reconstruct the degraded    the clear image of existing super-resolution methods), which
+input image, which could guide the backbone to pay more           can guide the backbone to pay more attention to ships and
+attention to ships, keep more information about the objects,      be more robust against the disturbances from complex back-
+and omit the complex background.                                  grounds. Further, different from the existing super-resolution
+   1) Supervision of DRE: In this part, we propose a method       methods that use labels of higher image resolution, our
+named “Selective Degradation” to generate labels for the          proposed DRE reconstructs labels of lower image resolution
+enhancer. Selective Degradation, with the nature of filtering,    (128 ⇥ 128) than the input image (512 ⇥ 512), which saves
+performs mean filters of different sizes on different posi-       much computation and memory. The structure of DRE is also
+tions in original images. Details of Selective Degradation        much simpler and shallower than that of the existing super-
+are illustrated in Algorithm 1. Fig. 3 depicts how to get         resolution methods.
+the mean kernel size of a certain position in an image. By
+Selective Degradation, we can get a “pseudo saliency map”         B. Efficient Detector
+in which ships would be kept completely, and the background          To achieve efficient ship detection, our detector is based on
+is processed to be fuzzy. Through the training of DRE, the        YOLOv5s. We have made some modifications for the tiny ship
+backbone will pay more attention to the tiny ships instead of     detection task to further improve efficiency.
+the textures, details, or the fractus clouds of the background.      In order to spread the rich spatial information of the low-
+   2) Design of DRE: As is shown in Fig. 2, we take feature       level features to the deep-level features at a short and fast
+maps from the backbone as the input of the enhancer. Here         path, YOLOv5 adopts the PAN [57] structure. However, when
+we just utilize the feature maps with the shape of 64 ⇥ 64        assigning anchors to each output layer in tiny ship object
+CHEN et al.: A DEGRADED RECONSTRUCTION ENHANCEMENT-BASED METHOD FOR TINY SHIP DETECTION WITH A NEW LARGE-SCALE DATASET                            5
+
+
+
+detection, most of the bounding boxes fall on the shallow                                         TABLE I
+detection layers while few on the deep detection layers. It          D ETAILS OF CRMA CONFIGURATION . CBS REPRESENTS OPERATIONS OF
+                                                                         C ONVOLUTION , BATCH N ORMALIZATION , AND S ILU ACTIVATION
+is actually a time-costing operation but retrieving few benefits     FUNCTION . MHSA DENOTES THE M ULTI - HEAD S ELF - ATTENTION LAYER .
+to enrich the spatial information of the deep detection layer. In
+DRENet, we remove the PAN path to improve the detection                                           Input: 16×16×512
+speed.
+   Considering different output layers of FPN [58] are assigned         Pathway         Layer           Filters        Size          Output
+with an imbalanced number of training samples, we add two                                 CBS            256           1×1          16×16×256
+“Scale Layers” behind the two Upsampling layers in the
+                                                                                          CBS            128           1×1          16×16×128
+detector (depicted in Fig. 2), following the work of [59].
+                                                                           1            MHSA              —               —         16×16×128
+The Scale Layer is actually just a single learnable parameter
+that can balance the backpropagated gradients from differ-                                CBS            256           1×1          16×16×256
+ent output layers in the bottom-up pathway layers of FPN.                              Residual           —               —         16×16×256
+Supposed there are two layers C1, and C2 in the bottom-up                  2              CBS            256           1×1          16×16×256
+pathway from shallow to deep, and two layers P1, and P2
+in the top-down pathway corresponded. In the original FPN,              Output          Concat            —               —         16×16×512
+P 1 = C1 + upsample(P 2), after we add the scale layer, it
+turns to be P 1 = C1 + ↵ ⇥ upsample(P 2), where ↵ is a
+learnable parameter.
+   To achieve a full-image receptive field, we propose a CRoss-                             lossreg = 1           CIoU                          (2)
+stage Multi-head Attention (CRMA) module, and replace the
+CSP-like layers in the bottleneck of YOLOv5s. The CSP-like                                           ⇢2 (b, bgt )              ⌫2
+                                                                               CIoU = IOU                                                       (3)
+layers in YOLOv5 are designed based on CSPNet [60]. The                                                  c2           1       IOU + ⌫
+structure splits the input in half from the channel dimension,
+then passes the two parts into two branches (one branch with                              4          wgt                      w 2
+                                                                                     ⌫=      (arctan                arctan      )               (4)
+many convolution operations while the other just an identical                             ⇡2         hgt                      h
+mapping), and at last concatenates the two branches’ outputs as      where b and bgt denote the central points of predicted box
+the final output. In our work, we argue the many convolutions        and target box, ⇢(·) denotes the Euclidean distance, c is the
+in the branch are low cost-effective and replace them with           diagonal length of the smallest enclosing box covering the
+the Multi-Head Self-Attention (MHSA) layer designed in [61],         two boxes, ⌫ measures the consistency of aspect ratio, and
+which can enlarge the network’s receptive field much while           wgt , hgt , w, h respectively represent the width and height of
+keeping low parameters and complexity, and also more suitable        two boxes.
+for vision task (with relative positional encodings used and Q,                       P
+                                                                                        (yn ⇥ ln yn⇤ + (1 yn ) ⇥ ln(1 yn⇤ ))
+K, V in 2D style) compared with the original version in [62].           losscls =                                                (5)
+                                                                                                          n
+By fusing CSPNet’s idea and the MHSA layer, we construct
+the CRMA module. More details of CRMA are shown in Fig.              where n represents the number of all anchor boxes, yn⇤ denotes
+2 and TABLE I. Also note that we replace all the five CSP-           the probability of the n-th predicted bounding box. yn is the
+like layers with our CRMA in YOLOv5s’s bottleneck, which             label corresponding to the predicted bounding box, which is
+can gain much reduction of computation and complexity of             formulated by CIoU . Finally, we design the detector loss with
+the network while keeping good performance.                          a balanced factor of 0.05.
+
+                                                                                  Lossdetector = lossreg + 0.05 ⇥ losscls                       (6)
+C. Loss Function
+   The loss function of DRENet is composed of two parts,                3) DRENet Loss: The training of the enhancer and detector
+including the enhancer loss and the detector loss.                   jointly may occur unbalance between the two branches, thus
+   1) Enhancer Loss: We apply mean square error (MSE)                leading to sub-optimal. How to weigh the two branches has a
+to form the reconstruction error of the enhancer. The loss           great impact on the performance of ship detection. Motivated
+function is formulated as follows:                                   by the work of Kendall et al. [64], we design a method to
+                                   P ⇤                               balance the training preference of the enhancer and detector
+                                      (y     y)2
+                 Lossenhancer =                               (1)    automatically, which is achieved by two learnable weight
+                                         N                           coefficients. Finally, the DRENet loss is defined as:
+where y ⇤ represents the pixel value of the reconstruction result,
+y represents the pixel value of the “Selective Degradation”                        1                 1
+                                                                      Loss =          Lossenhancer + 2 Lossdetector +ln a+ln b (7)
+label, and N represents the number of total pixels.                               2a2               2b
+   2) Detector Loss: The detector loss function contains re-         where a and b are two coefficients automatically learned by
+gression loss and classification loss. We conduct typical loss       the network. In training, a and b in the first two items of Loss
+in object detection task - CIoULoss [63] for regression error,       tend to be large values, while in the last two, they tend to be
+and Binary Cross-Entropy Loss for classification. In DRENet,         small. They are regulated by each other. This design can help
+they are defined as:                                                 the training progress smooth and steady.
+6                                                  IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+D. Implementation Details
+   Our backbone follows the design of YOLOv5s. There are
+5 stages in the backbone, each with downsampling by 2, thus
+we have different feature maps, 256⇥256, 128⇥128, 64⇥64,
+32⇥32 and 16⇥16. Taking the features of 64⇥64, 32⇥32, and
+16⇥16 as detector’s input, we obtain the probability, position,
+and shape of the ship by inference. As for the enhancer, we
+take the 64 ⇥ 64 feature maps for reconstructing a degraded
+label with a shape of 128 ⇥ 128.
+   We adopt Stochastic Gradient Descent (SGD) optimizer
+with 0.99 momentum and 0.0005 weight decay. The learning
+rate is initially set to 0.01 and decays in a Cosine annealing
+strategy until 500 epochs. The batch size is 16. While for the
+optimization of the two weight coefficients a and b in loss,
+we adopt Adaptive moment estimation (Adam) optimizer with
+learning rate set to 0.01. Notably, the enhancer and detector
+are jointly optimized in the training phase, but in the testing
+phase, the enhancer can be removed and only the detector is
+used.
+
+                        IV. L EVIR -S HIP
+                                                                     Fig. 4. Ship target size statistics in LEVIR-SHIP. We use the smallest
+   In recent decades, there are many effective object detection      enclosing rectangle of the actual ship target as a measure.
+datasets in optical remote sensing.
+   NWPU-VHR-10 [65] contains 800 images in 10 categories.
+However, there are only 57 images including total 302 ships,           TABLE II shows the comparison between Levir-Ship and
+which is not enough to train a DL network and suffers from           several existing RS object detection datasets. The ship in
+overfitting. In addition, the spatial resolution of the dataset is   Levir-Ship is surrounded by complex background, and is hard
+0.5-2m.                                                              to recognize, compared with those ships in HR images. In
+   HRSC2016 [66] is a single-class dataset for ship detection.       addition, due to the influence of different time, different pho-
+The images are all from 6 well-known ports. There are 1070           tographers, and different locations, the images show different
+images, and 2976 objects in total. The spatial resolution of the     conditions, which brings many challenges to the task.
+dataset is 0.4-2m.                                                     From Fig. 5, we can see that the background is complex,
+   DIOR [67] is a relatively large dataset proposed in recent        and ships in the images are hard to find even zoomed in
+years. It contains 20 categories, 23463 images, and 192472           several times. Meanwhile, since Levir-Ship covers a variety
+instances. The ship category has 2702 images and 62400               of environmental conditions, DL network can obtain better
+objects in total. However, the ship is also under a high spatial     generalization, stability, and sufficiency.
+resolution.
+   HRRSD [68] is another large-scale RS dataset recently                     V. E XPERIMENTAL R ESULTS AND A NALYSIS
+proposed. There are 13 categories, 21761 images, and 55740              In this section, we conduct experimental comparative anal-
+instances. It contains 2165 images with 3886 ship objects, but       yses of the proposed method. Our experiment is based on
+the resolution of 0.15-1.2m is still too high.                       Levir-Ship, and we randomly divide the dataset into training
+   Most ship detection datasets focus on high spatial resolution,    set, validation set, and test set (details shown in TABLE III).
+such as 0.3m, 0.5m, and 2m [65]–[68]. Few datasets concen-           All experiments are implemented on an NVIDIA Tesla V100
+trate on tiny ship objects with a lower spatial resolution. In our   GPU.
+work, we propose a tiny ship detection dataset named Levir-
+Ship under the spatial resolution of 16m.
+   Images in Levir-Ship are captured from multispectral cam-         A. Evaluation Metrics
+eras of GaoFen-1 and GaoFen-6 satellites. We only use                   We evaluate the effectiveness and efficiency of the proposed
+the R, G, and B bands. 85 scenes have been collected in              method by detection accuracy and model complexity. The
+the dataset with pixel resolutions between 10000×10000 and           metrics are Average Precision (AP), Floating Point Operations
+50000×20000. We crop the original images to finally get 1973         (FLOPs), Model Parameters, and Frames Per Second (FPS).
+positive samples and 1903 negative samples with the size of          Details are described as follows.
+512×512. As shown in Fig. 4, we plot the distribution of                To evaluate detection accuracy, We use AP50 (prediction
+width/height of ships in the Levir-Ship dataset. We can observe      is a true positive sample when the IoU is larger than 0.5)
+that the ship pixel size in Levir-Ship is almost below 20×20,        as the evaluation metric to measure the detection accuracy of
+and centralizes at around 10×10. The ship in Levir-Ship is           the model. In calculating AP value, we conduct the method
+relatively small compared to the vast background, which brings       illustrated in the COCO dataset (in the Precision-Recall curve,
+many challenges to the detection network.                            according to classification confidence, 101 points are sampled
+CHEN et al.: A DEGRADED RECONSTRUCTION ENHANCEMENT-BASED METHOD FOR TINY SHIP DETECTION WITH A NEW LARGE-SCALE DATASET                                   7
+
+
+
+                                                            TABLE II
+   C OMPARISON BETWEEN THE PROPOSED LEVIR-SHIP DATASET AND FOUR PUBLICLY AVAILABLE OBJECT DETECTION DATASETS . BB N UMBER
+DENOTES THE NUMBER OF BOUNDING BOXES . F OR DATASETS CONTAINING MULTIPLE CATEGORIES , ONLY INFORMATION ABOUT THE SHIP CATEGORY IS
+                                                          LISTED HERE .
+
+
+                   Dataset                 Images Number           BB Number                  Source                     Resolution           Year
+
+             NWPU VHR-10                        57                      302                Google Earth                    0.5-2m             2014
+               HRSC2016                        1070                     2976               Google Earth                    0.4-2m             2016
+                     DIOR                      2702                     62400              Google Earth                   0.5-30m             2018
+                   HRRSD                       2165                     3886       Google Earth & Baidu Earth            0.15-1.2m            2019
+           LEVIR-SHIP (Ours)                   3876                     3219          GaoFen-1 & GaoFen-6                   16m               2021
+
+
+
+
+                     (a) Images with different amounts of cloud                               (b) Images of different land percentages
+
+
+
+
+                       (c) Images of different light intensity                             (d) Images of different sea area characteristics
+
+Fig. 5. A partial display of the data contained in LEVIR-SHIP under different situations that may be encountered in the process of ship detection. The blue
+bounding boxes are the ground truth.
+
+
+
+                             TABLE III                                          methods such as SVDNet [28] and PCANet [69] (configured as
+    T HE DIVISION OF TRAINING SET, VALIDATION SET, AND TEST SET                 [28]), but unfortunately found these methods failed as the ship
+                                                                                targets only cover a small area of the image. Unless otherwise
+                               Image number                Target number        specified, we train all networks for 500 epochs, using batch
+      Training set                  2320                         2002
+                                                                                size 16.
+                                                                                  TABLE IV shows the comparative results of networks. It
+     Validation set                  788                         665
+                                                                                can be seen that compared with other methods, our proposed
+        Test set                     788                         552            method achieves the highest detection accuracy and real-time
+                                                                                detection speed. DRENet achieves a healthy 1.5 point AP
+                                                                                gap with the closest competitor, EfficientDet-D2 [44], while
+at equal intervals, and then the Precision values corresponding                 being much faster (85 vs.21 FPS). Compared with the fastest
+to these points are accumulated and averaged to obtain the final                YOLOv5s [27], DRENet is a minor slower but much more
+AP value) to ensure that the calculation of the Precision-Recall                accurate (82.4 vs.75.6 AP). Furthermore, the Params and
+curve area is more accurate. We use FLOPs, Parameters, and                      FLOPs of DRENet are small. These can demonstrate the
+FPS to reflect the detection speed.                                             excellent detection performance of DRENet on the tiny ship
+                                                                                detection task.
+                                                                                   Fig. 6 gives some detection results between DRENet and
+B. State-of-the-art Comparison                                                  other methods. Blue boxes represent true positive detections.
+   We compare DRENet with other state-of-the-art networks in                    Red boxes denote false negative detections. Yellow boxes indi-
+ship detection on Levir-Ship dataset, including YOLOv3 [40],                    cate false positive samples. From the top to the bottom in the
+YOLOv5s [27], Retinanet [43], SSD [42], FasterRCNN [36],                        figure, the complexity of the background gradually rises. The
+EfficientDet [44], FCOS [47], CenterNet [46], HSFNet [11],                      ship in the image behaves very small, and the distinguishable
+ImYOLOv3 [24], DFR and RFE structure proposed by Tian et                        features are not clear enough. Meanwhile, some ships are sur-
+al. [12]. The last three methods are proposed for ship detection                rounded by fractus clouds, leading to a challenge in detection.
+task. We have also tried to compare with some traditional                       We can observe that our method achieves better detection
+8                                                   IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+                                                            TABLE IV
+    C OMPARISON WITH SOME WELL - KNOWN DETECTION METHODS AND STATE - OF - THE - ART SHIP DETECTION METHODS . T HE BOLD REPRESENTS THE
+                                                         OPTIMAL METRIC .
+
+
+                      Methods                       Params(Inference)             FLOPs(Inference)            AP             FPS
+
+         YOLOv3                                     61.52M                        99.2G                      69.9            61
+         YOLOv5s                                    7.05M                         10.4G                      75.6            95
+         Retinanet (ResNet50)                       36.33M                        104.4G                     74.9            12
+         SSD (VGG16)                                24.39M                        175.2G                     52.6            25
+         FasterRCNN (VGG16)                         136.70M                       299.2G                     70.8            10
+         EfficientDet-D0                            3.84M                         4.6G                       71.3            32
+         EfficientDet-D2                            8.01M                         20.0G                      80.9            21
+         FCOS (ResNet50)                            5.92M                         51.8G                      75.5            37
+         CenterNet (Hourglass-104)                  191.24M                       584.6G                     77.7            25
+         HSFNet                                     157.59M                       538.1G                     73.6            7
+         ImYOLOv3                                   62.86M                        101.9G                     72.6            51
+         MaskRCNN (ResNet50)+DFR+RFE                24.99M                        237.8G                     76.2            6
+         DRENet (ours)                              4.79M                         8.3G                       82.4            85
+
+
+
+results than other methods. DRENet can detect more true                 kernel at each pixel position. The steps are given in Algorithm
+positive ships and miss fewer targets. Additionally, the false          1.
+positive detections can be well avoided, compared with other               2) Design of Enhancer : The degraded reconstruction en-
+method detection results shown in the figure. For example, as           hancer is used for extracting more distinguishable basic feature
+for 3rd-row images, no methods mentioned can find the ship              representation between ship target and background. We con-
+behind the cloud except for DRENet. The comparable results              duct experiments on the different structures and supervisions
+show DRENet has higher applicability and robustness for the             of the enhancer.
+tiny ship object detection task.                                           Different Enhancer Structure. Here, we make compar-
+   To further analyze the performance of our method under               isons on different inner structures of the enhancer to select
+different background situations, we roughly divide the test             the most suitable enhancer structure for the ship detection
+set into further five subsets: “clam sea”, “thin cloud”, “thick         task. We evaluate the performance by AP and network com-
+cloud”, “strong wave” and “fractus cloud”, according to dif-            plexity. TABLE VI shows the results in detail. “n-RCAB”
+ferent background situations. To better illustrate the difference       represents the number of RCAB included in our enhancer net-
+between these situations, for each subset we select an example          work. “Upsampling” denotes different upsampling multiples,
+image, displayed in Fig. 7. TABLE V shows the comparisons               corresponding to reconstructing Enhancer labels of different
+of DRENet with other methods in different situations, from              resolutions. It can be seen from the results that when 1
+which we can observe that the subsets “thick cloud”, “strong            RCAB structure and upsampling 2 times are carried out, the
+wave” and “fractus cloud” are more difficult than the other             performance is the best. When the enhancer becomes more
+two, as the performance of other methods has dropped a lot              complex, the training of the enhancer focus more on high-
+in these scenes. From the results, we can see that our method           level layers, instead of the basic layers of the backbone. This
+is more robust to complex backgrounds like “fractus cloud”              may illustrate why the performance declines as the structure
+than other methods while also keeping good performance in               becomes weighted. Meanwhile, when the upsampling factor
+the simple scene like “calm sea”.                                       gets larger, reconstruction of the degraded image becomes
+                                                                        more difficult, which leads to the deterioration of the enhancer.
+                                                                        Then the trained enhancer cannot achieve the proper feature
+C. Controlled Experiment                                                representation the detector needs.
+   1) Degradation Function F : We compare the degradation                  Different Supervision Form. We compare different label
+effect on the original input image when taking different                generation strategies in the enhancer to acquire better super-
+function F (·) to adjust the mean kernel size, including linear         vision for the reconstruction branch. As shown in TABLE
+function, logarithmic function, and exponential function. As            VII, different generation strategies have different impacts
+shown in Fig. 8, it can be seen that the exponential function           on detection accuracy. The enhancer structure we take is 1
+conducts a more obvious degradation effect and can better               RCAB and upsampling 2 times. From the table, we can make
+meet the need of the enhancer to highlight the ship and                 some observations. First, direct down-sampling can improve
+blur the background. In order to keep the details of the ship           the detection performance compared with only the detector
+and minimize the effect of the background, we apply the                 without the enhancer. This may be because the backbone
+exponential function to calculate the size of the mean filter           retains more spatial information by fitting the label, which
+CHEN et al.: A DEGRADED RECONSTRUCTION ENHANCEMENT-BASED METHOD FOR TINY SHIP DETECTION WITH A NEW LARGE-SCALE DATASET                                   9
+
+
+
+
+              (a)                            (b)                           (c)                            (d)                           (e)
+
+Fig. 6. Comparisons of the detection results by different methods. (a) YOLOv5s. (b) EfficientDet-D2. (c) ImYOLOv3. (d) Method [12]. (e) Ours. The blue
+box represents the real target detected, the red box represents the missed target and the yellow box represents false alarms. To facilitate observation, we
+randomly enlarge some missed ship targets.
+
+
+
+makes more contributions to the detection of tiny ships.                         the network learning deviates from the original direction and
+Second, we can also see the sudden-blur method reduces the                       cannot focus on the details of the tiny ship while suppressing
+detection accuracy, which is mainly because a ship in Levir-                     the background. Third, by using “Selective Degradation”,
+Ship dataset only occupies a small area, and the training of                     i.e. the continuity-blur in TABLE VII to generate the label,
+the network will suffer from a relatively small loss. Thus,                      the detection performance has been significantly improved.
+10                                                            IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+
+               (a)                           (b)                               (c)                         (d)                            (e)
+
+Fig. 7. Images as examples for each background situation. (a) calm sea. (b) thin cloud. (c) thick cloud. (d) strong wave. (e) fractus cloud.
+
+                                                               TABLE V
+     T HE COMPARISONS OF DREN ET WITH OTHER METHODS IN DIFFERENT SITUATIONS , WHERE “ NUMBER ” DENOTES IMAGES ’ NUMBER OF EACH
+                                        SITUATION . T HE HIGHEST AP VALUE IS MARKED IN BOLD .
+
+
+       Situations                Number       YOLOv5s              EfficientDet-D2             ImYOLOv3           Method [12]            DRENet (ours)
+
+        calm sea                  262              76.8                 83.0                      75.9                78.4                      82.1
+       thin cloud                 238              84.3                 83.9                      83.7                82.4                      87.3
+      thick cloud                  60              60.5                 78.9                      56.6                70.1                      86.8
+      strong wave                 101              73.4                 73.3                      62.8                71.8                      82.8
+     fractus cloud                127              72.1                 74.7                      61.8                64.4                      76.5
+
+
+                                                           TABLE VI
+     C OMPARISON OF DIFFERENT NETWORK COMPLEXITY IN THE ENHANCER . “T RAIN ” REPRESENTS THE TRAINING PROCESS WHERE WE KEEP THE
+                           DEGRADED RECONSTRUCTION ENHANCER . T HE HIGHEST AP VALUE IS MARKED IN BOLD .
+
+
+                     Structure                        n-RCAB             Upsampling                AP            Params(Train)           FLOPs(Train)
+
+                     YOLOv5s                              —                     —                 75.6              7.05M                       10.4G
+
+                                                          1                     ×2                76.8              8.25M                       20.3G
+     YOLOv5s+Degraded reconstruction                      1                     ×4                76.2              8.84M                       40.0G
+              enhancer                                    2                     ×2                76.6              8.55M                       22.7G
+                                                          2                     ×8                75.6              9.73M                      121.2G
+
+
+
+                             TABLE VII                                               on the detector. Results are shown in TABLE VIII. We can
+       C OMPARISON OF DIFFERENT LABELS IN THE ENHANCER .                             get some observations from the table. First, by adding “Scale
+ “S UDDEN - BLUR ” MEANS TO UNIFORMLY BLUR THE AREA OUTSIDE THE
+   TARGET WITHOUT OPERATING ON THE AREA AROUND THE TARGET,                           Layer”, a minor improvement appears without increasing the
+       WHILE “C ONTINUITY- BLUR ” REPRESENTS THE S ELECTIVE                          complexity. It may be because the Scale Layer alleviates the
+  D EGRADATION WITH THE EXPONENTIAL FUNCTION APPLIED AS F (·).                       problem of unbalanced training of different layers in FPN to a
+              T HE HIGHEST AP VALUE IS MARKED IN BOLD .
+                                                                                     certain extent. Second, after replacing the CSP bottleneck with
+                                                                                     the CRMA module we propose, the complexity is significantly
+                Label generation method                           AP
+                                                                                     reduced, and the detection AP has risen by 4.2. We believe
+        Original (YOLOv5s)                                       75.6                this is due to the greater receptive field which leads to richer
+        Down-sampling                                            76.6                features that benefit tiny ship object detection. It verifies the
+        Sudden-blur+Down-sampling                                75.2                effectiveness of the designed CRMA structure. We further
+        Continuity-blur( =1.01)+Down-sampling                    76.8
+                                                                                     make a trade-off of whether to remove PAN. From TABLE
+                                                                                     IX, we can observe the number of network parameters and
+        Continuity-blur( =1.03)+Down-sampling                    78.7
+                                                                                     operations be greatly reduced at the little expense of detection
+        Continuity-blur( =1.05)+Down-sampling                    77.1
+                                                                                     accuracy when the PAN structure is removed. Thus, we remove
+                                                                                     PAN in our final model.
+                                                                                        Compared with the YOLOv5s prototype, the amount of
+In addition, we take different parameters     in degradation                         parameters and FLOPs has been reduced by nearly 32% and
+function F , and finally select 1.03 because of its relatively                         19% respectively, while AP has increased 4.7 points. With
+great performance.                                                                   faster speed, smaller model, and higher accuracy, the improved
+   3) Structure of Detector: We have made some improve-                              detector is more suitable for detecting ships in MR RS images.
+ments to the original YOLOv5s prototype to achieve better                               4) Network Overall Setting: In this part, we will conduct
+performance in tiny ship detection. To verify the effect of                          experiments on loss function and training strategy.
+different modifications, we conduct a series of ablation study                          Loss Function. DRENet is composed of an enhancer and
+CHEN et al.: A DEGRADED RECONSTRUCTION ENHANCEMENT-BASED METHOD FOR TINY SHIP DETECTION WITH A NEW LARGE-SCALE DATASET                                     11
+
+
+
+                                                                TABLE VIII
+                    T HE ABLATION STUDY OF THE MODIFICATIONS IN THE DETECTOR . T HE OPTIMAL VALUES ARE MARKED IN BOLD .
+
+                      Network description                      Scale             CRMA                AP                Params              FLOPs
+
+               Baseline (YOLOv5s)                               #                  #                 75.6              7.05M               10.4G
+               Add Scale                                        !                  #                 76.3              7.05M               10.4G
+               Replace CSP bottleneck with CRMA                 #                  !                 79.8              5.69M               9.1G
+               Add Scale and CRMA                               !                  !                 80.8              5.69M               9.1G
+
+
+
+                                                                                                              TABLE X
+                                                                                   C OMPARISON OF DIFFERENT CONFIGURATION METHODS OF THE LOSS
+                                                                                  FUNCTION . ↵ DENOTES THE WEIGHT OF THE SUM OF THE TWO BRANCH
+                                                                                     LOSS FUNCTIONS . T HE HIGHEST AP VALUE IS MARKED IN BOLD .
+
+
+                                                                                         Combination description                weight ↵           AP
+
+                                                                                                                                  100              80.9
+                                                                                                                                   10              81.6
+                                                                                         Fixed weight summation
+                                                                                                                                   1                81
+                                                                                                                                  0.1              80.6
+       (a) Origin images                      (b) Different function F (·)
+                                                                                       Automatic weight summation                 —                82.4
+
+
+                                                                                                            TABLE XI
+                                                                                 C OMPARISON OF DIFFERENT TRAINING METHODS . P RE - TRAINING REFERS
+                                                                                   TO TRAINING THE ENHANCER FIRST, AND THEN JOINT TRAINING . T HE
+                                                                                               HIGHEST AP VALUE IS MARKED IN BOLD .
+
+
+                                                                                            Training method                Pretrained epoches       AP
+    (c) y = log x                 (d) y = x                (e) y =     x
+
+                                                                                    Joint train without pre-training                  —             82.4
+Fig. 8. The degradation effect when takes a logarithmic function, linear
+function, and exponential function to calculate the mean filter kernel size                                                        100              81.9
+at each position. The red circles in the images are the ships. is a constant                                                       300              81.4
+of functions, which is set to ensure the ship areas are kept clear                     Joint train with pre-training
+. x is the shortest distance to ship targets and y denotes the                                                                     500              80.5
+kernel size.                                                                                                                      1000              77.5
+
+
+                            TABLE IX
+                                                                                                           TABLE XII
+   T HE TRADE - OFF BETWEEN KEEPING PAN AND REMOVING PAN. W
+                                                                                   G ENERALIZATION OF DREN ET ON THE DOWNSAMPLED VERSION OF
+         DENOTES KEEPING , WHILE W / O DENOTES REMOVING .
+                                                                                                      EXISTING HR DATASET.
+
+
+                           AP           Params              FLOPs                       Method            Enhancer        Efficient Detector       AP
+         w                 80.8          5.69M               9.1G                      YOLOv5s                -                   -                51.5
+         w/o               80.3          4.79M               8.3G
+                                                                                                             +                    -                52.8
+                                                                                        DRENet                -                   +                50.9
+detector, and the two parts need to be trained jointly. The                                                  +                    +                51.6
+total loss contains the supervision of the detection label and
+degraded reconstruction label. Including the automatically
+balanced learning method mentioned in DRENet Loss (see                           fixed balanced factor, as the factor ↵ gets larger from 0.1 to
+Section III-C3), we also design a fixed balanced factor to                       10, AP also increases, which again reveals the effectiveness
+verify the performance. The formula with a fixed balanced                        of the enhancer.
+factor is indicated as:                                                             Training Strategy. TABLE XI shows the results of different
+               loss = lossdetector + ↵ ⇥ lossenhancer                      (8)   training methods. Our goal is to seek better performance on
+                                                                                 ship detection, and the enhancer is just an auxiliary branch.
+Where ↵ is a fixed factor to balance the detector loss and                       So we try to pre-train the enhancer and then perform joint
+enhancer loss. Comparative results are shown in TABLE X. It                      training. However, the experimental result shows that the
+indicates that the automatic weight learning method can bring                    performance of pre-training is worse than that of direct joint
+a significant improvement. Meanwhile, in the method with a                       training, and as the pre-training epoch increases, AP gradually
+12                                                          IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+declines. We believe that this phenomenon is mainly because                       [2] J. Han, D. Zhang, G. Cheng, L. Guo, and J. Ren, “Object detection
+the two branches complement each other. Since the enhancer                            in optical remote sensing images based on weakly supervised learning
+                                                                                      and high-level feature learning,” IEEE Transactions on Geoscience and
+can be regarded as a target location plus target segmentation,                        Remote Sensing, vol. 53, no. 6, pp. 3325–3337, 2015.
+it is more difficult to directly train the enhancer, and network                  [3] H. Lin, Z. Shi, and Z. Zou, “Fully convolutional network with task
+learning may appear to be deteriorated and divergent. While                           partitioning for inshore ship detection in optical remote sensing images,”
+                                                                                      IEEE Geoscience and Remote Sensing Letters, vol. 14, no. 10, pp. 1665–
+the detector can provide targets’ position guidance for the                           1669, 2017.
+enhancer, so that it can have a better learning effect. Therefore,                [4] F. Yang, Q. Xu, and B. Li, “Ship detection from optical satellite
+the pre-training of the enhancer will result in poor detection                        images based on saliency segmentation and structure-lbp feature,” IEEE
+                                                                                      Geoscience and Remote Sensing Letters, vol. 14, no. 5, pp. 602–606,
+accuracy, and will intensify with the number of epochs.                               2017.
+   5) Generalization on Existing High-Resolution Dataset:                         [5] K. Chen, Z. Zou, and Z. Shi, “Building extraction from remote sensing
+We also analyze the generalization of our method on the                               images with sparse token transformers,” Remote Sensing, vol. 13, no. 21,
+existing HR dataset, that is, implementing experiments on the                         p. 4441, 2021.
+                                                                                  [6] W. Li, K. Chen, H. Chen, and Z. Shi, “Geographical knowledge-driven
+downsampled version of HR images.                                                     representation learning for remote sensing images,” IEEE Transactions
+   Here we choose the HRRSD dataset to implement the                                  on Geoscience and Remote Sensing, 2021.
+experiments. Considering the size and resolution (0.15-1.2m)                      [7] J. Xu, X. Sun, D. Zhang, and K. Fu, “Automatic detection of inshore
+                                                                                      ships in high-resolution remote sensing images using robust invariant
+of the images in HRRSD, we first reshape all the images                               generalized hough transform,” IEEE geoscience and remote sensing
+into 64⇥64, and then do ablation experiments to reveal the                            letters, vol. 11, no. 12, pp. 2070–2074, 2014.
+performance of DRENet.                                                            [8] S. Li, Z. Zhou, B. Wang, and F. Wu, “A novel inshore ship detection
+                                                                                      via ship head classification and body boundary determination,” IEEE
+   From the results in TABLE XII, it appears that when only                           Geoscience and Remote Sensing Letters, vol. 13, no. 12, pp. 1920–1924,
+our efficient detector applied, the AP value drops a bit (-0.6),                      2016.
+and we argue it is mainly caused by the size of the input.                        [9] S. Zhang, R. Wu, K. Xu, J. Wang, and W. Sun, “R-cnn-based ship
+                                                                                      detection from high resolution remote sensing imagery,” Remote Sensing,
+As the image size is only 64⇥64, after being processed by                             vol. 11, no. 6, p. 631, 2019.
+the network’s backbone, the features consumed by CRMA                            [10] L. He, S. Yi, X. Mu, and L. Zhang, “Ship detection method based
+will be at an even smaller size, thus the large-receptive-field                       on gabor filter and fast rcnn model in satellite images of sea,” in
+                                                                                      Proceedings of the 3rd International Conference on Computer Science
+characteristic of CRMA cannot gain more advantages than                               and Application Engineering, 2019, pp. 1–7.
+the convolution operations in YOLOv5s’s CSP-like structure.                      [11] Q. Li, L. Mou, Q. Liu, Y. Wang, and X. X. Zhu, “Hsf-net: Multiscale
+Therefore, as we remove PAN structure in our efficient detec-                         deep feature embedding for ship detection in optical remote sensing im-
+tor, the performance then deteriorates, which is also verified                        agery,” IEEE Transactions on Geoscience and Remote Sensing, vol. 56,
+                                                                                      no. 12, pp. 7147–7161, 2018.
+in TABLE IX.                                                                     [12] L. Tian, Y. Cao, B. He, Y. Zhang, C. He, and D. Li, “Image enhancement
+   While, we can also observe from the results that our en-                           driven by object characteristics and dense feature reuse network for ship
+hancer continues displaying a big boost. When we only apply                           target detection in remote sensing imagery,” Remote Sensing, vol. 13,
+                                                                                      no. 7, p. 1327, 2021.
+the enhancer, AP increases +1.3 points, and when we combine                      [13] A. Van Etten, “You only look twice: Rapid multi-scale object detection
+both the enhancer and detector, our DRENet achieves a near                            in satellite imagery,” arXiv preprint arXiv:1805.09512, 2018.
+performance (AP +0.1) compared with baseline YOLOv5s.                            [14] Y. Wang, L. Wang, Y. Jiang, and T. Li, “Detection of self-build data set
+                                                                                      based on yolov4 network,” in 2020 IEEE 3rd International Conference
+These results can further demonstrate the effectiveness of                            on Information Systems and Computer Aided Education (ICISCAE).
+our enhancer. Considering the computation and complexity                              IEEE, 2020, pp. 640–642.
+saved in our DRENet (demonstrated in TABLE IV), DRENet                           [15] Y. Wang, C. Wang, and H. Zhang, “Combining a single shot multibox
+                                                                                      detector with transfer learning for ship detection using sentinel-1 sar
+actually achieves good performance even in the downsampled                            images,” Remote sensing letters, vol. 9, no. 8, pp. 780–788, 2018.
+version of the existing high-resolution dataset.                                 [16] Y. Wang, C. Wang, H. Zhang, Y. Dong, and S. Wei, “Automatic ship
+                                                                                      detection based on retinanet using multi-resolution gaofen-3 imagery,”
+                       VI. C ONCLUSION                                                Remote Sensing, vol. 11, no. 5, p. 531, 2019.
+                                                                                 [17] Y. Gui, X. Li, and L. Xue, “A multilayer fusion light-head detector for
+   In this paper, we propose a tiny ship detection dataset -                          sar ship detection,” Sensors, vol. 19, no. 5, p. 1124, 2019.
+“Levir-Ship”, and an efficient tiny ship detection network -                     [18] R. Zhang, J. Yao, K. Zhang, C. Feng, and J. Zhang, “S-cnn-based ship
+DRENet towards the real-world tiny ship detection task. Levir-                        detection from high-resolution remote sensing images.” International
+                                                                                      Archives of the Photogrammetry, Remote Sensing & Spatial Information
+Ship contains 3876 images from GaoFen-1 and GaoFen-6                                  Sciences, vol. 41, 2016.
+satellites with multispectral cameras of 16m spatial resolution.                 [19] L. Li, Z. Zhou, B. Wang, L. Miao, and H. Zong, “A novel cnn-
+DRENet performs two parts, including an enhancer to obtain                            based method for accurate ship detection in hr optical remote sensing
+                                                                                      images via rotated bounding box,” IEEE Transactions on Geoscience
+more distinguishable features in the backbone, and a detector                         and Remote Sensing, vol. 59, no. 1, pp. 686–699, 2020.
+to carry efficient detection on tiny ships. The enhancer is                      [20] F. Wu, Z. Zhou, B. Wang, and J. Ma, “Inshore ship detection based on
+inference-free, so it would not introduce extra inference cost                        convolutional neural network in optical satellite images,” IEEE Journal
+on application. Experiments on Levir-Ship verify that our                             of Selected Topics in Applied Earth Observations and Remote Sensing,
+                                                                                      vol. 11, no. 11, pp. 4005–4015, 2018.
+proposed DRENet has higher detection accuracy and ensures                        [21] W. Liu, L. Ma, and H. Chen, “Arbitrary-oriented ship detection frame-
+real-time detection speed at the same time compared with other                        work in optical remote-sensing images,” IEEE Geoscience and Remote
+state-of-the-art detection methods.                                                   Sensing Letters, vol. 15, no. 6, pp. 937–941, 2018.
+                                                                                 [22] Y. You, Z. Li, B. Ran, J. Cao, S. Lv, and F. Liu, “Broad area target
+                                                                                      search system for ship detection via deep convolutional neural network,”
+                              R EFERENCES                                             Remote Sensing, vol. 11, no. 17, p. 1965, 2019.
+ [1] H. He, Y. Lin, F. Chen, H.-M. Tai, and Z. Yin, “Inshore ship detection in   [23] Z. Song, H. Sui, and L. Hua, “A hierarchical object detection
+     remote sensing images via weighted pose voting,” IEEE Transactions on            method in large-scale optical remote sensing satellite imagery
+     Geoscience and Remote Sensing, vol. 55, no. 6, pp. 3091–3107, 2017.              using saliency detection and cnn,” International Journal of Remote
+CHEN et al.: A DEGRADED RECONSTRUCTION ENHANCEMENT-BASED METHOD FOR TINY SHIP DETECTION WITH A NEW LARGE-SCALE DATASET                                        13
+
+
+
+     Sensing, vol. 42, no. 8, pp. 2827–2847, 2021. [Online]. Available:            [45] H. Law and J. Deng, “Cornernet: Detecting objects as paired keypoints,”
+     https://doi.org/10.1080/01431161.2020.1826059                                      in Proceedings of the European conference on computer vision (ECCV),
+[24] L. Chen, W. Shi, and D. Deng, “Improved yolov3 based on attention                  2018, pp. 734–750.
+     mechanism for fast and accurate ship detection in optical remote sensing      [46] X. Zhou, D. Wang, and P. Krähenbühl, “Objects as points,” arXiv
+     images,” Remote Sensing, vol. 13, no. 4, p. 660, 2021.                             preprint arXiv:1904.07850, 2019.
+[25] L. Chen, W. Shi, C. Fan, L. Zou, and D. Deng, “A novel coarse-to-fine         [47] Z. Tian, C. Shen, H. Chen, and T. He, “Fcos: Fully convolutional one-
+     method of ship detection in optical remote sensing images based on a               stage object detection,” in Proceedings of the IEEE/CVF international
+     deep residual dense network,” Remote Sensing, vol. 12, no. 19, p. 3115,            conference on computer vision, 2019, pp. 9627–9636.
+     2020.                                                                         [48] Z. Zou and Z. Shi, “Random access memories: A new paradigm for
+[26] Y. Zhang, K. Li, K. Li, L. Wang, B. Zhong, and Y. Fu, “Image super-                target detection in high resolution aerial remote sensing images,” IEEE
+     resolution using very deep residual channel attention networks,” in                Transactions on Image Processing, vol. 27, no. 3, pp. 1100–1111, 2017.
+     Proceedings of the European conference on computer vision (ECCV),             [49] G. Wang, Y. Zhuang, H. Chen, X. Liu, T. Zhang, L. Li, S. Dong, and
+     2018, pp. 286–301.                                                                 Q. Sang, “Fsod-net: Full-scale object detection from optical remote sens-
+[27] G. Jocher, A. Stoken, J. Borovec, NanoCode012, A. Chaurasia,                       ing imagery,” IEEE Transactions on Geoscience and Remote Sensing,
+     TaoXie, L. Changyu, A. V, Laughing, tkianai, yxNONG, A. Hogan,                     vol. 60, pp. 1–18, 2021.
+     lorenzomammana, AlexWang1900, J. Hajek, L. Diaconu, Marc,                     [50] T. Zhang, Y. Zhuang, G. Wang, S. Dong, H. Chen, and L. Li, “Multiscale
+     Y. Kwon, oleg, wanghaoyang0106, Y. Defretin, A. Lohia, ml5ah,                      semantic fusion-guided fractal convolutional object detection network
+     B. Milanko, B. Fineran, D. Khromov, D. Yiwei, Doug, Durgesh, and                   for optical remote sensing imagery,” IEEE Transactions on Geoscience
+     F. Ingham, “ultralytics/yolov5: v5.0 - YOLOv5-P6 1280 models, AWS,                 and Remote Sensing, 2021.
+     Supervise.ly and YouTube integrations,” Apr. 2021. [Online]. Available:       [51] Z. Huang, W. Li, X.-G. Xia, X. Wu, Z. Cai, and R. Tao, “A novel
+     https://doi.org/10.5281/zenodo.4679653                                             nonlocal-aware pyramid and multiscale multitask refinement detector
+[28] Z. Zou and Z. Shi, “Ship detection in spaceborne optical image with                for object detection in remote sensing images,” IEEE Transactions on
+     svd networks,” IEEE Transactions on Geoscience and Remote Sensing,                 Geoscience and Remote Sensing, vol. 60, pp. 1–20, 2021.
+     vol. 54, no. 10, pp. 5832–5845, 2016.                                         [52] Z. Huang, W. Li, X.-G. Xia, and R. Tao, “A general gaussian heatmap
+[29] G. Mattyus, “Near real-time automatic vessel detection on optical                  label assignment for arbitrary-oriented object detection,” IEEE Transac-
+     satellite images,” in ISPRS Hannover Workshop. ISPRS Archives, 2013,               tions on Image Processing, vol. 31, pp. 1895–1910, 2022.
+     pp. 233–237.                                                                  [53] Z. Huang, W. Li, X.-G. Xia, H. Wang, F. Jie, and R. Tao, “Lo-det:
+[30] J. Han, P. Zhou, D. Zhang, G. Cheng, L. Guo, Z. Liu, S. Bu, and                    Lightweight oriented object detection in remote sensing images,” IEEE
+     J. Wu, “Efficient, simultaneous detection of multi-class geospatial targets        Transactions on Geoscience and Remote Sensing, vol. 60, pp. 1–15,
+     based on visual saliency modeling and discriminative learning of sparse            2022.
+     coding,” ISPRS Journal of Photogrammetry and Remote Sensing, vol. 89,         [54] G. Tang, S. Liu, I. Fujino, C. Claramunt, Y. Wang, and S. Men, “H-
+     pp. 37–48, 2014.                                                                   yolo: a single-shot ship detection approach based on region of interest
+[31] C. Zhu, H. Zhou, R. Wang, and J. Guo, “A novel hierarchical method                 preselected network,” Remote Sensing, vol. 12, no. 24, p. 4192, 2020.
+     of ship detection from spaceborne optical image based on shape and            [55] Lei, Sen and Shi, Zhenwei and Zou, Zhengxia, “Super-resolution for
+     texture features,” IEEE Transactions on geoscience and remote sensing,             remote sensing images via local–global combined network,” IEEE
+     vol. 48, no. 9, pp. 3446–3456, 2010.                                               Geoscience and Remote Sensing Letters, vol. 14, no. 8, pp. 1243–1247,
+[32] Z. Shi, X. Yu, Z. Jiang, and B. Li, “Ship detection in high-resolution             2017.
+     optical imagery based on anomaly detector and local shape feature,”           [56] S. Lei, Z. Shi, and Z. Zou, “Coupled adversarial training for remote
+     IEEE Transactions on Geoscience and Remote Sensing, vol. 52, no. 8,                sensing image super-resolution,” IEEE Transactions on Geoscience and
+     pp. 4511–4523, 2013.                                                               Remote Sensing, vol. 58, no. 5, pp. 3633–3643, 2019.
+                                                                                   [57] S. Liu, L. Qi, H. Qin, J. Shi, and J. Jia, “Path aggregation network
+[33] Z. Zou, Z. Shi, Y. Guo, and J. Ye, “Object detection in 20 years: A
+                                                                                        for instance segmentation,” in Proceedings of the IEEE conference on
+     survey,” arXiv preprint arXiv:1905.05055, 2019.
+                                                                                        computer vision and pattern recognition, 2018, pp. 8759–8768.
+[34] R. Girshick, J. Donahue, T. Darrell, and J. Malik, “Rich feature
+                                                                                   [58] T.-Y. Lin, P. Dollár, R. Girshick, K. He, B. Hariharan, and S. Belongie,
+     hierarchies for accurate object detection and semantic segmentation,”
+                                                                                        “Feature pyramid networks for object detection,” in Proceedings of the
+     in Proceedings of the IEEE conference on computer vision and pattern
+                                                                                        IEEE conference on computer vision and pattern recognition, 2017, pp.
+     recognition, 2014, pp. 580–587.
+                                                                                        2117–2125.
+[35] R. Girshick, “Fast r-cnn,” in Proceedings of the IEEE international           [59] Y. Gong, X. Yu, Y. Ding, X. Peng, J. Zhao, and Z. Han, “Effective fusion
+     conference on computer vision, 2015, pp. 1440–1448.                                factor in fpn for tiny object detection,” in Proceedings of the IEEE/CVF
+[36] S. Ren, K. He, R. Girshick, and J. Sun, “Faster r-cnn: towards real-time           Winter Conference on Applications of Computer Vision, 2021, pp. 1160–
+     object detection with region proposal networks,” IEEE transactions on              1168.
+     pattern analysis and machine intelligence, vol. 39, no. 6, pp. 1137–1149,     [60] C.-Y. Wang, H.-Y. M. Liao, Y.-H. Wu, P.-Y. Chen, J.-W. Hsieh, and I.-H.
+     2016.                                                                              Yeh, “Cspnet: A new backbone that can enhance learning capability of
+[37] K. He, G. Gkioxari, P. Dollár, and R. Girshick, “Mask r-cnn,” in                  cnn,” in Proceedings of the IEEE/CVF conference on computer vision
+     Proceedings of the IEEE international conference on computer vision,               and pattern recognition workshops, 2020, pp. 390–391.
+     2017, pp. 2961–2969.                                                          [61] A. Srinivas, T.-Y. Lin, N. Parmar, J. Shlens, P. Abbeel, and A. Vaswani,
+[38] J. Redmon, S. Divvala, R. Girshick, and A. Farhadi, “You only look                 “Bottleneck transformers for visual recognition,” in Proceedings of the
+     once: Unified, real-time object detection,” in Proceedings of the IEEE             IEEE/CVF Conference on Computer Vision and Pattern Recognition,
+     conference on computer vision and pattern recognition, 2016, pp. 779–              2021, pp. 16 519–16 529.
+     788.                                                                          [62] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez,
+[39] J. Redmon and A. Farhadi, “Yolo9000: better, faster, stronger,” in                 L. Kaiser, and I. Polosukhin, “Attention is all you need,” arXiv preprint
+     Proceedings of the IEEE conference on computer vision and pattern                  arXiv:1706.03762, 2017.
+     recognition, 2017, pp. 7263–7271.                                             [63] Z. Zheng, P. Wang, W. Liu, J. Li, R. Ye, and D. Ren, “Distance-
+[40] Redmon, Joseph and Farhadi, Ali, “Yolov3: An incremental improve-                  iou loss: Faster and better learning for bounding box regression,”
+     ment,” arXiv preprint arXiv:1804.02767, 2018.                                      Proceedings of the AAAI Conference on Artificial Intelligence,
+[41] A. Bochkovskiy, C.-Y. Wang, and H.-Y. M. Liao, “Yolov4: Op-                        vol. 34, no. 07, pp. 12 993–13 000, Apr. 2020. [Online]. Available:
+     timal speed and accuracy of object detection,” arXiv preprint                      https://ojs.aaai.org/index.php/AAAI/article/view/6999
+     arXiv:2004.10934, 2020.                                                       [64] A. Kendall, Y. Gal, and R. Cipolla, “Multi-task learning using uncer-
+[42] W. Liu, D. Anguelov, D. Erhan, C. Szegedy, S. Reed, C.-Y. Fu, and A. C.            tainty to weigh losses for scene geometry and semantics,” in Proceedings
+     Berg, “Ssd: Single shot multibox detector,” in European conference on              of the IEEE conference on computer vision and pattern recognition,
+     computer vision. Springer, 2016, pp. 21–37.                                        2018, pp. 7482–7491.
+[43] T.-Y. Lin, P. Goyal, R. Girshick, K. He, and P. Dollár, “Focal loss          [65] G. Cheng, J. Han, P. Zhou, and L. Guo, “Multi-class geospatial object
+     for dense object detection,” in Proceedings of the IEEE international              detection and geographic image classification based on collection of
+     conference on computer vision, 2017, pp. 2980–2988.                                part detectors,” ISPRS Journal of Photogrammetry and Remote Sensing,
+[44] M. Tan, R. Pang, and Q. V. Le, “Efficientdet: Scalable and efficient               vol. 98, pp. 119–132, 2014.
+     object detection,” in Proceedings of the IEEE/CVF conference on               [66] Z. Liu, L. Yuan, L. Weng, and Y. Yang, “A high resolution optical
+     computer vision and pattern recognition, 2020, pp. 10 781–10 790.                  satellite image dataset for ship recognition and some new baselines,”
+14                                                          IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+     in International conference on pattern recognition applications and                                  Zhenwei Shi (Member, IEEE) received the Ph.D.
+     methods, vol. 2. SCITEPRESS, 2017, pp. 324–331.                                                      degree in mathematics from the Dalian University
+[67] K. Li, G. Wan, G. Cheng, L. Meng, and J. Han, “Object detection in                                   of Technology, Dalian, China, in 2005.
+     optical remote sensing images: A survey and a new benchmark,” ISPRS                                     He was a Post-Doctoral Researcher with the De-
+     Journal of Photogrammetry and Remote Sensing, vol. 159, pp. 296–307,                                 partment of Automation, Tsinghua University, Bei-
+     2020.                                                                                                jing, China, from 2005 to 2007. He was Visiting
+[68] Y. Zhang, Y. Yuan, Y. Feng, and X. Lu, “Hierarchical and robust                                      Scholar with the Department of Electrical Engineer-
+     convolutional neural network for very high-resolution remote sensing                                 ing and Computer Science, Northwestern University,
+     object detection,” IEEE Transactions on Geoscience and Remote Sens-                                  Evanston, IL, USA, from 2013 to 2014. He is
+     ing, vol. 57, no. 8, pp. 5535–5548, 2019.                                                            currently a Professor and the Dean of the Image
+[69] T.-H. Chan, K. Jia, S. Gao, J. Lu, Z. Zeng, and Y. Ma, “Pcanet: A simple                             Processing Center, School of Astronautics, Beihang
+     deep learning baseline for image classification?” IEEE transactions on      University, Beijing. He has authored or coauthored over 200 scientific papers
+     image processing, vol. 24, no. 12, pp. 5017–5032, 2015.                     in refereed journals and proceedings, including the IEEE Transactions on
+                                                                                 Pattern Analysis and Machine Intelligence, the IEEE Transactions on Image
+                                                                                 Processing, the IEEE Transactions on Geoscience and Remote Sensing,
+                                                                                 the IEEE Geoscience and Remote Sensing Letters, the IEEE Conference
+                                                                                 on Computer Vision and Pattern Recognition, and the IEEE International
+                                                                                 Conference on Computer Vision. His research interests include remote sensing
+                         Jianqi Chen received his B.S. degree from the Im-       image processing and analysis, computer vision, pattern recognition, and
+                         age Processing Center, School of Astronautics, Bei-     machine learning.
+                         hang University in 2021. He is currently pursuing his     Dr. Shi also serves as an Editor for the Pattern Recognition, the ISPRS
+                         M.S. degree in the Image Processing Center, School      Journal of Photogrammetry and Remote Sensing, the Infrared Physics and
+                         of Astronautics, Beihang University. His research       Technology, and so on. His personal website is http://levir.buaa.edu.cn/.
+                         interests include deep learning, object detection and
+                         artificial intelligence safety.
+
+
+
+
+                         Keyan Chen received the B.S. degree from the
+                         School of Astronautics, Beihang University, Beijing,
+                         China, in 2019. He is currently working toward the
+                         M.S. degree in the Image Processing Center, School
+                         of Astronautics, Beihang University. His research
+                         interests include image processing, machine learning
+                         and pattern recognition.
+
+
+
+
+                         Hao Chen received his B.S. degree from the Image
+                         Processing Center School of Astronautics, Beihang
+                         University in 2017. He is currently pursuing his doc-
+                         torate degree in the Image Processing Center, School
+                         of Astronautics, Beihang University.His research in-
+                         terests include machine learning, deep learning and
+                         semantic segmentation.
+
+
+
+
+                         Zhengxia Zou received his BS degree and his
+                         Ph.D. degree from Beihang University in 2013 and
+                         2018. He is currently an Associate Professor at the
+                         School of Astronautics, Beihang University. During
+                         2018-2021, he was a postdoc research fellow at the
+                         University of Michigan, Ann Arbor. His research
+                         interests include computer vision and related prob-
+                         lems in remote sensing. He has published more
+                         than 20 peer-reviewed papers in top-tier journals and
+                         conferences, including TPAMI, TIP, TGRS, CVPR,
+                         ICCV, AAAI. His research was featured in more
+than 30 global tech media and was adopted by a number of application
+platforms with over 50 million users worldwide. His personal website is
+https://zhengxiazou.github.io/.
+

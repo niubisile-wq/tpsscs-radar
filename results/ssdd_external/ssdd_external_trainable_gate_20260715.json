@@ -1,0 +1,137 @@
+{
+  "date": "20260715",
+  "source": "Official SSDD SAR Ship Detection Dataset",
+  "dataset_root": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ssdd\\extracted\\Official-SSDD-OPEN\\BBox_RBox_PSeg_SSDD\\coco_style",
+  "development_meta": {
+    "images": 741,
+    "target_samples": 530315,
+    "background_samples": 1778400
+  },
+  "validation_meta": {
+    "images": 186,
+    "annotations": 396,
+    "target_pixels": 358723,
+    "background_pixels": 26245218
+  },
+  "test_meta": {
+    "images": 231,
+    "annotations": 545,
+    "target_pixels": 495574,
+    "background_pixels": 31475622
+  },
+  "train_auc_on_sample": 0.989208978280459,
+  "selected_policies": {
+    "1e-05": "raw",
+    "3e-05": "raw",
+    "0.0001": "raw",
+    "0.0003": "gate",
+    "0.001": "gate",
+    "0.003": "gate",
+    "0.01": "gate"
+  },
+  "test_stats": {
+    "wins_raw": 4,
+    "ties_raw": 3,
+    "losses_raw": 0,
+    "wins_or_ties_raw": 7,
+    "wins_lowrank": 7,
+    "comparisons": 7,
+    "mean_delta_vs_raw": 0.09085510654600235
+  },
+  "test_rows": [
+    {
+      "pfa": 1e-05,
+      "selected_policy": "raw",
+      "candidate_pd": 0.018806474915956044,
+      "raw_pd": 0.018806474915956044,
+      "lowrank_pd": 3.228579384713484e-05,
+      "candidate_empirical_pfa": 9.690038849748544e-06,
+      "beats_raw": false,
+      "ties_raw": true,
+      "beats_or_ties_raw": true,
+      "beats_lowrank": true
+    },
+    {
+      "pfa": 3e-05,
+      "selected_policy": "raw",
+      "candidate_pd": 0.037334484859980546,
+      "raw_pd": 0.037334484859980546,
+      "lowrank_pd": 0.00035110800808759135,
+      "candidate_empirical_pfa": 2.995969388627173e-05,
+      "beats_raw": false,
+      "ties_raw": true,
+      "beats_or_ties_raw": true,
+      "beats_lowrank": true
+    },
+    {
+      "pfa": 0.0001,
+      "selected_policy": "raw",
+      "candidate_pd": 0.042784730433799996,
+      "raw_pd": 0.042784730433799996,
+      "lowrank_pd": 0.0009746274017603829,
+      "candidate_empirical_pfa": 8.171403252968282e-05,
+      "beats_raw": false,
+      "ties_raw": true,
+      "beats_or_ties_raw": true,
+      "beats_lowrank": true
+    },
+    {
+      "pfa": 0.0003,
+      "selected_policy": "gate",
+      "candidate_pd": 0.2629960409545295,
+      "raw_pd": 0.16249238257051418,
+      "lowrank_pd": 0.002467845367190369,
+      "candidate_empirical_pfa": 0.00029994641567369186,
+      "beats_raw": true,
+      "ties_raw": false,
+      "beats_or_ties_raw": true,
+      "beats_lowrank": true
+    },
+    {
+      "pfa": 0.001,
+      "selected_policy": "gate",
+      "candidate_pd": 0.4512484512908264,
+      "raw_pd": 0.3316638887431544,
+      "lowrank_pd": 0.00443929665398104,
+      "candidate_empirical_pfa": 0.0009999484680556908,
+      "beats_raw": true,
+      "ties_raw": false,
+      "beats_or_ties_raw": true,
+      "beats_lowrank": true
+    },
+    {
+      "pfa": 0.003,
+      "selected_policy": "gate",
+      "candidate_pd": 0.6096203594216,
+      "raw_pd": 0.41216649783886966,
+      "lowrank_pd": 0.006667016429433344,
+      "candidate_empirical_pfa": 0.002999940716024611,
+      "beats_raw": true,
+      "ties_raw": false,
+      "beats_or_ties_raw": true,
+      "beats_lowrank": true
+    },
+    {
+      "pfa": 0.01,
+      "selected_policy": "gate",
+      "candidate_pd": 0.746853144030962,
+      "raw_pd": 0.5284094807233632,
+      "lowrank_pd": 0.019454208655014186,
+      "candidate_empirical_pfa": 0.0099999612398446,
+      "beats_raw": true,
+      "ties_raw": false,
+      "beats_or_ties_raw": true,
+      "beats_lowrank": true
+    }
+  ],
+  "criteria": {
+    "min_test_images": 200,
+    "min_test_annotations": 500,
+    "required_losses_vs_raw": 0,
+    "required_wins_vs_raw": 3,
+    "required_wins_vs_lowrank": 7,
+    "requires_positive_mean_delta_vs_raw": true
+  },
+  "passed": true,
+  "boundary": "External supervised trainable-gate adaptation on official SSDD train/test split; not zero-shot transfer of the AISTAP-SIM saved state."
+}

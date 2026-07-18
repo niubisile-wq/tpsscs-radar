@@ -1,0 +1,1505 @@
+                                          JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                          1
+
+
+
+
+                                             Reliable Clutter Suppression for Slow-Moving Weak Target
+
+                                                                                           Radar Detection
+                                                                     Ruihang Zhang, Jiayin Xue, Tingting Zhang, Member, IEEE
+
+
+
+
+                                                                                                       Abstract
+arXiv:2509.04309v1 [eess.SP] 4 Sep 2025
+
+
+
+
+                                                   Reliable slow-moving weak target detection in complicated environments is challenging due to the masking effects
+                                               from the surrounding strong reflectors. The traditional Moving Target Indication (MTI) may suppress the echoes from
+                                               not only the static interference objects (IOs), but also the desired slow-moving weak target. According to the low-rank
+                                               and sparse properties of the range-velocity maps across different radar scans, a novel clutter suppression scheme based
+                                               on the Go decomposition (Godec) framework is proposed in this paper. The simulation results show that with the
+                                               existence of masking effects, the target detection scheme based on Godec clutter suppression can reliably detect the
+                                               slow-moving weak target, compared to the traditional MTI-based scheme. Besides, the time consumption comparison
+                                               is conducted, demonstrating that the proposed solution is one that sacrifices time complexity in exchange for enhanced
+                                               reliability. Additionally, the tradeoffs among the number of false alarm cells, the detection probability and the iteration
+                                               times for convergence have been revealed, guiding parameter settings of the proposed solution in practical applications.
+                                               Experiment validation is also conducted to verify the proposed solution, providing further insight into the scenarios
+                                               where the solution is most applicable.
+
+
+                                                                                                      Index Terms
+
+                                                   Clutter suppression, Go decomposition, slow-moving weak target detection, Weibull clutter, masking effects.
+
+
+                                                                                                 I. I NTRODUCTION
+
+                                            The rapid development of the low-altitude economy has promoted the prosperity of the unmanned aerial vehicles
+
+                                          (UAVs) in the daily life, which also brings many troubles at the same time, such as unauthorized surveying and
+
+                                          mapping, interference in civil aviation, aerial photography leaks, etc. [1]. The application of integrated sensing and
+
+                                          communication enables the base stations to position the surrounding objects while communicating with the mobile
+
+                                          users, providing the prerequisite on the infrastructure for detection of targets in civil areas [2].
+                                            Slow-moving weak targets, like the UAVs mentioned, are the objects that have small radar cross sections (RCS)
+
+                                          with low relative velocities [3]. Reliable detection of such targets is attractive in many civil and military applications.
+
+                                          One challenge is that in complicated environments, the echoes of the surrounding strong reflectors usually lead to
+
+                                          miss detection of those targets of interest (TOIs) [4]. Various researches have been carried out recently to improve
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                             2
+
+
+
+
+the detection of the slow-moving weak targets. Most of them concentrate on the methods of long-time coherent
+
+accumulation of the received signals, e.g., the Keystone transform, the Radon fourier transform, the fractional fourier
+
+transform, etc. [5]–[9]. Besides, there are also some of them concentrating on enhancing the detection performance
+
+of the constant false alarm rate (CFAR) detectors, such as the compressed sensing CFAR detector, the ordered
+
+statistic of sub-reference cells CFAR detector, the iterative threshold segmentation CFAR detector, etc. [10]–[13].
+
+However, there is another trend to further improve the detection performance by suppressing the strong clutter of
+
+the interference objects (IOs), which is also the main focus in this paper.
+
+  The traditional method of clutter suppression like Moving Target Indication (MTI) makes full use of the difference
+
+between the static and moving objects in the Doppler domain [14]. The authors in [15] and [16] respectively
+
+introduced the application of MTI for pulsed and linear frequency-modulated continuous wave (LFMCW) radar,
+
+for moving target detection. However, when it comes to the slow-moving weak target detection, MTI will suppress
+
+not only the strong echoes from the static IOs but also the weak echoes from the TOIs, leading to the loss in the
+
+detection probability. Therefore, a more reliable clutter suppression method is needed.
+
+  In recent years, a number of low-rank and sparse matrix decomposition (LRaSMD) optimization algorithms
+
+have been proposed, which concentrate on developing fast approximations and meaningful decompositions [17]. Go
+
+decomposition (Godec) is a robust LRaSMD method that can be used for matrix completion, background modeling,
+
+shadow/light removal, etc. [18]. Naive Godec has a high computational complexity due to the singular value
+
+decomposition (SVD), and the authors in [18] significantly reduced its time cost by replacing SVD with bilateral
+
+random projection (BRP). Besides, the power scheme modification is also adopted to achieve faster convergence of
+
+Godec, which also contributes to reducing the time cost to some extent.
+
+  When it comes to the application of Godec in radar detection, the authors in [4] applied Godec to the moving
+
+targets radar detection and compared the results with those obtained by the MTI-based method, demonstrating the
+
+superior performance of the proposed Godec-based method for detecting the slow-moving targets. However, the
+
+time cost of the Godec-based method, which is also an important consideration in practical applications, was not
+
+mentioned. In addition, the authors in [19] noted that finding appropriate values for the parameters of Godec is very
+
+challenging and Godec does not provide any guideline for determining those values, which to some extent limits
+
+the application of Godec in practical radar detection. Therefore, a method for obtaining the relevant parameters of
+
+Godec needs to be clarified to enhance the practicality of the Godec-based method.
+
+  In this paper, we utilized a wideband LFMCW radar for simulation and a pulsed radar for experiment validation.
+
+The main contributions can be summarized as follows:
+
+  • A Godec-based clutter suppression solution is proposed for the slow-moving weak target detection. New
+
+     iteration termination conditions are incorporated into the original Godec algorithm, enabling its application to
+
+     slow-moving weak target radar detection with the presence of statistical clutter. Besides, the time complexity
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                              3
+
+
+
+
+     is discussed. Furthermore, we show that the given solution can be combined with the efficient cell-averaging
+
+     constant false alarm rate (CA-CFAR) for the slow-moving weak target detection.
+
+  • To address the challenge of selecting the sparsity upper bound constraint in Godec, we employ a piecewise
+
+     approach with an auxiliary parameter to reduce the times of traversal in the searching process. Additionally,
+
+     a normalized performance function is introduced to determine the optimal value of the auxiliary parameter,
+
+     thereby achieving the best CFAR detection results.
+
+  • Simulation results are presented to show the reliability of the proposed solution compared to the traditional ones
+
+     based on MTI. Additionally, tradeoffs among the number of the false alarm cells, the detection performance
+
+     and the time consumption are revealed, guiding parameter settings of the proposed solution. Moreover, exper-
+
+     iment validation is conducted, which not only verifies the effectiveness of the proposed solution in practical
+
+     applications, but also provides further insights into the scenarios where the proposed solution is most applicable.
+
+  The remainder of this paper is organized as follows. Section II details the relevant preliminaries. Section III
+
+outlines the principle of Godec and describes the proposed Godec-based clutter suppression scheme, highlighting
+
+the novel parameters introduced into the original Godec algorithm and the methodology employed for searching
+
+the optimal auxiliary parameter. Section IV and V respectively present the simulation results and the experiment
+
+validation, along with a detailed analysis. Finally, Section VI concludes the paper.
+
+
+                                                      II. P RELIMINARY
+
+A. System Settings
+
+  As shown in Fig. 1, there exists at least one radar, one static IO and one slow-moving weak target, and the
+
+mobile IOs may also exist in the detection area. We define the RCS of the slow-moving weak target as no more
+
+than 0 dBsm, with a velocity not exceeding 1 m/s. Objects that do not meet these criteria are all considered IOs
+
+[20], [21]. To show the masking effects, the range between the slow-moving weak target and the radar is set close
+
+to that between the static IO and the radar. Here we assume that the difference between these two ranges is not
+
+above 1 m. The radar can both transmit and receive signals, and only the line-of-sight (LOS) signals are considered.
+
+
+B. Signal Processing
+
+  In this part, we mainly discuss the traditional signal processing scheme for LFMCW radar in the slow-moving
+
+weak target detection. The general structure of signal processing is shown in Fig. 2.
+
+  1) Weibull Clutter: Unlike most radar target detection researches that only consider the background noise, this
+
+paper also takes into account the statistical clutter received from the environment, specifically the clutter with an
+
+amplitude that follows a Weibull distribution. Here we consider the generation of the coherent Weibull clutter using
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                     4
+
+
+
+
+                                                        Static IO                                Trajectory
+
+
+
+
+                                                    LOS
+                                                                                      Slow-moving weak target
+
+
+                                                                      LOS
+
+
+
+
+                                                           LOS
+                                         Radar                                                       Trajectory
+
+                                                                              Mobile IO
+
+
+                                Fig. 1: Diagram of the slow-moving weak target detection.
+
+
+                  Received                          FFT over                   FFT over
+                   signal                           the delay                  the time
+                                   Intermediate      domain         Range       domain    Velocity             Clutter           CFAR
+                                 frequency signal                   profile                profile           suppression        detection
+                  Transmit
+                   signal
+
+
+                                  Fig. 2: The general structure of radar signal processing.
+
+
+
+the zero-mean nonlinear transformation (ZMNL) method [22], and the block diagram is shown in Fig. 3. The real
+
+and imaginary part of the coherent Weibull sequence u and v can be expressed as
+                                          
+                                          u = x(x2 + y 2 )1/p−1/2
+                                          
+                                          
+                                                                                                                                            (1)
+                                                        v = y(x2 + y 2 )1/p−1/2
+                                                        
+                                                        
+
+
+where x and y are zero mean joint Gaussian sequences, p represents the shape parameter of Weibull distribution.
+
+
+                                                                     Zero-mean Nonlinear Transformation
+
+
+
+
+                       x0                           x                                                                       u
+                                                                    (·)2
+                                Linear Filter
+                                                                                               (·)1/p-1/2
+                                    H(f)
+                       y0                           y                                                                       v
+                                                                    (·)2
+
+
+
+
+                  Gaussian White Noise       Coherent Gaussian Sequence                                     Coherent Weibull Sequence
+                      z0 = x0 + jy0                   z = x + jy                                                    w = u + jv
+
+                                Fig. 3: Diagram of the coherent Weibull clutter generation.
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                         5
+
+
+
+
+  As illustrated in Fig. 3, prior to applying the ZMNL, two independent Gaussian white noise channels are firstly
+
+processed through a linear filter H(f ). This step determines the power spectrum characteristics of the Weibull
+
+clutter, including Gaussian, exponential, and all-pole, etc. [23]. The power spectral density (PSD) functions for
+
+these three types of spectra are presented below:
+
+                                                                                      f2
+                                     Gaussian:       Sg (f ) = Hg2 (f ) = C0 exp(      2 )                      (2)
+                                                                                     2f3dB
+
+                                                                                          |f |
+                                   Exponential:        Se (f ) = He2 (f ) = C0 exp(−           )                (3)
+                                                                                         f3dB
+
+                                                                                 C0
+                                        All-pole:      Sa (f ) = Ha2 (f ) =          f γ
+                                                                                                                (4)
+                                                                              1 + | f3dB |
+
+where γ is the exponent of the all-pole model, C0 is the average clutter power, which is expressed as [24]
+
+                                                             2
+                                                            wm Γ(1 + 2/p)
+                                                    C0 =                                                        (5)
+                                                               (ln 2)2/p
+
+where wm represents the median amplitude of Weibull clutter, which is expressed as
+
+
+                                                       wm = q(ln 2)1/p                                          (6)
+
+
+where q represents the scale parameter of Weibull distribution. f3dB represents the spectral width corresponding to
+
+the half-power point of the clutter spectrum. As a rule of thumb, it is approximately 3% of the Doppler frequency
+
+of wind [25], which can be expressed as
+                                                               2vw
+                                                      f3dB =       ∗ 0.03                                       (7)
+                                                                λ
+
+where vw represents the relative radial velocity of wind on average, which is the main cause of the Weibull clutter
+
+considered in this paper. λ is the carrier wavelength.
+
+  2) Range-velocity Map: The transmit signal in the m-th chirp of LFMCW radar st (t) is expressed as
+
+
+                               st (t) = At exp j2π(f0 t + µt2 /2) , (m − 1)Tc ≤ t ≤ mTc
+                                                                 
+                                                                                                                (8)
+
+
+where At is the signal amplitude, Tc is the duration of each chirp, f0 is the carrier frequency, µ = B/Tc is the
+
+linear modulation slope (B is the signal bandwidth). Assuming that there are NIO IOs in the detection area, the
+
+received signal r(t) can be expressed as
+                                                         NIO
+                                                       X                    
+                               r(t) = A0 st t − τ0 (t) +     Ai st t − τi (t) +c(t) + w(t)                      (9)
+                                      |      {z       } i=1
+                                             TOI         |        {z         }
+                                                                     IOs
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                6
+
+
+
+
+where c(t) is the Weibull clutter, w(t) is the background noise, A0 , A1 , . . . , ANIO are the amplitudes of received
+
+signals, which can be obtained by the radar equation [26], τ0 , τ1 , . . . , τNIO are the signal propagation delays, which
+
+can be expressed as
+
+                                                     τi (t) = 2(Ri + vi t)/c                                         (10)
+
+
+where c is the light speed, Ri and vi are respectively the range and relative radial velocity between the radar and
+
+the i-th object.
+
+  After receiving the signals reflected from the objects, a mixture between the received signal r(t) and the transmit
+
+signal st (t) is conducted, and the intermediate frequency (IF) signal rIF (t) can be obtained, which is expressed as
+                                                                        NIO
+                                                                        X
+                              rIF (t) = r(t)s∗t (t) = AIF0 sIF0 (t) +         AIFi sIFi (t) +c̃(t) + w̃(t)           (11)
+                                                      | {z }
+                                                                        i=1
+                                                            TOI         |       {z      }
+                                                                                IOs
+
+where c̃(t) and w̃(t) are the Weibull clutter and noise, AIF0 , AIF1 , . . . , AIFNIO are the amplitudes of the IF signals
+
+sIF0 (t), sIF1 (t), . . . , sIFNIO (t), and the IF signals are expressed as
+
+                                                                             
+                        sIFi (t) = exp − j2π f0 τi (t) + µτi (t)t − µτi2 (t)/2 , i = 0, 1, . . . , NIO               (12)
+
+
+  By sampling rIF (t) and reshaping it into an M × N matrix, the two-dimensional discrete signal matrix RIF (m, n)
+
+can be obtained, which is expressed as
+
+                                                            
+                   RIF (m, n) = rIF (m − 1)Tc /M + (n − 1)Tc , m = 1, 2, . . . , M ; n = 1, 2, . . . , N             (13)
+
+
+where M and N respectively represent the number of samples per chirp and the number of sampling chirps per
+
+radar scan. By performing the two-dimensional FFT after adopting the Hamming window on RIF (m, n), the range
+
+and velocity profiles can be obtained, i.e., the range-velocity map.
+
+  3) MTI: For the slow-moving weak target detection, as the velocity of the target is close to zero, and the static
+
+IOs within the detection area are strong reflectors, we usually need to suppress the strong echoes to guarantee the
+
+correct detection of the weak target. MTI is a common method for suppressing the static clutter, which utilizes the
+
+difference in Doppler frequencies between the echoes of the static and moving objects [27]. By designing an finite
+
+impulse response filter in the Doppler domain, the frequency response of the filter has a deep stop-band near the
+
+zero frequency, thereby suppressing the echoes of the static IOs.
+
+  Many MTI filters have been designed, among which the simplest and most commonly used ones are the single
+
+and double delay-line canceller [28]. The frequency responses of these two cancellers are shown in Fig. 4, where
+
+fr represents the chirp repetition frequency. It can be seen that the more chirps involved in the canceller, the deeper
+
+the stop-band nearby the zero frequency, which is detrimental to detecting the slow-moving weak target. Therefore,
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                             7
+
+
+
+
+only the single delay-line canceller is considered in this article.
+
+
+                                                               0
+
+
+                                                              -10
+
+
+                                                              -20
+
+
+
+
+                                    Frequency Response (dB)
+                                                              -30
+
+
+                                                              -40
+
+
+                                                              -50
+
+
+                                                              -60
+
+
+                                                              -70
+                                                                                                    Single delay-line canceller
+                                                                                                    Double delay-line canceller
+                                                              -80
+                                                                    0    0.5   1           1.5       2           2.5              3
+                                                                                          f/f r
+
+
+                                Fig. 4: Frequency responses of the common MTI filters.
+
+
+  When processing an M ×N range-velocity map, MTI performs a difference operation between every two adjacent
+
+columns of the matrix. Therefore, the number of floating-point operations (flops) required by MTI to process a
+
+single range-velocity map is (N − 1)M .
+
+  4) CFAR: As shown in Fig. 2, the CFAR detection is performed after the clutter suppression. Two kinds of
+
+CFAR are considered including the CA-CFAR and the ordered-statistic CFAR (OS-CFAR) [29], [30]. The 2-D
+
+detection window of the two CFAR detectors are shown in Fig. 5, where the presence of TOI in the cell under test
+
+(CUT) is determined by comparing its intensity with the average intensity of the reference cells (CA-CFAR) / the
+
+intensity of the k-th strongest reference cell (OS-CFAR). It has been revealed that the OS-CFAR achieves better
+
+performance against the masking effect but higher computational complexity than the CA-CFAR [11], [31].
+
+
+
+
+                                  Range axis
+
+
+
+
+                                                                                   Velocity axis
+
+
+                                                                        CUT           Guard cells                Reference cells
+
+
+                              Fig. 5: 2-D detection window of CA-CFAR and OS-CFAR.
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                         8
+
+
+
+
+  When processing an M ×N range-velocity map, CA-CFAR requires NR N0 flops to compute the average intensity
+
+of all the N0 detection windows, where each detection window contains NR reference cells. OS-CFAR requires
+
+sorting the intensities of all NR reference cells within each detection window, resulting in O(NR log2 (NR )) × N0
+
+comparisons.
+
+
+                                III. P ROPOSED G ODEC - BASED C LUTTER S UPPRESSION
+
+  In this section, a reliable slow-moving weak target detection scheme based on the Godec clutter suppression and
+
+CA-CFAR is proposed.
+
+
+A. Principle of Godec
+
+  For the problem of a matrix X which can be expressed as
+
+
+                                                       X=L+S+N                                                (14)
+
+
+where L, S and N are respectively the low-rank, sparse and noise part of the matrix, Godec can efficiently and
+
+robustly estimate the low-rank part L and the sparse part S by alternatively assigning the low-rank approximation
+
+of X − S to L and the sparse approximation of X − L to S [18]. The LRaSMD problem can be solved by an
+
+optimization, expressed as
+                                                    min ∥X − L − S∥2F
+                                                     L,S
+
+                                                                                                              (15)
+                                                                   
+                                                      s.t.   rank L ≤ r
+                                                                   
+                                                             card S ≤ s
+
+where the notation ∥ · ∥F represents the Frobenius norm of its argument, rank(·) and card(·) respectively represent
+
+the rank and cardinality of the matrix, r and s respectively represent the rank upper bound constraint on L and the
+
+cardinality upper bound constraint on S.
+
+  BRP and the power scheme modification are adopted to solve this optimization problem efficiently, and the details
+
+of the BRP-based Godec algorithm can be found in [18]. Here we define ζ (ζ ≥ 0) as the integer exponent of the
+
+power scheme modification. Besides, the decomposition error of Godec ϵ is defined as
+
+
+                                             ϵ = ∥X − L − S∥F /∥X∥F × 100%                                    (16)
+
+
+B. Applications of Godec for Clutter Suppression
+
+  As mentioned in [4], due to the low-rank and sparse structure of the static and moving objects in range-velocity
+
+maps across multiple radar scans, Godec is suitable for suppressing the echoes of the static objects.
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                                                                               9
+
+
+
+
+    1) Procedures: As shown in Fig. 6, we obtain K range-velocity maps through K radar scans, with a time interval
+
+tinterval between each two scans. To fully explore the capability of Godec in suppressing the stationary clutter, the
+
+TOI is required to move across at least one range bin between two adjacent scans. By stacking each range-velocity
+
+map into a column vector and combining K column vectors into a “range-velocity-scan” matrix Xrvs , Godec can
+
+be performed on Xrvs to obtain the low-rank part Lrvs and the sparse part Srvs . Then, by inversely reshaping Lrvs
+
+and Srvs , the static and dynamic parts of the range-velocity maps can be obtained, corresponding to containing the
+
+static and mobile objects, respectively.
+
+                                                                                                                                              Reshape
+
+
+
+
+                       Range                                   1 2 ... k ... K           1 2 ... k ... K   1 2 ... k ... K   Range                                 Range
+
+                        M-1                            Stack                                                                  M-1                                   M-1
+                                                                                                                                                                           Mobile IO &
+                               TOI + IO                                                                                              Static IO
+                                                                                                                                                                              TOI
+                           0                                                                                                     0                                     0
+                               K-th scan N-1 Velocity                                                                                K-th scan N-1 Velocity                 K-th scan N-1 Velocity
+                       Range       .                                                                                         Range       .                         Range        .
+                                   ..                                                                                                    ..                                     .
+           K-th scan                                                                                                                                                            .
+                         M-1                                                                                                   M-1                                   M-1
+                                                       Stack
+      k-th scan                                                                                                                                                            Mobile IO &
+                               TOI + IO                                                                                              Static IO
+                                                                                                                                                                              TOI
+   2-nd scan                                                                     Godec
+                           0                                                                                                     0                                     0
+ 1-st scan                     k-th scan N-1 Velocity                                                                                k-th scan N-1 Velocity                 k-th scan N-1 Velocity
+                       Range       .                                                                                         Range       .                         Range        .
+                                   ..                                                                                                    ..                                     .
+                                                                                                                                                                                .
+                         M-1                           Stack                                                                   M-1                                   M-1
+                                                                                                                                                                           Mobile IO &
+                               TOI + IO                                                                                              Static IO
+                                                                                                                                                                              TOI
+                           0                                                                                                     0                                     0
+                               2-nd scan N-1 Velocity                                                                                2-nd scan N-1 Velocity                 2-nd scan N-1 Velocity
+                       Range            tinterval                                                                            Range             tinterval           Range            tinterval
+                         M-1                                                                                                   M-1                                   M-1
+                                                       Stack
+                                                                                                                                                                           Mobile IO &
+                               TOI + IO                                                                                              Static IO
+                                                                                                                                                                              TOI
+                           0   1-st scan     N-1 Velocity                                                                        0   1-st scan      N-1 Velocity       0    1-st scan    N-1 Velocity
+                                                                 R-V-S Matrix            Low-Rank Matrix     Sparse Matrix
+
+
+
+
+                                                                                                                 Reshape
+
+
+
+                                               Fig. 6: Diagram of the Godec-based clutter suppression.
+
+
+    2) Parameters: Since we only perform CFAR detection on the obtained dynamic parts of the range-velocity
+
+maps, and the value of the sparsity upper bound constraint s directly affects the ability of Godec to decompose
+
+the dynamic parts, this paper focuses solely on investigating the searching method for the parameter s. Other
+
+related parameters, such as r, ζ, etc., are set to fixed values. To facilitate the rational setting of s and improve the
+
+efficiency of the proposed Godec-based solution in reliable target detection, the following parameters are added
+
+into the original Godec algorithm:
+
+   • itermax , itercov , δ: Due to the presence of Weibull clutter, the stopping criterion for iteration of Godec in [18]
+
+         is usually not achievable. Therefore, to explore the optimal efficiency of the slow-moving weak target detection
+
+         based on the Godec clutter suppression, three new parameters itermax , itercov and δ, which respectively
+
+         represent the maximum iteration times, the iteration times required for convergence and the threshold for
+
+         the error difference between two adjacent iterations, are added into the original Godec algorithm. Accordingly,
+
+         two additional stopping criteria are introduced in the original Godec algorithm: one is when the number of
+
+         iterations exceeds itermax , and the other is when the difference in decomposition error between two consecutive
+
+         iterations is smaller than δ, and itercov will be output when the iteration terminates.
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                            10
+
+
+
+
+  • Nmov : Due to the large number of cells contained in Xrvs , and the fact that one strong mobile IO often
+
+     corresponds to multiple dynamic cells due to its significant spectral leakage during the two-dimensional FFT,
+
+     using an exhaustive searching method to determine the value of the sparsity upper bound constraint s is
+
+     extremely computationally expensive. Accordingly, we employ a piecewise approach to search the reasonable
+
+     value for s in order to reduce the times of traversal, and the obtained value for s exhibit a certain degree of
+
+     robustness to the dynamic statistical clutter in the same scenario.
+
+     Considering the characteristic that the echoes of strong mobile IOs exhibit significant spectral leakage in
+
+     the velocity domain, we define a new integer parameter Nmov (Nmov ∈ (0, M ]) that satisfies the following
+
+     relationship with s:
+
+                                                        s = Nmov × N × K                                          (17)
+
+
+     In (17), we assume that the horizontal bands caused by the spectral leakage stretch over the entire velocity
+
+     domain, which is the worst situation. Compared to the exhausting traversal of s, the traversal of the integer
+
+     Nmov is much more efficient.
+
+  3) Algorithms: Based on the parameters above, the Godec algorithm adapted for slow-moving weak target
+
+detection is presented in Algorithm 1, where A1 ∈ RK×r and A2 ∈ RM N ×r mentioned at line 3 and line 6 are
+
+Gaussian random matrices in BRP. The QR decomposition mentioned at line 7 is adopted to extract the rank-r
+
+components from Xrvs , and the approximate low-rank matrix is recovered at line 8. At line 9, after eliminating the
+
+approximate low-rank part, the remaining components of Xrvs are sorted by intensity, and the top (Nmov × N × K)
+
+strongest cells are extracted as the components of the sparse matrix.
+
+  As mentioned in [18], when applying the power scheme modification (ζ > 0), the Godec algorithm presented in
+
+Algorithm 1 requires [r2 (M N + 3K + 4r) + 4(ζ + 1)M N Kr](itercov + 1) flops, where itercov has a significant
+
+impact on the time complexity of the Godec-based solution. Besides, there is an intrinsic tradeoff between the false
+
+alarm rate Pfa and the detection probability Pd in CFAR detection. In the proposed Godec-based solution, all these
+
+three factors (itercov , Pfa and Pd ) are associated with the value of s. Therefore, searching for the optimal value of
+
+s (or Nmov ) often requires balancing these three factors, with the goal of maximizing the detection probability of
+
+TOI while minimizing the values of the other two factors as much as possible, thereby ensuring both the reliability
+
+and efficiency of the algorithm.
+
+  We use the average number of false alarm cells in all scans Nfa as the factor for measuring false alarms instead
+
+of Pfa in this paper. Considering the factors related to Nmov mentioned above, we define a normalized performance
+
+function f here to quantify the performance of the proposed Godec-based solution for different values of Nmov ,
+
+which is expressed as
+                                                                                
+                                    f = 0.5 ∗ 1/itercov + 0.5 ∗ Pd + 1/(Nfa + 1)                                  (18)
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                11
+
+
+
+
+Algorithm 1 Godec algorithm adapted for slow-moving weak target detection
+Input:
+    N : the number of sampling chirps per radar scan;
+    K: the number of radar scans;
+    r: the rank upper bound constraint on the low-rank matrix Lrvs ;
+    Nmov : the integer parameter correlated with the sparsity upper bound constraint s;
+    ζ: the integer exponent of the power scheme modification;
+    ϵ0 : the pre-determined decomposition error bound;
+    itermax : the maximum iteration times;
+    δ: the threshold for the error difference between two adjacent iterations;
+    Xrvs : the “range-velocity-scan” matrix
+Output:
+    itercov : the iteration times required for convergence;
+    Lrvs : the low-rank matrix;
+    Srvs : the sparse matrix;
+    ϵ: the decomposition error
+
+ 1: Initialize L0 = Xrvs , S0 = 0, t = 0;
+                                                                      ∥Xrvs −Lt−1 −St−1 ∥F −∥Xrvs −Lt −St ∥F
+ 2: while (∥Xrvs − Lt − St ∥F /∥Xrvs ∥F ≥ ϵ0 ) ∧ (t ≤ itermax ) ∧ (                 ∥Xrvs ∥F                   ≥ δ) do
+                                                            K×r
+ 3:    Generate a Gaussian random matrix A1 ∈ R       ;
+ 4:    t = th+ 1;
+                                     T i ζ            
+ 5:    L̃ = Xrvs − St−1 Xrvs − St−1          Xrvs − St−1 ;
+ 6:    Y1 = L̃A1 , A2 = Y1 ;
+ 7:    Y2 = L̃T Y1 = Q2 R2 , Y1 = L̃Y2 = Q1 R1 ;
+                h           −1 T i1/(2ζ+1) T
+ 8:    Lt = Q1 R1 AT2 Y1         R2          Q2 ;
+                           
+ 9:    St = PΩ Xrvs − Lt , Ω is the nonzero subset of the first (Nmov × N × K) largest entries of |Xrvs − Lt |;
+10: end while
+11: itercov = t − 1, Lrvs = Lt , Srvs = St ;
+12: ϵ = ∥Xrvs − Lrvs − Srvs ∥F /∥Xrvs ∥F × 100%.
+
+
+
+
+where itercov ∈ [1, itermax ], Pd ∈ [0, 1] and Nfa ≥ 0. The aim of searching for the optimal Nmov is to maximize
+
+f . Accordingly, the details of the slow-moving weak target detection based on Godec clutter suppression and CA-
+
+CFAR can be found in Algorithm 2, in which the process of searching for the optimal parameter Nmov is from
+
+line 1 to line 13.
+
+
+                                                 IV. S IMULATION R ESULTS
+
+A. Simulation Settings
+
+  In this section, we show the simulation results in typical target detection schemes and the proposed Godec-based
+
+scheme, and demonstrate the performance advantages of the proposed one. As shown in Fig. 7, at the size of
+
+80m × 80m, the simulation network has 1 radar located at the original point. In the detection area, there are two
+
+static IOs, one mobile IO and one TOI. To simplify the problem, we assume that the TOI and the mobile IO are
+
+respectively moving away from the radar at a constant speed. The target and the mobile IO trajectory formed in 10
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                             12
+
+
+
+
+Algorithm 2 Slow-moving weak target detection based on Godec clutter suppression and CA-CFAR
+Input:
+    M : the number of samples per chirp;
+    NG : the number of guard cells;
+    NR : the number of reference cells;
+    Pfa : the false alarm rate;
+    Parameters input in Algorithm 1
+Output:
+    X0 : the CFAR detection result with the best performance
+
+ 1: Initialize Nmov0 = M − 1 and f0 = 0;
+ 2: while Nmov > 0 do
+ 3:   Perform Algorithm 1 and obtain itercov ;
+ 4:                                       Lrv and Srv in K radar scans;
+      Inversely reshape Lrvs and Srvs to get
+ 5:   Xdet = CA-CFAR Srv , NG , NR , Pfa ;
+ 6:   Calculate the average false alarm cells in K scans Nfa and the detection probability of TOI Pd ;
+ 7:   Calculate f according to (18);
+ 8:   if f > f0 then
+ 9:      f0 = f ;
+10:      Nmov0 = Nmov ;
+11:   end if
+12:   Nmov = Nmov − 1;
+13: end while
+14: Perform Algorithm 1 with Nmov0 ;
+15: Inversely reshape Lrvs and Srvs to get Lrv and Srv in K scans;
+16: X0 = CA-CFAR Srv , NG , NR , Pfa .
+
+
+
+
+radar scans can be seen in Fig. 7 as the dash-dotted line. The radar and object simulation parameters are detailed
+
+in Table I and Table II, respectively.
+
+
+                                           80
+                                                                                                     Radar
+                                           70                                                        Static IO
+                                                                                                     Mobile IO
+                                                                                                     TOI
+                                           60
+                                                              Mobile IO trajectory
+
+                                           50
+                                    y(m)
+
+
+
+
+                                           40
+
+
+                                           30
+                                                                                38.5
+                                           20                                     38
+                                                                                37.5
+                                                                                  37
+                                           10                                                   TOI trajectory
+                                                                                36.5
+
+                                            0                                           43.5 44 44.5 45 45.5
+                                                0   10   20      30        40          50     60      70         80
+                                                                          x(m)
+
+
+                                 Fig. 7: Radar detection network simulation in 10 scans.
+
+
+  The relevant parameters for Weibull clutter simulation can be found in Table III. As mentioned in [24], the
+
+Weibull scale and shape parameter p and q for 24 GHz short range radar are respectively 1.6 and 6.9 for traffic
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                        13
+
+
+
+
+                                                TABLE I: Radar Simulation Settings
+
+                          Parameters          Description                                      Value
+                          Pt                  Radar transmit power (dBm)                       20
+                          Gt                  Transmit antenna gain (dB)                       20
+                          Gr                  Receive antenna gain (dB)                        20
+                          N0                  Power spectrum density of noise (dBm/Hz)         -174
+                          BW                  Bandwidth (GHz)                                  1
+                          fc                  Carrier frequency (GHz)                          24
+                          M                   Sampling ADC number per chirp                    1024
+                          N                   Sampling chirp number per scan                   256
+                          K                   Number of radar scans                            10
+                          Tr                  Chirp repetition interval (ms)                   0.1
+                          tinterval           Time interval between two adjacent scans (s)     0.5
+
+
+
+                                               TABLE II: Object Simulation Settings
+
+                    Object            Range (m)       Azimuth (◦ )   Radial velocity (m/s)    RCS (dBsm)
+                    Static IO          16 / 56.7        60 / 40               0                 37 / 60
+                    Mobile IO             25              20                 10                    23
+                    Target                57              50                 0.5                  -20
+
+
+
+
+road Weibull clutter. Meanwhile, as mentioned in [32], for wideband radar, the PSD of the ground clutter is usually
+
+described by the all-pole model. Thus, an all-pole model with an exponent γ, which is equal to 3, is used as the
+
+PSD of Weibull clutter in the simulation. The probability density function (PDF) and the PSD of the simulated
+
+Weibull clutter can be found in Fig. 8, where the amplitude in Fig. 8a is normalized by its mean and the PSD
+
+in Fig. 8b is normalized by its maximum. Accordingly, the correctness of the Weibull clutter simulation can be
+
+validated, as the PDF and PSD of the simulated clutter fit well with the theoretical ones. Additionally, we define
+
+the clutter power coefficient ξ as the ratio of the clutter power to the weak target echo power, which is equal to
+
+2000 in the simulation. For simplification, complex Additive White Gaussian Noise (AWGN) is considered as the
+
+background noise.
+
+                                           TABLE III: Weibull Clutter Simulation Settings
+
+                                      Parameters     Description                       Value
+                                      p              Scale parameter                   1.6
+                                      q              Shape parameter                   6.9
+                                      vw             Radial velocity of wind (m/s)     5
+                                      γ              Exponent of the all-pole model    3
+                                      ξ              Clutter power coefficient         2000
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                                                                     14
+
+
+
+
+                          2.5                                                                                                1
+                                                                               Weibull - Gaussian                                                                 Gaussian - Simulated
+                                                                               Weibull - Exponential                                                              Exponential - Simulated
+                                                                                                                            0.9                                   All-Pole - Simulated
+                                                                               Weibull - All-Pole
+                                                                                                                                                                  Gaussian - Theroetical
+                                                                               Weibull - Theoretical
+                           2                                                                                                0.8                                   Exponential - Theroetical
+                                                                                                                                                                  All-Pole - Theroetical
+
+                                                                                                                            0.7
+    Probability Density
+
+
+
+
+                                                                                                           Normalized PSD
+                          1.5                                                                                               0.6
+
+                                                                                                                            0.5
+
+                           1                                                                                                0.4
+
+                                                                                                                            0.3
+
+                          0.5                                                                                               0.2
+
+                                                                                                                            0.1
+
+                           0                                                                                                 0
+                                0   0.2   0.4   0.6     0.8    1     1.2     1.4   1.6     1.8         2                          -100   -50          0          50            100
+                                                      Normalized Amplitude                                                                      Frequency (Hz)
+
+                                                          (a) PDF                                                                                (b) PSD
+
+                                                        Fig. 8: Weibull clutter (p = 1.6, q = 6.9) simulation verification.
+
+
+
+  The relevant parameters for CFAR detectors and Godec in the simulation can be found in Table IV and Table
+
+V, respectively.
+
+                                                                                   TABLE IV: CFAR Parameters
+
+                                                               Parameters            Description                                         Value
+                                                               NG                    Number of guard cells                               8
+                                                               NR                    Number of reference cells                           40
+                                                               Pfa                   False alarm rate                                    1e-9
+                                                               k                     The k-th strongest reference cell                   10
+
+
+
+
+                                                                                   TABLE V: Godec Parameters
+
+                                    Parameters          Description                                                                                              Value
+                                    r                   Rank upper bound constraint on the low-rank matrix L                                                     1
+                                    ζ                   Integer exponent of the power scheme modification                                                        3
+                                    ϵ0                  The pre-determined error bound                                                                           1e-3
+                                    δ                   The threshold for the error difference between two adjacent iterations                                   1e-4
+                                    itermax             The maximum iteration times                                                                              100
+
+
+
+
+B. Masking Effects
+
+  Here we show the results in the first radar scan as an example. As shown in Fig. 9, the range-velocity map
+
+obtained by the two-dimensional FFT is normalized by its maximum. The intensity of the echoes of TOI is 16.86
+
+dB higher than that of the background clutter and noise. Besides, it can be seen that there are horizontal and vertical
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                      15
+
+
+
+
+bands at the location of the strong IOs in the range-velocity map, which is caused by the spectral leakage during
+
+the two-dimensional FFT. As shown in the enlarged part of Fig. 9, it is difficult to distinguish the TOI from the
+
+spectral extension of the strong IO.
+
+
+
+
+                              Fig. 9: Radar range-velocity map without clutter suppression.
+
+
+  In this case, CA-CFAR and OS-CFAR are both performed on Fig. 9, and the CFAR detection results can be
+
+found in Fig. 10. It can be found that in all of the 10 scans, neither CA-CFAR nor OS-CFAR can detect the weak
+
+TOI due to the masking effects caused by the nearby strong static IO.
+
+
+
+
+                     (a) CA-CFAR detection result                          (b) OS-CFAR detection result
+
+                            Fig. 10: Masking effects in slow-moving weak target detection.
+
+
+
+
+C. Clutter Suppression
+
+  In this part, we show the performance of different target detection schemes using MTI and Godec for clutter
+
+suppression, and further compare the time consumption of those schemes that are able to detect the slow-moving
+
+weak targets.
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                        16
+
+
+
+
+  1) MTI: As shown in Fig. 11, the range-velocity map processed by a single delay-line canceller in the first radar
+
+scan is normalized by its maximum. It can be seen from the enlarged part of Fig. 11 that although the echoes of
+
+the strong static IO have been well removed, the echoes of the slow-moving weak target also suffer an intensity
+
+loss, whose intensity is even 14.88 dB lower than that of the background clutter and noise.
+
+
+
+
+                                  Fig. 11: Radar range-velocity map processed by MTI.
+
+
+  In this case, CA-CFAR and OS-CFAR are both performed on Fig. 11, and the CFAR detection results can be
+
+found in Fig. 12. Considering all of the 10 scans, the results show that CA-CFAR still cannot detect the weak TOI,
+
+but OS-CFAR can obtain the correct detection results in the 8-th scan, i.e., the detection probability of the MTI +
+
+OS-CFAR scheme is 10%.
+
+
+
+
+                     (a) CA-CFAR detection result                        (b) OS-CFAR detection result
+
+                             Fig. 12: Detection performance with MTI clutter suppression.
+
+
+  2) Godec: As shown in Fig. 13, Godec achieves suppression of the strong static IOs by separating cells with
+
+constant and varying intensity in multiple scans into different range-velocity maps. Besides the Godec parameters
+
+shown in Table V, there is still a hyperparameter Nmov which determines the sparsity upper bound constraint on
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                           17
+
+
+
+
+the sparse matrix S. Here we assume that Nmov = 18, and it can be seen from the enlarged part of Fig. 13a that the
+
+echoes of TOI nearby the strong static IO are well separated. Besides, in Fig. 13b, the cell on the position of TOI is
+
+highlighted, whose intensity can achieve 17.11 dB higher than that of the background clutter and noise. Compared
+
+with the intensity loss caused by MTI, it can be seen that the proposed Godec-based method can effectively preserve
+
+the echoes of TOI from being suppressed.
+
+  Considering the computational complexity, OS-CFAR is not considered here. CA-CFAR is performed on Fig.
+
+13b, whose result is shown in Fig. 13c, where the TOI can be successfully detected. Considering all of the 10
+
+scans, it can be found that the detection probability of the Godec + CA-CFAR scheme can reach up to 100%.
+
+
+
+
+                    (a) Static range-velocity map                                  (b) Dynamic range-velocity map
+
+
+
+
+                                                    (c) CA-CFAR detection result
+
+                         Fig. 13: Results of the Godec + CA-CFAR scheme with Nmov = 18.
+
+
+  3) Time Consumption Comparison: For the MTI + OS-CFAR and the Godec + CA-CFAR schemes which can
+
+both detect the TOI, here we give the average running time of ten running tests in Table VI. It can be calculated
+
+that the time consumption of the Godec + CA-CFAR scheme is 93.26% of that of the MTI + OS-CFAR scheme.
+
+However, the time consumption accounted for in the Godec + CA-CFAR scheme does not include the time required
+
+to determine the optimal hyperparameter Nmov . Consequently, in practical applications, the overall time consumption
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                18
+
+
+
+
+of the Godec + CA-CFAR scheme is expected to exceed that of the MTI + OS-CFAR scheme. This indicates that
+
+the Godec + CA-CFAR scheme prioritizes achieving high reliability in detecting the slow-moving weak targets at
+
+the cost of increasing the time complexity.
+
+                                         TABLE VI: Average Time Consumption
+
+                                  Process       MTI         Godec    CA-CFAR          OS-CFAR
+                                  Time (s)      0.0414      0.3378    7.6389           8.5115
+
+
+
+
+  4) Tradeoffs in the Godec-based Solution: When searching for the optimal hyperparameter Nmov , three repeated
+
+runs are conducted for each value of Nmov , as the Weibull clutter generated in the simulation varies with each run.
+
+The average number of the false alarm cells in 10 scans Nfa , the detection probability of the TOI Pd , the iteration
+
+times required for convergence itercov and the average performance function in three runs f obtained by the Godec
+
++ CA-CFAR scheme with different Nmov are presented in Table VII. From this, the following observations can be
+
+made:
+
+  • Generally, as Nmov increases, Nfa also increases, with a slight decrease observed after Nmov = 100. The
+
+       detection probability Pd reaches its maximum in the range of Nmov = 25 to 30. Beyond this range, further
+
+       increase in Nmov lead to a slight decrease in Pd , and it generally remains above 70%. Additionally, the number
+
+       of iteration times required for convergence itercov increases as Nmov grows.
+
+  • In the table, two tradeoffs can be observed. When Nmov ≤ 30, itercov is always equal to 2, and the tradeoff
+
+       primarily lies between Nfa and Pd . However, when Nmov > 100, Pd changes slightly, and the tradeoff shifts
+
+       to being mainly between Nfa and itercov .
+
+  • In the table, as Nmov increases, f exhibits a trend of first increasing and then decreasing in general, and it
+
+       reaches its maximum when Nmov = 30.
+
+                                TABLE VII: Nfa , Pd , itercov and f with Different Nmov
+
+ Nmov          1        5        8        11        14        18      21        25        30      40      50     100     200
+              3.4      5.5      4.8       5.1      6.8        13.1   13.8      15.3      17.4    20.3    21.9    34.5    27.1
+ Nfa          3.4      5.8      5.7       6.0      7.5        10.2   14.1      13.9      14.4    20.1    23.8    34.4    26.4
+              2.9      4.6      5.7       6.4      8.3        10.3   12.1      13.2      14.6    19.2    24.3    34.8    25.2
+               0       0.2      0.2       0.4      0.6        0.6     0.9       1.0       0.8     0.9     0.8     0.9     0.8
+ Pd            0       0.3      0.4       0.4      0.5        0.7     0.6       0.7       0.9     0.8     0.7     0.5     0.7
+               0       0.1      0.1       0.4      0.5        1.0     0.7       0.7       0.8     0.7     0.9     0.8     0.7
+               2        2        2          2       2          2      2         2         2       3       3       4       5
+ itercov       2        2        2          2       2          2      2         2         2       3       3       4       5
+               2        2        2          2       2          2      2         2         2       3       3       4       5
+ f           0.309   0.340     0.348    0.387     0.413      0.462   0.451     0.467     0.474   0.379   0.377   0.315   0.293
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                           19
+
+
+
+
+For the observations above, the following interpretations are provided:
+
+  • For Nfa and Pd : The increase in Nmov causes the intensity threshold for extracting sparse components from
+
+     the range-velocity map to decrease. As a result, more dynamic cells are extracted, leading to an increase in
+
+     Nfa and Pd . However, when Nmov becomes sufficiently large (Nmov > 100), Godec is able to extract the sparse
+
+     components caused by the Weibull clutter, which leads to a huge number of clutter cells appearing in the
+
+     dynamic range-velocity map as shown in Fig. 13b. During CFAR detection, these clutter cells may have the
+
+     masking effects on each other, which results in the decrease in Nfa . Moreover, the numerous clutter cells also
+
+     cause a reduction in Pd to some extent.
+
+  • For itercov : The noise component N with large magnitude will decelerate the convergence process [18].
+
+     Therefore, when Nmov is small (Nmov ≤ 30), the extracted sparse components do not yet include the dynamic
+
+     cells caused by the Weibull clutter. In this case, the intensity of N is relatively small compared to that of the
+
+     extracted sparse components, resulting in fewer iteration times for convergence. On the other hand, when Nmov
+
+     is large (Nmov > 30), the extracted sparse components not only include the TOI but also a portion of dynamic
+
+     cells caused by the Weibull clutter. In this case, the intensity of N becomes more significant relative to these
+
+     dynamic cells, leading to an increase in itercov as Nmov increases.
+
+  • For selecting the optimal Nmov , to make the results more robust, here we consider that any Nmov that result in f
+
+     reaching 95% of its maximum are acceptable. Accordingly, the recommended range for Nmov is approximately
+
+     between 18 and 30 in the simulation.
+
+
+                                               V. E XPERIMENT VALIDATION
+
+A. Overview
+
+  The data analyzed in this section are provided by a private company specializing in radar target detection, under
+
+a confidentiality agreement. Due to the proprietary nature of the data, the exact identity of the company and further
+
+details cannot be disclosed. Here, we present one of the realistic range-velocity maps, as shown in Fig. 14. After
+
+experiment validation, it was found that there is only one weak mobile IO (UAV) moving at a constant speed of
+
+10 m/s, while the other components are either the static IOs or the uninterested clutter.
+
+  Due to limitations in the experimental conditions, we introduce a TOI aligning with the assumptions made in
+
+this article into the range-velocity map by simulation. The echo intensity of the simulated TOI is approximately
+
+equal to that of the realistic weak UAV on the same range. Generally, as shown in Fig. 14, the slow-moving weak
+
+target detection can be considered from these two cases: one in which the TOI is beyond the horizontal band, and
+
+the other in which it is within the horizontal band. In the following parts of this section, we will evaluate the
+
+performance of the proposed Godec-based solution in detecting the TOI in these two cases.
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                       20
+
+
+
+
+                            Fig. 14: Range-velocity map obtained by realistic measurement.
+
+
+
+B. Case 1: TOI Located beyond the Horizontal Band
+
+  Taking scan 1 as an example, as shown in Fig. 15, the simulated TOI is located at a distance of 468 m from
+
+the radar, with a normalized intensity of approximately -40 dB and a velocity at 0.1 m/s. The results of applying
+
+CFAR detection directly to the range-velocity map without clutter suppression is shown in Fig. 16. Considering all
+
+10 scans, the detection probabilities of CA-CFAR and OS-CFAR are 0 and 10%, respectively.
+
+
+
+
+                      Fig. 15: Range-velocity map with TOI located beyond the horizontal band.
+
+
+  The realistic range-velocity map processed by MTI is shown in Fig. 17, and the CFAR detection results can be
+
+seen in Fig. 18. In this case, the detection probabilities of CA-CFAR and OS-CFAR are respectively 50% and 90%,
+
+and the performances of the detection schemes mentioned above are summarized in Table VIII.
+
+  For the proposed Godec-based solution, here we assume Nmov = 3, and the static and dynamic range-velocity
+
+maps obtained are presented as Fig. 19a and Fig. 19b. After CA-CFAR detection shown in Fig. 19c, the detection
+
+probability of TOI can reach 100%, with the average number of the false alarm cells in 10 scans Nfa = 92.7.
+
+Besides, the time consumption comparison of the Godec-based scheme and the MTI + OS-CFAR scheme can be
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                 21
+
+
+
+
+                     (a) CA-CFAR detection result                          (b) OS-CFAR detection result
+
+                                          Fig. 16: Masking effects in experiment.
+
+
+
+
+                                Fig. 17: Realistic range-velocity map processed by MTI.
+
+
+
+
+                     (a) CA-CFAR detection result                          (b) OS-CFAR detection result
+
+                        Fig. 18: Realistic detection performance with MTI clutter suppression.
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                             22
+
+
+
+
+                              TABLE VIII: Detection Performances of the Typical Schemes
+
+               Scheme       CA-CFAR only             OS-CFAR only       MTI + CA-CFAR            MTI + OS-CFAR
+               Pd                   0                    10%                    50%                     90%
+               Nfa                 24.7                  115.1                  21.7                    42.6
+
+
+
+found in Table IX, and the tradeoffs revealed in the simulation section can be validated from Table X, where we
+
+can recommend the range for Nmov from 2 to 4. It can be observed that although the Godec-based scheme achieves
+
+a 10% improvement in the detection probability, this comes at the cost of a doubling of false alarm cells and a
+
+significantly higher time consumption. Therefore, when the TOI is beyond the horizontal band, we may recommend
+
+using the MTI-based scheme.
+
+
+
+
+                     (a) Static range-velocity map                                   (b) Dynamic range-velocity map
+
+
+
+
+                                                      (c) CA-CFAR detection result
+
+                     Fig. 19: Experiment results of the Godec + CA-CFAR scheme with Nmov = 3.
+
+
+
+C. Case 2: TOI Located within the Horizontal Band
+
+  In this case, we adjusted the position of the simulated TOI to a distance of 1418 m from the radar, with a
+
+normalized intensity of approximately -45 dB and a velocity of 0.1 m/s. By searching for the optimal Nmov , we
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                               23
+
+
+
+
+                                  TABLE IX: Average Time Consumption in Experiment
+
+                                  Process       MTI         Godec     CA-CFAR         OS-CFAR
+                                  Time (s)     0.0199       0.2402        4.7611       5.3720
+
+
+
+                           TABLE X: Nfa , Pd , itercov and f with Different Nmov in Case 1
+
+        Nmov         1        2         3        4           5        7        10       15       25      40      70
+        Nfa        14.5      49.3     92.7      93.5      86.0        73.2     70.0    58.5      47.7    32.0    13.6
+        Pd         0.3       0.9      1.0       1.0       0.9         0.9      0.9     0.9       0.9     0.9     0.9
+        itercov     2         2        2         2         3           3        4       4         5       7       9
+        f         0.341     0.480    0.503     0.503     0.395       0.395    0.354   0.354     0.330   0.304   0.298
+
+
+
+found that regardless of the value of Nmov , the detection probability of the TOI was 0. Therefore, we reset the
+
+velocity of TOI to 0.2 m/s, and the range-velocity map is shown in Fig. 20, where we can find that the TOI is
+
+located within the horizontal band.
+
+
+
+
+                      Fig. 20: Range-velocity map with TOI located within the horizontal band.
+
+
+  In this case, the MTI + OS-CFAR scheme fails to detect the TOI in any scan, with the average number of false
+
+alarm cells across 10 scans being 42.1. Besides, the performance of the Godec-based scheme is shown in Table XI.
+
+It can be observed that the detection probability can reach up to 40% when Nmov = 3 and 4, proving the reliability
+
+of the proposed solution on slow-moving weak target detection. Therefore, compared to case 1 mentioned above,
+
+we may recommend using the proposed Godec-based scheme when the TOI is within the horizontal band.
+
+
+                                                       VI. C ONCLUSION
+
+  In this paper, we mainly focus on the reliable clutter suppression for slow-moving weak target radar detection.
+
+Specific system settings and the signal processing of LFMCW radar are provided. Besides, a Godec-based method
+
+is proposed to suppress the strong echoes of the static IOs. The original Godec algorithm is extended by introducing
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                        24
+
+
+
+
+                               TABLE XI: Nfa , Pd , itercov and f with Different Nmov in Case 2
+
+              Nmov           1          2          3          4          5          6          7         8          10        15
+              Nfa          14.4      48.2       91.4       91.9       83.5       79.8       71.5       66.3       68.7      57.0
+              Pd             0        0.2        0.4        0.4        0.3        0.3        0.3        0.3        0.2       0.1
+              itercov        2         2          2          2          3          3          3          3          4         4
+              f            0.266     0.305      0.353      0.353      0.245      0.245      0.245      0.245      0.179     0.154
+
+
+
+additional parameters to make it suitable for its application in slow-moving weak target radar detection. To address
+
+the challenge of selecting optimal Godec parameters, we employ a piecewise approach to reduce the traversal
+
+times required for the searching process, and the optimal parameter values are determined based on a normalized
+
+performance function. Simulation results show that, in the presence of masking effects, the proposed Godec-based
+
+solution provides a reliable detection performance at a cost of the computational complexity. Furthermore, there
+
+are two tradeoffs between the number of false alarm cells, detection probability, and the iteration times required for
+
+convergence, which should be considered when selecting the optimal sparsity parameter for Godec. Additionally,
+
+experiment validation of the proposed solution verifies the simulation results and further identifies the applicable
+
+scenarios for the Godec-based solution, enhancing its practical applicability.
+
+
+                                                                  R EFERENCES
+
+ [1] J. Wang, Y. Liu, and H. Song, “Counter-unmanned aircraft system(s) (c-uas): State of the art, challenges, and future trends,” IEEE Aerospace
+     and Electronic Systems Magazine, vol. 36, no. 3, pp. 4–29, 2021.
+ [2] Y. Wang, K. Zu, L. Xiang, Q. Zhang, Z. Feng, J. Hu, and K. Yang, “Isac enabled cooperative detection for cellular-connected uav network,”
+     IEEE Transactions on Wireless Communications, pp. 1–1, 2024.
+ [3] Z. He, X. Chen, H. Zhang, L. Zhang, and C. Zhang, “Long-time integration for drone targets detection based on digital ubiquitous radar,”
+     in 2022 IEEE 5th International Conference on Electronic Information and Communication Technology (ICEICT), 2022, pp. 581–585.
+ [4] J. Su, G. Cui, T. Li, Y. Fan, M. Tao, H. Wang, and X. Zhang, “A novel multi-scan joint method for slow-moving target detection in the
+     strong clutter via rpca,” in 2021 IEEE International Geoscience and Remote Sensing Symposium IGARSS, 2021, pp. 4787–4789.
+ [5] J. Lu, B. Wang, H. Cha, and Q. Liu, “Range migration correction method based on improved keystone transform for gps-based passive
+     radar,” in 2022 Photonics & Electromagnetics Research Symposium (PIERS), 2022, pp. 143–150.
+ [6] Z. Niu, T. Su, and J. Zheng, “Target detection algorithm for hypersonic vehicle based on wideband radar echo model,” IEEE Access,
+     vol. 7, pp. 7678–7690, 2019.
+ [7] Z. Zhang, X. Wang, D. Huang, X. Fang, M. Zhou, and Y. Zhang, “Mrpt: Millimeter-wave radar-based pedestrian trajectory tracking for
+     autonomous urban driving,” IEEE Transactions on Instrumentation and Measurement, vol. 71, pp. 1–17, 2022.
+ [8] C. Xiaolong, G. Jian, Z. Jibin, Z. Yue, and Y. Xiaohan, “Radar fast long-time coherent integration via tr-skt and robust sparse frft,” Journal
+     of Systems Engineering and Electronics, vol. 34, no. 5, pp. 1116–1129, 2023.
+ [9] J. Shi, J. Zheng, X. Liu, W. Xiang, and Q. Zhang, “Novel short-time fractional fourier transform: Theory, implementation, and applications,”
+     IEEE Transactions on Signal Processing, vol. 68, pp. 3280–3295, 2020.
+[10] Z. Cao, J. Li, C. Song, Z. Xu, and X. Wang, “A novel cfar algorithm for multi-target detection with fmcw radar,” in GLOBECOM 2020
+     - 2020 IEEE Global Communications Conference, 2020, pp. 1–6.
+[11] T. Jeong, S. Park, J.-W. Kim, and J.-W. Yu, “Robust cfar detector with ordered statistic of sub-reference cells in multiple target situations,”
+     IEEE Access, vol. 10, pp. 42 750–42 761, 2022.
+JOURNAL OF LATEX CLASS FILES, VOL. 14, NO. 8, AUGUST 2021                                                                                 25
+
+
+
+
+[12] W. Yang, M. Ai, F. Wang, Q. Fu, M. Chai, and Y. Zhang, “Multi target detection algorithm for millimeter wave radar based on improved
+     os-cfar,” in 2023 3rd International Symposium on Computer Technology and Information Science (ISCTIS), 2023, pp. 442–447.
+[13] C. Xu, Y. Li, C. Ji, Y. Huang, H. Wang, and Y. Xia, “An improved cfar algorithm for target detection,” in 2017 International Symposium
+     on Intelligent Signal Processing and Communication Systems (ISPACS), 2017, pp. 883–888.
+[14] W. Xing, M. Liu, Y. Gui, W. Wang, and C. Hu, “Research on speed measurement in mti radars,” in 2022 2nd International Conference
+     on Computer Science, Electronic Information Engineering and Intelligent Control Technology (CEI), 2022, pp. 237–241.
+[15] M. I. Skolnik et al., Introduction to radar systems.   McGraw-hill New York, 1980, vol. 3.
+[16] M. Ash, M. Ritchie, and K. Chetty, “On the application of digital moving target indication techniques to short-range fmcw radar data,”
+     IEEE Sensors Journal, vol. 18, no. 10, pp. 4167–4175, 2018.
+[17] Y. Zhang, B. Du, L. Zhang, and S. Wang, “A low-rank and sparse matrix decomposition-based mahalanobis distance method for
+     hyperspectral anomaly detection,” IEEE Transactions on Geoscience and Remote Sensing, vol. 54, no. 3, pp. 1376–1389, 2016.
+[18] T. Zhou and D. Tao, “Godec: Randomized low-rank & sparse matrix decomposition in noisy case,” in Proceedings of the 28th International
+     Conference on Machine Learning, ICML 2011, 2011.
+[19] C.-I. Chang and J. Chen, “Orthogonal subspace projection using data sphering and low-rank and sparse matrix decomposition for
+     hyperspectral target detection,” IEEE Transactions on Geoscience and Remote Sensing, vol. 59, no. 10, pp. 8704–8722, 2021.
+[20] Y. Yang, X.-S. Wang, Y.-Z. Li, and L.-F. Shi, “Rcs measurements and isar images of fixed-wing uav for fully polarimetric radar,” in 2019
+     International Radar Conference (RADAR), 2019, pp. 1–5.
+[21] M. Pieraccini, L. Miccinesi, and N. Rojhani, “Rcs measurements and isar images of small uavs,” IEEE Aerospace and Electronic Systems
+     Magazine, vol. 32, no. 9, pp. 28–32, 2017.
+[22] S. Huang, J. Bao, Y. Hu, C. Liu, H. Chen, D. Fu, R. Yu, and T. J. Cui, “An experimental platform to simulate real-time correlated sea
+     clutter based on space-time-coding digital metasurfaces,” IEEE Antennas and Wireless Propagation Letters, vol. 23, no. 6, pp. 1675–1679,
+     2024.
+[23] A. Melebari, M. Y. Abdul Gaffar, and J. J. Strydom, “Analysis of high resolution land clutter using an x-band radar,” in 2015 IEEE Radar
+     Conference, 2015, pp. 139–144.
+[24] P. Surendran, S. J. Ko, C. U. Kang, and J. H. Lee, “Performance of uwb short range radar in weibull clutter environment,” in 2012 9th
+     European Radar Conference, 2012, pp. 194–197.
+[25] Y. Zhang, “Modeling and simulation study for radar clutter,” Master’s thesis, Northeastern University, 5 2008.
+[26] M. I. Skolnik, “Radar handbook,” 1970.
+[27] M. Mao and X. Han, “Optimization research on radar signal processing technology based on mti-mtd,” in 2023 IEEE 3rd International
+     Conference on Data Science and Computer Application (ICDSCA), 2023, pp. 480–486.
+[28] A. Ghorbani, S. M. Karbasi, and M. M. Nayebi, “A genetic approach to mti filter design with nonuniform sampling,” in 2020 IEEE Radar
+     Conference (RadarConf20), 2020, pp. 1–6.
+[29] M. Zhang and X. Li, “An efficient real-time two-dimensional ca-cfar hardware engine,” in 2019 IEEE International Conference on Electron
+     Devices and Solid-State Circuits (EDSSC), 2019, pp. 1–3.
+[30] A. Safa, T. Verbelen, L. Keuninckx, I. Ocket, M. Hartmann, A. Bourdoux, F. Catthoor, and G. G. E. Gielen, “A low-complexity radar
+     detector outperforming os-cfar for indoor drone obstacle avoidance,” IEEE Journal of Selected Topics in Applied Earth Observations and
+     Remote Sensing, vol. 14, pp. 9162–9175, 2021.
+[31] M. Kronauge and H. Rohling, “Fast two-dimensional cfar procedure,” IEEE Transactions on Aerospace and Electronic Systems, vol. 49,
+     no. 3, pp. 1817–1823, 2013.
+[32] L. Jin, D. Fengzhou, and L. Hongwei, “Analysis of wideband radar clutter and moving target detection based on real data,” CHINESE
+     JOURNAL OF RADIO SCIENCE, vol. 30, no. 5, pp. 884–889, 2015.
+

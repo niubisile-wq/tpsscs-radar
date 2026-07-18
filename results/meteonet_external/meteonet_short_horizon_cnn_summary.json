@@ -1,0 +1,32 @@
+﻿[
+  {
+    "split": "train",
+    "n": 14,
+    "mae_model": 3.028712511062622,
+    "mae_persistence": 1.810327172279358,
+    "rmse_model": 6.638557434082031,
+    "rmse_persistence": 6.059458255767822,
+    "csi20_model": 0.21406038756196485,
+    "csi20_persistence": 0.4314739564093092
+  },
+  {
+    "split": "val",
+    "n": 4,
+    "mae_model": 4.519809246063232,
+    "mae_persistence": 3.4083714485168457,
+    "rmse_model": 8.591825485229492,
+    "rmse_persistence": 8.92712688446045,
+    "csi20_model": 0.3823008849557522,
+    "csi20_persistence": 0.47363509099393375
+  },
+  {
+    "split": "test",
+    "n": 5,
+    "mae_model": 2.3642449378967285,
+    "mae_persistence": 0.5277401804924011,
+    "rmse_model": 4.696712017059326,
+    "rmse_persistence": 2.620810031890869,
+    "csi20_model": 0.0,
+    "csi20_persistence": 0.14705882352941177
+  }
+]

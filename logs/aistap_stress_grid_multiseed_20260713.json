@@ -1,0 +1,20 @@
+﻿[
+    {
+        "seed":  7,
+        "mean_trainable_pd_at_pfa1e3":  0.786,
+        "mean_trainable_pfa_at_pfa1e3":  0.001,
+        "unique_best_ranks":  "1,20,30"
+    },
+    {
+        "seed":  11,
+        "mean_trainable_pd_at_pfa1e3":  0.7651,
+        "mean_trainable_pfa_at_pfa1e3":  0.001,
+        "unique_best_ranks":  "1,20,30"
+    },
+    {
+        "seed":  23,
+        "mean_trainable_pd_at_pfa1e3":  0.786,
+        "mean_trainable_pfa_at_pfa1e3":  0.001,
+        "unique_best_ranks":  "1,15,20,30"
+    }
+]

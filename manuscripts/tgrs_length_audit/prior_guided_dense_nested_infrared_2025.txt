@@ -1,0 +1,944 @@
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025                                                                                     5002015
+
+
+
+
+       Infrared Small Target Detection Based on Prior
+               Guided Dense Nested Network
+               Chang Liu , Xuedong Song, Dianyu Yu , Linwei Qiu , Fengying Xie , Member, IEEE,
+                               Yue Zi , and Zhenwei Shi , Senior Member, IEEE
+
+
+   Abstract— Infrared small target detection (IRSTD) has been                     Index Terms— Deep learning, dense nested network, high-
+widely applied and developed in military and civilian fields,                  order Riesz transform, infrared small target detection (IRSTD),
+playing a vital role. Despite the extensive research foundation                traditional manual feature.
+of traditional manual feature-based methods, they are still
+constrained by the inherent problem of infrared small targets
+lacking prior features. In recent years, the advancement of deep                                          I. I NTRODUCTION
+learning methods has enriched the research landscape in this
+field, yet they are still constrained by the imbalance of positive
+and negative samples between the target and the background.
+To address these issues, we propose a novel prior guided
+dense nested network (PGDN-Net), which ingeniously integrates
+                                                                               I   NFRARED small target detection (IRSTD) is currently
+                                                                                   widely used in military early warning [1], search and
+                                                                               tracking [2], guidance and anti-missile [3], remote sensing,
+traditional manual features with a deep learning network model.                surveillance, and reconnaissance [4], among others. It also
+First, three prior features are extracted, including the high-                 plays an important role in the civilian field [5], such as search
+order Riesz transform feature, the compactness and heterogeneity               and rescue of maritime personnel, warning of forest fires, and
+feature (CH), and the corner feature of the structure tensor (ST).
+Then, these features are input into a dense nested network for                 so on. Due to the long distance of detection, small targets
+guidance, supported by a two-orientation attention aggregation                 in infrared images usually occupy a few pixels and exhibit
+module and a channel and spatial attention module. Different                   minimal shape or texture characteristics [6]. Furthermore,
+features play their respective guiding roles in different depths of            various factors like hardware system errors and disturbances
+the network. Through multiple attention mechanisms and feature                 from atmospheric turbulence lead to a reduced signal-to-noise
+fusion operations on the interested target area, the extraction
+and preservation of target features can be improved, while                     ratio (SNR) in the infrared image, potentially causing the
+easily removing irrelevant backgrounds. Experiments on public                  target to be obscured by background clutter. In the early years,
+datasets demonstrate the effectiveness and progressiveness of                  the Society of Photo-Optical Instrumentation Engineers (SPIE)
+our PGDN-Net. Compared with other state-of-the-art methods,                    defined small targets as those with image sizes smaller than
+it achieves better performance in background suppression, target               81 pixels (9 × 9) [7]. This type of target typically exhibits
+enhancement, probability of detection, and false alarm rate.
+In addition, the PGDN-Net model can effectively maintain                       strong central infrared characteristics and radiates attenuation
+and restore the original shape of the target while performing                  in all directions [8].
+robust detection, which is beneficial for subsequent fine-grained                 The current challenges faced by IRSTD can be summarized
+recognition tasks.                                                             into the following three points.
+  Received 14 September 2024; revised 18 January 2025 and 10 February
+                                                                                  1) Lack of prior features of the target: The long
+2025; accepted 11 February 2025. Date of publication 20 February 2025; date           transmission distances result in smaller target sizes, with
+of current version 27 February 2025. This work was supported in part by the           a lack of texture and shape features, making traditional
+National Natural Science Foundation of China under Grant 62475006 and
+Grant 62125102 and in part by the National Key Research and Development
+                                                                                      target detection methods unsuitable for detecting such
+Program of China under Grant 2022ZD0160401. (Corresponding author:                    point targets [9].
+Fengying Xie.)                                                                    2) High background complexity: The background in
+  Chang Liu is with the Tianmushan Laboratory, Hangzhou 311115, China,
+also with the Department of Aerospace Information Engineering, School of
+                                                                                      infrared images is complex and varied. In strong
+Astronautics, Beihang University, Beijing 100191, China, and also with the            noise or high brightness backgrounds, targets are
+Aerospace Information Research Institute, Chinese Academy of Sciences,                easily submerged or disturbed, and sometimes even
+Beijing 100190, China (e-mail: by1915010@buaa.edu.cn).
+  Xuedong Song is with Shanghai Institute of Satellite Engineering, Shanghai
+                                                                                      become invisible, which poses a great challenge to the
+201109, China (e-mail: owensong96@163.com).                                           detection performance and multiscene adaptability of the
+  Dianyu Yu, Linwei Qiu, and Fengying Xie are with the Tianmushan                     detectors [10].
+Laboratory, Hangzhou 311115, China, and also with the Department
+of Aerospace Information Engineering, School of Astronautics, Beihang
+                                                                                  3) Imbalance of positive and negative sample information:
+University, Beijing 100191, China (e-mail: tcdd20010521@buaa.edu.cn;                  Background information occupies the vast majority of
+qiulinwei@buaa.edu.cn; xfy_73@buaa.edu.cn).                                           pixels in infrared images, and the proportion of pixels
+  Yue Zi is with the School of Electrical and Information Engineering,
+Changsha University of Science and Technology, Changsha 410114, China
+                                                                                      for infrared small targets is extremely low. Therefore,
+(e-mail: ziyue91@csust.edu.cn).                                                       there is an extreme imbalance of information between
+  Zhenwei Shi is with the Department of Aerospace Information Engineering,            the positive and negative samples of the target and
+School of Astronautics, Beihang University, Beijing 100191, China (e-mail:
+shizhenwei@buaa.edu.cn).
+                                                                                      background, which can easily lead to false alarms in
+  Digital Object Identifier 10.1109/TGRS.2025.3542232                                 detection [11].
+               1558-0644 © 2025 IEEE. All rights reserved, including rights for text and data mining, and training of artificial intelligence
+                     and similar technologies. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                                     See https://www.ieee.org/publications/rights/index.html for more information.
+       Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+5002015                                                                     IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025
+
+
+
+   The field of IRSTD has evolved over several decades,
+with experts and scholars consistently proposing and refining
+solutions to address the aforementioned challenges, aiming to
+improve detection performance. The IRSTD methods can be
+divided into two categories [12]: sequence-frame detection
+method and single-frame detection method. The sequence-
+frame detection method can obtain satisfactory detection
+results by extracting inter-frame feature, while existing
+methods have richer and more diverse extraction of inter-frame
+features. The triple-domain strategy (Tridos) method [13]
+                                                                              Fig. 1. Scheme comparison diagram of the traditional model-driven method,
+extracts infrared target feature learning comprehensively in                  the data-driven deep learning method, and the proposed method for IRSTD.
+spatiotemporal-frequency domains, while a sliced spatio-
+temporal network (SSTNet) method [14] explores the
+cross-slice spatio-temporal motion modeling for infrared dim-                 typical methods and the proposed method. On the one hand,
+small targets. However, due to the advantages of low data                     traditional prior features can guide the focus of the network,
+demand, high computational efficiency, and strong algorithm                   effectively preserving target feature information within deep
+flexibility in single-frame detection technologies, the single-               networks. On the other hand, dense nested network structures
+frame detection method has received much attention in                         can achieve feature extraction of targets at multiple scales,
+recent years. By using nonlinear filtering [15], morphological                enabling progressive feature interaction and enhancement. The
+operations [16], and other techniques to focus on background                  proposed PGDN-Net model can combine the advantages of
+information, the infrared background can be predicted, and                    traditional and deep learning methods to improve detection
+small targets can be detected and extracted through difference                performance. Specifically, we introduce the high-order Riesz
+calculation. There are also many methods from the perspective                 transform features, compactness and heterogeneity features
+of the human visual system (HVS) that enhance the local                       (CHs), and corner features of the structure tensor (ST) of
+salient features of the target based on measures such                         the target into a dense nested network, and combine two-
+as contrast measurement [17], saliency enhancement [18],                      orientation attention aggregation module and channel and
+and image information entropy [19], while suppressing the                     spatial hybrid attention module to complete feature extraction
+interference from clutter and noise in the background to                      and segmentation detection of the target.
+achieve robust IRSTD. In addition, some methods utilize                          In this article, we propose a novel PGDN-Net to achieve
+the structural information of images and transform the                        IRSTD. The main contributions of the proposed method can
+detection task into an optimization problem of matrix                         be summarized as follows.
+decomposition [20], [21]. On the one hand, it can restore the                    1) To explore the potential features of infrared small
+low-rank background matrix, and on the other hand, it can                            targets, we propose a method for extracting high-
+also restore the sparse target matrix, ultimately achieving the                      order Riesz features (HRs). This method is based on
+separation of both matrices and facilitating target detection.                       the Riesz transform theory and effectively extracts the
+These methods are all traditional model-driven methods,                              target’s local feature information using corresponding
+and although they have lower computational complexity,                               convolutional templates.
+most of them rely heavily on manual feature settings.                            2) To address the challenges of limited prior features, high
+In recent years, data-driven deep learning methods have                              background complexity, and imbalanced positive and
+been widely applied in the field of image processing owing                           negative samples, we propose the PGDN-Net, which
+to the powerful feature extraction ability of convolutional                          combines traditional and deep learning methods and
+neural networks. Several studies on IRSTD, based on Nash                             guides the dense nested network using prior features.
+equilibrium [22], [23], task transformation [24], [25], attention                    This method has demonstrated superior performance in
+and semantic features [26], [27], multiscale information [28],                       various indicators.
+[29], dense nested structures [30], [31], and multisupervision                   3) To effectively integrate manually extracted features
+mechanisms [32], [33], have achieved satisfactory results.                           with the deep learning network, multiple attention
+However, the problem of imbalanced positive and negative                             mechanisms are introduced to preserve and focus on the
+sample information in infrared images remains a significant                          features of the target area at each layer of the PGDN-
+challenge for deep learning methods. The loss of target                              Net. This approach ensures that the output not only
+features in deep networks and the false detection of interfering                     detects the target but also accurately reflects its original
+elements in the background significantly degrade detection                           shape.
+performance.                                                                     The remainder of this article is organized as follows.
+   To address the current challenges in IRSTD and alleviate                   Section II gives a brief review of related work on IRSTD
+the shortcomings of traditional and deep learning methods,                    methods. In Section III, we introduce the architecture of our
+we propose a prior guided dense nested network (PGDN-Net)                     PGDN-Net model. In Section IV, we conduct experiments
+model, which combines traditional prior feature information                   on comparison with state-of-the-art methods, as well as
+with a deep learning model to achieve robust and accurate                     experiments on the ablation of our method. At last, the
+IRSTD. Fig. 1 shows the comparison of the different                           conclusion of this article is presented in Section V.
+
+      Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+LIU et al.: INFRARED SMALL TARGET DETECTION BASED ON PRIOR GUIDED DENSE NESTED NETWORK                                                              5002015
+
+
+
+                      II. R ELATED W ORK                                     based on the local salient features of the target, leading to good
+  Based on the feature information used in IRSTD, the                        generalization ability. However, due to limited prior feature
+detection method can be classified into four categories:                     information of the target, some false alarms may be detected
+1) background feature-based method; 2) target feature-based                  in the background.
+method; 3) low-rank and sparse matrix decomposition-based
+method; and 4) deep learning-based methods. This section                     C. Low-Rank and Sparse Matrix Decomposition-Based
+provides a concise overview of the relevant research on these                Method
+four types of detection methods.                                                The method based on low-rank and sparse matrix
+                                                                             decomposition transforms the detection task into an opti-
+A. Background Feature-Based Method                                           mization problem involving the decomposition of a low-rank
+    Background feature-based methods primarily utilize the                   background matrix and a sparse target matrix. Based on
+continuity and similarity features of the background as                      constraints on background components, various effective
+the main basis for the design of the detection method.                       strategies have emerged, such as infrared patch-image (IPI)
+These methods typically begin by filtering or smoothing out                  model [20], non-negative infrared patch-image model based
+target information unrelated to the background to predict                    on partial sum minimization of singular values (NIPPS) [44],
+the background information. Then, they use the difference                    non-convex rank approximation minimization (NRAM) [45],
+operation between the original image and the predicted                       and the edge and corner awareness-based spatial–temporal
+background image to achieve rough detection of infrared                      tensor (ECA-STT) [46]. Similarly, constraints on the target
+small targets. Subsequently, threshold suppression is used to                component have also been introduced into some innovative
+suppress the background of the infrared image, achieving the                 methods, such as low-rank and sparse representation (LRSR)
+purpose of detecting and extracting targets. Representative                  [47], reweighted infrared patch-tensor model (RIPT) [21],
+techniques include Max Mean and Max Median nonlinear                         tensor creation, and Tucker decomposition (TCTD) [48].
+filtering [15], 2-D least-mean-square (TDLMS) filtering [34],                While this method effectively decomposes the background
+Top Hat morphological filtering [16], bilateral filtering [35],              and target autonomously, it sometimes inaccurately categorizes
+etc. While these methods perform well in flat backgrounds,                   background clutter and corners as sparse target components.
+they exhibit poor robustness in complex backgrounds and                      In addition, the construction of tensor blocks and the iterative
+are highly susceptible to strong edges and noise interference,               optimization of matrix decomposition decreases computational
+resulting in false alarms and missed detections.                             efficiency, leading to longer execution periods and hindering
+                                                                             the achievement of real-time demands.
+B. Target Feature-Based Method
+    Target feature-based methods primarily utilize the local                 D. Deep Learning-Based Method
+saliency features of the target as the prior information for                    Data-driven deep learning methods place significant
+detection. Although this prior information is relatively scarce,             demands on the quantity, quality, and richness of the datasets.
+potential feature information can still be mined based on                    However, IRSTD datasets are limited, with the amount
+this prior knowledge to enhance the target’s saliency while                  and variety of publicly available samples far inferior to
+suppressing background clutter and noise. After the classic                  those of other image types. Despite these challenges, deep
+local contrast measurement (LCM) method [17] was first                       learning methods have achieved remarkable progress in the
+proposed, a large number of optimized and variant versions                   field of IRSTD, leveraging their formidable capabilities in
+have been derived, such as improved LCM (ILCM) [7], relative                 automatic feature extraction and representation. To tackle the
+LCM (RLCM) [36], tri-layer LCM (TLLCM) [37], and local                       Nash equilibrium problem between false alarms and missed
+energy factor (LEF) [38]. The saliency filtering enhancement                 alarms in detection tasks, two models have emerged: miss
+strategy uses the pixel value distribution characteristics of                detection versus false alarm (MDFA) model [22] based on
+infrared small targets with high brightness at the center and                conditional GAN and the PixelGame model [23] based on
+attenuated radiation in all directions. By considering pixel                 fully dilated convolution network (FDCN) [49]. Both models
+intensity and gradient within the target area, local window                  have devised distinct adversarial strategies to optimize the
+filters have been designed to enhance the target and suppress                equilibrium issue. Given the extremely low pixel ratio of
+the background, including methods like fast saliency [18],                   infrared small targets and the potential issue of target loss
+novel local contrast descriptor (NLCD) [39], fast adaptive                   in the network model after multiple layers of convolution,
+masking and scaling with iterative segmentation (FAMSIS)                     some methods have approached the problem by treating the
+[40], and variance difference (VARD) [41]. The grayscale                     target as noise, thereby converting the detection task into
+difference between small target areas and their surrounding                  a denoising task, such as denoising autoencoder network
+background areas in infrared images makes image entropy                      (DAE) [24], dilated residual U-Net (DRUNet) [25], and
+an effective information for IRSTD, such as multiscale local                 mask-aware dynamic filtering (MADF) [50]. Some network
+gray dynamic range (MLGDR) [42], derivative entropy-based                    models, such as asymmetric contextual modulation (ACM)
+contrast measure (DECM) [43], and multidirectional local                     [51], attentional local contrast network (ALCNet) [28], and
+difference measure weighted by entropy (MDLDE) [19].                         enhanced asymmetric attention U-Net (EAAU-Net) [29],
+In this type of method, effective detectors can be designed                  further emphasize the attention to the target area by combining
+
+     Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+5002015                                                                     IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025
+
+
+
+
+Fig. 2. Overview of the proposed method. The blue, green, red, and white boxes represent the corner feature of the ST, the HR, the CH, and the input
+image, respectively. The blue, green, and red arrows, respectively, represent the extraction process of traditional manual features about ST, HR, and CH.
+
+
+
+semantic features with contextual information. Furthermore,                      2) The dense nested network module is composed of
+to address uncertainty in target sizes, multiscale feature                          multiple U-shape sub-networks stacked on top of each
+analysis and fusion methods have been introduced. Models                            other. Multiple nodes are applied on the path between the
+like infrared small-target detection U-Net (ISTDU-Net) [32],                        sub-networks, which consist of encoders and decoders,
+multiscale local contrast learning network (MLCL-Net)                               to receive feature information from the current layer and
+[11], and one-stage cascade refinement network (OSCAR)                              the adjacent upper and lower layers.
+[33] have all employed multiscale feature extraction and                         3) The feature pyramid fusion module is used to aggregate
+propagation to improve the detection robustness. Dense nested                       multilayer features at different depths within the
+networks [30], [31], [52] are similar to multiscale feature                         network. It upsamples the multilayer features to a unified
+methods, which utilize a progressive feature interaction and                        size, and then fuses the shallow-layer features rich in
+fusion strategy to effectively integrate low-level detailed                         spatial and contour information with the deep-layer
+features with high-level semantic features. This approach is                        features rich in semantic information to obtain a hybrid
+one of the effective methods for IRSTD. Nowadays, with the                          feature map.
+deepening exploration of deep learning, remote sensing image                     4) The target prediction module inputs mixed feature maps
+captioning [53], [54] is constantly developing. In the field                        into a 1 × 1 convolutional kernel module to achieve
+of target detection, incorporating object counts into remote                        feature extraction and information exchange across
+sensing image captioning [55] is beneficial for improving                           different channels, ultimately achieving the detection of
+the intuitiveness of detection results and is one of the                            infrared small targets.
+future development directions. Deep learning methods heavily
+depend on the quantity and diversity of training datasets, which              B. Prior Feature Extraction
+remains a significant limitation in the field. Additionally, the                 The dense nested network structure was initially designed
+lack of shape features and prominent textures in infrared small               to accommodate targets of different scales. The feature fusion
+targets poses difficulties in feature learning and extraction,                process between the upper, lower, and current layers is
+which may sometimes hinder their practical application in                     primarily implemented to avoid the loss of small infrared
+engineering.                                                                  targets in the deeper layers. However, due to the small size and
+                                                                              limited features of the targets, there is an extreme imbalance
+          III. P RIOR G UIDED D ENSE N ESTED N ETWORK                         in the data volume compared to the background information.
+A. Overall Architecture                                                       The target in the network is easily affected by background
+   The overall architecture of the PGDN-Net model is shown in                 clutter, which makes feature extraction difficult and leads to
+Fig. 2. It consists of a prior feature extraction module, a dense             bias in the learning of the network model. Introducing prior
+nested network module, a feature pyramid fusion module, and                   features aims to guide the dense nested network in learning,
+a target prediction module.                                                   extracting, and retaining feature information of the target area
+   1) The prior feature extraction module extracts three                      more accurately. In this method, three main types of target
+      different traditional handcrafted features, including the               prior features are extracted, such as the HR, the CH of the
+      HR, the CH, and the corner feature of the ST.                           target, and the corner feature of the ST.
+
+      Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+LIU et al.: INFRARED SMALL TARGET DETECTION BASED ON PRIOR GUIDED DENSE NESTED NETWORK                                                               5002015
+
+
+
+
+Fig. 3.    From left to right: constant signal with intrinsic dimension 0,
+linear signal with intrinsic dimension 1, and other signal with intrinsic     Fig. 4. R12 result of high-order Riesz transform for infrared small target.
+dimension 2.                                                                  The target regions are marked with red boxes.
+
+
+   1) High-Order Riesz Feature: Two-dimensional image
+signals can be divided according to different intrinsic
+dimensions to express the number of degrees of freedom
+required to describe the local structure [56]. The intrinsic
+dimension of a constant signal that remains constant is 0, the
+intrinsic dimension of lines and edges is 1, and the intrinsic
+dimension of other patterns is 2, as shown in Fig. 3 [56]. The                Fig. 5.    Schematic of target region and feature extraction operator for
+                                                                              high-order Riesz transform.
+features of the local signal with intrinsic dimension 2 have
+geometric and structural information, which determines the
+quality of the interpretation of the image and the analysis of
+the processing.                                                                  The second-order Riesz transform further emphasizes the
+   The Riesz transform is a complex transformation commonly                   features of the edge and the line through R11 and R22 ,
+used to analyze the phase and amplitude of the 2-D signal.                    while using R12 to characterize the feature information of the
+It is a natural multidimensional extension of the Hilbert                     intersection area of edges and lines. This is because R12 of the
+transform [57] and can obtain orthogonal pairs R1 and                         second-order Riesz transform is used for feature extraction
+R2 of non-directional images, which is 90◦ phase-shifted with                 on both the x- and y-axes, which can effectively perceive
+respect to the predominant orientation at each point in the                   prominent point signals in multiple directions in the image,
+original image [58]. Under 2-D condition, the frequency-                      perfectly matching the features of infrared small target areas.
+domain representation of the Riesz transform is as follows:                   Therefore, the target area in R12 exhibits significant features
+                                                                              of local symmetry, as shown in Fig. 4.
+                                    w1       w2 T
+                                               
+                                                                                 A simple detection operator FHR is designed to extract
+         (R1 (w), R2 (w)) = − j
+                         T
+                                       ,−j          IF      (1)
+                                   ∥w∥      ∥w∥                               locally symmetric salient target regions in R12 , and generate
+                                                                              prior information about the high-order Riesz transform
+where w = [w1 , w2 ] is a 2-D vector, I F is the Fourier
+                                                                              features HR. The grid-shaped symmetric detection operator
+transform of image I , and R1 , R2 represent the two
+                                                                              FHR is constructed by a 2-D Gaussian function. Its shape
+components of the Riesz transform, respectively. The product
+                                                                              structure and intensity distribution are similar to the target area
+in the frequency domain corresponds to the convolution
+                                                                              in R12 , both symmetrical about the diagonal axis, as shown
+operation in the spatial domain, so the 2-D Riesz transform in
+                                                                              in Fig. 5. The detection operator FHR is used to enhance
+the spatial domain can be expressed as
+                                                                              the saliency of the target area, providing effective prior
+                                                T                           feature information HR. Subsequently, the two-orientation
+                                  x          y
+       (R1 (x), R2 (x))T = − j        ,−j           ∗I     (2)                attention aggregation module is used to characterize the shape
+                                ∥(x)∥      ∥(x)∥
+                                                                              information of the target, guiding the subsequent training
+where x = [x, y], and “∗” represents the convolution                          and learning of the network model to achieve precise target
+operation.                                                                    detection.
+   The first-order Riesz transform is used to extract the                        2) Compactness and Heterogeneity Feature: The com-
+local linear features of the image [59], but it cannot fully                  pactness feature is reflected in the similarity and high
+characterize its features. Therefore, the second-order Riesz                  intensity of the pixel values within the target area, while the
+transform is utilized to extract the intrinsic 2-D structure                  heterogeneity feature is manifested in the significant difference
+of local regions in the image to provide a more detailed                      in pixel intensity between the target and its surrounding
+expression of the image features in this method. The second-                  background [39]. In this method, these two types of potential
+order Riesz transform is obtained by performing the Riesz                     features are introduced into the network to guide the model
+transform again based on the results of the first-order Riesz                 to learn the features of the potential target regions while
+transform                                                                     preserving the target features in deep layers.
+                    
+                                                                                 Specifically, we use a three-layer detection window
+                     R11 = R1 {R1 (I )}
+                    
+                                                                              designed in our previous IRSTD research work [60], consisting
+                       R12 = R2 {R1 (I )}                 (3)
+                                                                              of an inner layer L i , a middle layer L m , and an outer layer L o .
+                       R22 = R2 {R2 (I )}.
+                    
+                    
+                                                                              These three layers correspond to the center area of the target,
+
+      Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+5002015                                                                          IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025
+
+
+
+
+                                                                                  Fig. 7. Comparison diagram of vanilla U-Net and dense nested network
+Fig. 6.    Schematic of the three-layer local detection window.                   structure.
+
+
+
+the transition area between the target and the surrounding                           The corner feature prior information ST is input to various
+background, and the surrounding background area of the                            shallow nodes in the network through the channel and spatial
+target, as shown in Fig. 6.                                                       hybrid attention module to emphasize the importance of the
+   Here, the average pixel value ( P̄ i ) of the inner layer L i                  target area and suppress the simple background.
+and the maximum pixel value ( P̂ o ) of the outer layer L o
+are calculated separately. Based on the prior characteristics
+of compactness and heterogeneity, the binary CHs can be                           C. Dense Nested Network Structure
+obtained, which is the potential region of the target                                The dense nested network forms the main structure of the
+                      (                                                           PGDN-Net model, which is composed of multiple subnets of
+                         1, P̄ i (x, y) ≥ P̂ o (x, y)
+           CH(x, y) =                                        (4)                  U-Net stacked together. By adding multiple nodes along the
+                         0, P̄ i (x, y) < P̂ o (x, y)                             path composed of the encoder and decoder, a dense nested
+where (x, y) represents the pixel coordinates of the center                       structure is constructed, as illustrated in Fig. 7. The progressive
+point of the three-layer local detection window.                                  feature interaction strategy in the dense nested structure allows
+   The characteristics of compactness and heterogeneity                           each node in the intermediate layers of the network to receive
+provide important reference information to guide the model                        feature maps from both the current depths and adjacent
+in subsequent target extraction.                                                  depths, effectively overcoming the limitations of vanilla
+   3) Corner Feature of the ST: The ST of the image                               U-Net where feature information is transmitted only within
+can effectively estimate the local structure information [21],                    the same network depth. This enables the network to adapt
+providing a rational basis for distinguishing the flat, edge,                     to targets of different sizes. Moreover, feature information
+and corner areas. Small targets in the infrared image exhibit                     can also be transmitted between non-neighboring nodes of the
+significant geometric properties in the corners. The ST is                        same network depth to preserve the target’s feature information
+defined as follows:                                                               as much as possible and prevent the loss of target features.
+                                                                                     Specifically, the number of layers in a dense nested network
+                Jα (∇µτ ) = G α ∗ (∇µτ ⊗ ∇µτ )                                    is defined as i (i = 0, 1, 2, . . .), and the number of nodes in
+                               G α ∗ Ix 2                                         each layer is defined as j ( j = 0, 1, 2, . . .). L i, j represents the
+                                                       
+                                           G α ∗ Ix I y
+                          =                                                (5)
+                              G α ∗ Ix I y Gα ∗ Iy 2                              output feature map of the jth node in the ith layer. The input
+                                                                                  of each initial node (i.e., j = 0) is only the downsampling
+where µσ represents Gaussian smoothed image µ with
+                                                                                  feature map of the previous initial node, where L i,0 is
+variance τ > 0, G α indicates a Gaussian function with
+standard deviation α, ⊗ represents the Kronecker product,                                         L i,0 = Pmax C L i−1,0 , i > 0
+                                                                                                                         
+                                                                                                                                                      (7)
+∇ represents the gradient, Ix and I y represent the gradient
+of µσ along the x- and y-axes, respectively. Jα is a                              where Pmax [·] represents the max pooling operation and C[·]
+symmetric positive semi-definite matrix, therefore there are                      represents the cascaded convolution operation.
+two orthogonal eigenvectors and corresponding eigenvalues λ1                         The input to the nodes in the intermediate layers of the dense
+and λ2 . We define λ1 as the larger of the two eigenvalues.                       nested network consists of feature maps from three different
+Corresponding to the image, each pixel has two feature values                     depth levels. Considering the existence of non-neighboring
+λ1 and λ2 . By comparing their relationships, the local structure                 skip connections at the same depth, the calculation formula
+information of the image can be reflected as follows.                             for intermediate layer node L i, j is as follows:
+   1) The flat area: λ1 ≈ λ2 ≈ 0.                                                          n         j−1                                   o
+   2) The edge area: λ1 ≫ λ2 ≈ 0.                                                  L i, j = C L i,k k=0 , Pmax C L i−1, j , U C L i+1, j−1
+                                                                                                                            
+   3) The corner area: λ1 ≫ λ2 ≫ 0.
+   In this method, the corner feature of the ST ST in                                                                                                    (8)
+infrared image is derived based on the corner strength
+                                                                                  where i > 1, j > 0, U [·] represents the upsampling
+function [61], [62]                                                                                         j−1
+                                                                                  operation, and C[(L i,k )]k=0 represents the convolution result
+                                    λ1 · λ2                                       of connecting the feature maps of all nodes before the node
+                            ST =            · λ1 .                         (6)
+                                    λ1 + λ2                                       in the current layer.
+
+          Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+LIU et al.: INFRARED SMALL TARGET DETECTION BASED ON PRIOR GUIDED DENSE NESTED NETWORK                                                                   5002015
+
+
+
+
+                                                                                  Fig. 10.   Schematic of channel attention module.
+
+
+
+
+Fig. 8.    Schematic of two-orientation attention aggregation module.
+                                                                                  Fig. 11.   Schematic of spatial attention module.
+
+
+
+                                                                                  As shown in Fig. 10, the module first compresses the
+                                                                                  spatial dimension of the input feature map, aggregates spatial
+                                                                                  information through max pooling and average pooling, and
+                                                                                  then uses a shared network to learn the feature information on
+Fig. 9.    Schematic of channel and spatial attention module.
+                                                                                  the channel dimension, assigning different weight information
+                                                                                  to each channel. Finally, the two feature vectors produced by
+                                                                                  the shared network are merged, and the weight matrix of the
+D. Attention Mechanism
+                                                                                  channel dimension, namely, the channel attention information,
+   1) Two-Orientation Attention Aggregation Module: The                           is obtained through activation function mapping processing.
+two-orientation attention aggregation module is used to                              The channel attention operation can be represented by the
+refine the high-order Riesz transform features HR at various                      following formula:
+scales. Here, the high-order Riesz transform feature HR
+corresponding to the size of the ith layer is defined as HRi , and                      Mc (F) = FS {MLP[Pmax (F)] + MLP[Pavg (F)]}                        (10)
+the output result of the two-orientation attention aggregation
+                                                                                  where Mc denotes the weight matrix of channel attention, F is
+module is TOAAi . As shown in Fig. 8, the two-orientation
+                                                                                  the input feature information to the channel attention module,
+attention aggregation module consists of two parallel attention
+                                                                                  MLP represents the shared multilayer perceptron, Pmax and
+modules, each of which generates attention feature maps along
+                                                                                  Pavg represent the max-pooling and average-pooling operation,
+one direction (column or row) to extract information about
+                                                                                  respectively.
+the target in two directions in the high-order Riesz transform
+                                                                                       b) Spatial attention module: Spatial attention focuses on
+features. Finally, summarize the attention feature maps into
+                                                                                  “where the effective information is” in the image, and it works
+the output of the entire module.
+                                                                                  in conjunction with channel attention to achieve functional
+   The output of the two-orientation attention aggregation
+                                                                                  complementarity. As shown in Fig. 11, the module first
+module can be expressed as
+                                                                                  compresses the number of channels, performs max-pooling
+            TOAA(HRi ) = Fs {Fr [Fb (HRi )]}HRi                                   and average-pooling operations in the channel dimension, and
+                        + Fs {Fc [Fb (HRi )]}HRi + HRi                     (9)    then connects to obtain a feature map with two channels.
+                                                                                  Following convolution, the spatial attention feature is derived
+where Fs denotes the sigmoid function, Fb is a bottleneck                         by applying an activation function.
+architecture to restrict high-frequency noise in images, Fr                          The spatial attention operation can be represented by the
+and Fc represent the deformable convolution in the row and                        following formula:
+column directions, respectively.
+   The two-orientation attention aggregation module promotes                                    M S (F) = FS {Conv[Pmax (F); Pavg (F)]}                    (11)
+the PGDN-Net model to extract shape information of                                where M S denotes the weight matrix of spatial attention and
+significant regions of high-order Riesz prior features of the                     Conv is the convolution operation.
+target from two directions. It inserts the integrated output
+into the initial nodes of each layer to guide the network in
+preserving target features and extracting target shapes.                          E. Prior Feature Guidance
+   2) Channel and Spatial Attention Module: As shown in                              In the proposed PGDN-Net model, three traditional manual
+Fig. 9, the channel and spatial attention module is composed of                   features are extracted: high-order Riesz transform features,
+two cascaded units of channel attention and spatial attention,                    CHs, and corner features derived from ST of the target.
+which are connected in series to adaptively enhance the region                    As shown in Fig. 12, these three types of prior targets act at
+of interest in the image.                                                         different depths of the network, thus exerting different guiding
+     a) Channel attention module: Channel attention focuses                       functions.
+more on “what useful information is” in the image. Therefore,                        First, the corner features of the ST are input into the bottom
+each channel of the feature map is used as a feature detector.                    layer of the network for simple background filtering and
+
+          Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+5002015                                                                           IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025
+
+
+
+
+                                                                                   Fig. 13.    Examples of dataset image. The first line is the images from
+                                                                                   NUDT-SIRST for training. The second and third lines are the images from the
+                                                                                   single-frame and sequence-frame datasets for testing. The targets are marked
+                                                                                   with a red box.
+
+
+
+                                                                                   computational methods for the objective evaluation metrics
+                                                                                   employed. Then, the implementation details of the experiments
+Fig. 12. Schematic of three prior feature guidance strategies. The blue area
+represents the guidance section of the corner feature of the ST, the green area
+                                                                                   are listed, and qualitative and quantitative experiments with
+represents the guidance section of the HR, and the red area represents the         other state-of-the-art methods are conducted. Finally, the
+guidance section of the compact and heterogeneity feature CH.                      ablation experiment is conducted on the PGDN-Net model to
+                                                                                   verify the effectiveness and functionality of each module.
+
+elimination, in order to focus on the strong corner regions
+in the image and avoid information in the continuous flat                          A. Dataset
+irrelevant regions. Second, the HR is inputted in the initial                         In this article, we train various deep learning models
+nodes of each layer in the network to enhance the feature                          on the NUDT-SIRST dataset [31], which recognizes the
+strength of the target in each layer. Under the action of the                      background through a scene-aware model and adds appropriate
+two-orientation attention aggregation module, the extraction of                    and reasonable targets. The background includes clouds, cities,
+target shape information can be achieved. Finally, the compact                     oceans, fields, and strong light. The target sizes and clutter
+and heterogeneity features CH are inputted into the top level                      types are diverse, and the targets have rich situations and high-
+of the network to preserve the deep target features. Due to                        precision ground truth. The test data consists of an infrared
+the fact that compactness and heterogeneity are the most                           single-frame dataset [51] and six groups of sequence-frame
+fundamental features of the target, any possible target area                       datasets [63], [64], [65]. Fig. 13 shows some examples of
+can be effectively preserved, thereby avoiding the occurrence                      training data and test data, with targets marked in red boxes.
+of missed alarms.
+                                                                                   B. Evaluation Metrics
+F. Loss Function                                                                      Despite the multitude of objective metrics for evaluating
+   In the proposed PGDN-Net model, we use the binary                               IRSTD methods, they can generally be categorized into several
+cross-entropy loss (BCELoss) function for network parameter                        aspects, including but not limited to: the effect of background
+optimization. BCELoss is commonly used for loss calculation                        suppression, the effect of target enhancement, and detection
+in binary classification problems. In this method, the introduc-                   performance (such as detection rate and false alarm rate).
+tion of BCELoss can effectively evaluate the performance of                           In this article, we use background suppression factor (BSF)
+IRSTD models in predicting targets. The calculation formula                        and contrast gain (CG) to evaluate the ability of background
+for BCELoss is as follows:                                                         suppression and target enhancement, respectively. We also
+                                                                                   introduce the receiver operating characteristic (ROC) curve,
+       LossBCE (Pre,GT) = − Pre · log(GT) + (1 − Pre)
+                              
+                                                                                  the area under the ROC curve (AUC), and the intersection
+                                   · log(1 − GT)            (12)                   over union (IoU) to analyze the overall detection performance
+where Pre and GT represent the predicted result of the network                     of the IRSTD methods.
+and the ground truth of the training sample, respectively, and                        BSF is calculated in the following manner [46]:
+“·” indicates the multiplication.                                                                                     σin
+                                                                                                              BSF =                            (13)
+                                                                                                                     σout
+       IV. E XPERIMENTAL R ESULTS AND D ISCUSSION                                  where σ represents the gray standard deviations of the whole
+   To analyze the detection performance of the PGDN-Net                            background in the image, and “in” and “out” indicate the input
+model, we utilize some commonly objective evaluation metrics                       image and the predicted result, respectively. The background
+and compare them with other effective methods through rich                         suppression ability is directly proportional to the value of BSF.
+experiments. Initially, we present the utilized public datasets,                     There are two calculation approaches for CG [39], [66],
+followed by an in-depth explanation of the definitions and                         which are used to reflect the enhancement effect of detection
+
+       Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+LIU et al.: INFRARED SMALL TARGET DETECTION BASED ON PRIOR GUIDED DENSE NESTED NETWORK                                                               5002015
+
+
+
+methods on the overall target and the center point of the target              like TopHat [16], target feature-based methods like NLCD [39]
+                                                                              and LEF [38], low-rank and sparse matrix decomposition-
+                                    t¯ − b̄ out
+                          CGo =                                               based methods like PSTNN [62] and NTFRA [63], as well as
+                                     t¯ − b̄ in                               deep learning-based methods like MDFA [22], ISTDU [32],
+                                    tˆ − b̄ out                               DNANet [31], HCFNet [68], and SCTNet [69]. All of
+                          CGc =                                      (14)     the above methods use the public code provided and the
+                                     tˆ − b̄ in
+                                                                              reproduced code, and carry out relevant experiments according
+where t¯ and tˆ indicate the average and maximum pixel value                  to the default parameter settings in the original paper.
+of the target region, respectively. b̄ is the average pixel value                1) Qualitative Analysis: Fig. 14 shows some example
+of the background area surrounding the target. |·| is the symbol              results achieved by different methods based on a single-frame
+for solving absolute values. An increased CG value leads to                   dataset. These example images contain various complex detec-
+an improved target enhancement effect.                                        tion scenarios, such as strong light interference, multitarget
+   The ROC curve is one of the effective statistical analysis                 coexistence, complex background clutter, and target tailing.
+tools used in IRSTD to evaluate the performance of binary                        In Image1, the strong background interference greatly
+classification models between the target and the background.                  reduces the saliency of the target, leading to the failure of
+The ROC curve presents the relationship between the detection                 LEF, ISTDU, and HCFnet. Meanwhile, the rapidly changing
+probability Pd and the false alarm rate Fa in an intuitive                    background signal causes confusion in NTFRA, resulting in
+graphical form, reflecting the performance of the IRSTD                       a large number of background false alarms in the result.
+model. They are defined as follows [67]:                                      In Image2, there are two targets with similar sizes but
+                            Pd = n d /n all                          (15)     different intensities. NLCD, LEF, ISTDU, and HCFnet cannot
+                                                                              fully detect all targets, resulting in poor detection robustness.
+                            Fa = p f / pall                          (16)
+                                                                              In addition, it also indicates that these methods have poor
+where n d and n all represent the number of detected true                     enhancement effects on weak targets and can only enhance
+targets and all true targets, respectively. Similarly, p f and pall           the more significant targets. There are many easily confused
+represent the number of detected false pixels and all pixels in               pseudo target points in Image3, leading to a large number
+the image, respectively.                                                      of false alarms in TopHat, LEF, and MDFA. There is also
+   AUC is defined as the area under the ROC curve, typically                  a problem of inconsistent enhancement effects on targets
+ranging between 0.5 and 1. The AUC index further reports the                  of different intensities. In Image4, there is obvious trailing
+classifier with better performance based on the ROC curve.                    interference on the right side of the target, which causes
+The classifier with a larger AUC value performs better. The                   some methods to fail to recognize the target or mistakenly
+method of calculating AUC is to sum the areas of each part                    detect the trailing area as the target. The proposed PGDN-
+under the ROC curve. And IoU is used to calculate the                         Net model can effectively cope with the complex detection
+intersection-to-union ratio between the predicted results and                 scenarios mentioned above, with strong resistance to strong
+the ground truth labels, enabling a more nuanced assessment of                light interference, and can achieve high detection rates while
+a model’s capability to differentiate targets from backgrounds                preserving and restoring the true shape of the target as much
+and to detect targets of varying sizes.                                       as possible, which is beneficial for practical detection tasks.
+                                                                                 Fig. 15, respectively, shows the results achieved by different
+C. Implementation Details                                                     methods based on sequential-frame datasets. It indicates that
+                                                                              the proposed PGDN-Net model can accurately capture the
+   All the deep learning models are implemented in Python
+                                                                              target, and with the guidance of prior feature information and
+3.9.7 and PyTorch 2.0.1 on a computer with an Intel Xeon
+                                                                              the role of the attention mechanism, the extracted target is
+6252 @ 2.10 GHz CPU and an Nvidia A100 GPU. The other
+                                                                              more in line with the true form and feature distribution of the
+traditional methods are implemented in MATLAB 2019b on an
+                                                                              target. For example, in Seq.1, the target is an aircraft flying
+Intel Core i5-9400 at 2.90 GHz CPU. The number of dense
+                                                                              from left to right with a narrow tail on the left side. The output
+nested downsampling layers in the PGDN-Net model is set
+                                                                              of our PGDN-Net displays an approximately trapezoidal target
+to 4, and ResNet’s U-Net paradigm is used as the segmentation
+                                                                              with a narrow left side and a wider right side, which is similar
+backbone. The network model is trained using the Adagrad
+                                                                              to the actual shape feature of the target. Similarly, in Seq.3
+optimizer with a learning rate of 0.05, a batch size of 10, and
+                                                                              and Seq.4, the targets have certain shape features rather than
+500 iterations. This method uses the BCE loss function for
+                                                                              a simple dot. Our PGDN-Net model can output the results
+training.
+                                                                              that fit the actual shape and size of the target. TopHat and
+                                                                              NLCD have poor enhancement effects on weak targets, and
+D. Comparison to the State-of-the-Art Methods                                 the target detection results are incomplete. In addition, NLCD
+   To verify the superiority of our PGDN-Net model,                           is prone to the influence of high-brightness noise points in
+we conduct quantitative and qualitative experiments with                      the background, leading to an increase in false alarms. The
+several typical state-of-the-art methods on single-frame and                  background suppression ability of LEF is poor, especially in
+sequential-frame datasets. The compared methods comprehen-                    low SNR scenarios such as Seq.4 to Seq.6, and this method has
+sively cover the four main types of IRSTD algorithms cur-                     a significant bias in determining target size. PSTNN has a good
+rently available, including background feature-based methods                  inhibitory effect on the background. NTFRA is easily affected
+
+      Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+5002015                                                                            IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025
+
+
+
+
+Fig. 14. Examples of the original image and the corresponding results by each method for the single-frame dataset. The red box indicates that the real target
+is detected, the green box indicates that the real target is lost, and the yellow circle marks the clutter and false target points present in the background. The
+bottom-left corner of each subplot shows a close-up display of the target area.
+
+
+
+
+Fig. 15. Examples of the original image and the corresponding results by each method for six groups sequence-frame datasets. The red box indicates that
+the real target is detected, the green box indicates that the real target is lost, the blue box indicates that the detected target is incomplete, and the yellow circle
+marks the clutter and false target points present in the background. The bottom-left corner of each subplot shows a close-up display of the target area.
+
+
+
+by strong edge signal and clutter in the background, resulting                          First, we calculated the performance metrics of various
+in a large number of false alarms, such as Seq.2 and Seq.3.                          methods on the single-frame dataset. Table I lists the average
+MDFA and ISTDU have excellent performance on salient                                 BSF, CG, AUC, and IoU of the methods on the single-frame
+targets, but their enhancement effects on weak targets are poor,                     dataset, and Fig. 16 shows the ROC curves of the methods
+sometimes even lost them, resulting in a decrease in detection                       on the single-frame dataset. As can be seen, the PGDN-Net
+rate. DNANet has good performance, but its perception ability                        model has outstanding comprehensive detection performance
+for target edge detail is poor, resulting in jagged target edges                     in the single-frame dataset, with strong generalization ability.
+or misidentification of the background, such as Seq.3 and                            Thanks to the guidance of prior features of the target, the
+Seq.6. Since the model lacks prior information on features,                          model can more effectively extract target features and enhance
+it struggles to precisely distinguish between the target edge                        them. Concurrently, under the action of the attention module,
+and the adjacent background region. Although HCFNet and                              the network can more accurately focus on the interested target
+SCTNet can capture the target, their inhibitory effect on the                        area, suppress irrelevant background signals, and ultimately
+background is average. In contrast, our PGDN-Net model has                           achieve outstanding comprehensive indicators.
+an outstanding detection performance, good generalization in                            Next, we quantitatively evaluate the detection performance
+various scenarios, and higher detection robustness.                                  of each method on six groups of sequence-frame datasets.
+   2) Quantitative Analysis: We quantitatively evaluate the                          Table I lists the average BSF, CG, AUC, and IoU of the
+detection performance of our PGDN-Net model and other                                methods on the sequence-frame dataset, and Fig. 16 shows
+compared methods on multiple datasets using the metrics                              the results of the ROC curve of the methods on the sequence-
+mentioned earlier.                                                                   frame dataset.
+
+       Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+LIU et al.: INFRARED SMALL TARGET DETECTION BASED ON PRIOR GUIDED DENSE NESTED NETWORK                                                              5002015
+
+
+
+                                                                      TABLE I
+  AVERAGE BSF, CG, AUC, AND I O U O BTAINED ON THE S INGLE -F RAME DATASET AND S EQUENTIAL -F RAMES T HROUGH D IFFERENT M ETHODS .
+                     T HE F IRST T WO B EST R ESULTS A RE R EPRESENTED IN B OLD AND U NDERLINED , R ESPECTIVELY
+
+
+
+
+   Due to the failure of LEF in Seq.1, its output result is                  parameters acquired during training and do not incorporate
+a black background, so no calculation is performed on the                    objective prior features of the input image, their ability to
+objective indicators of Seq.1. As shown in Table I, the PGDN-                generalize is inadequate.
+Net model can almost achieve the optimal AUC and IoU on                         Fig. 16 shows the ROC curves of the methods on the six
+all groups of sequence-frame datasets, indicating that PGDN-                 groups of sequence-frame datasets. The ROC curves further
+Net obtains the best detection performance and can detect                    demonstrate the superiority of PGDN-Net. Specifically, at the
+more accurately. Although the target enhancement of NLCD                     same detection rate, PGDN-Net achieves the lowest false alarm
+is poor, its background suppression ability is prominent, due                rate, and at the same false alarm rate, it can obtain the highest
+to the random walk algorithm in this method, which can                       detection rate.
+better distinguish background information. LEF focuses more                     The comparative experimental result in this section indicates
+on enhancing the overall target, therefore its CG1 value is                  that the proposed PGDN-Net model has better detection
+relatively high. In contrast, PSTNN has a better enhancement                 performance than traditional methods, stronger generalization
+effect on the target center with higher CG2 . Although the                   ability than other deep learning methods, and combines the
+detection performance of MDFA, ISTDU, and DNANet is                          advantages of traditional and deep learning methods.
+good, their detection performance on different datasets varied
+widely. Compared to SCTNet, HCFNet has a better target                       E. Ablation Study
+enhancement effect, but SCTNet has better detection ability.                    In this section, we conduct the ablation experiment on three
+Since these deep learning methods are based solely on network                prior feature modules in our PGDN-Net model, such as the
+
+     Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+5002015                                                                      IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025
+
+
+
+
+Fig. 16.   ROC curves achieved by different methods on single-frame dataset and sequence-frame dataset.
+
+
+
+                                TABLE II
+               D ETAILED S ETUP OF A BLATION E XPERIMENT
+
+
+
+
+                                                                               Fig. 17. Output results of PGDN-Net1. The red box indicates that the real
+                                                                               target is detected and the yellow circle marks the clutter and false target points
+                                                                               present in the background.
+
+HR, the CH, and the corner feature of the ST, to investigate
+the potential benefits and choice of design. The baseline
+method for comparison is the original DNA-Net model, which
+does not introduce any prior target feature information as
+a guide. The ablation experiments are uniformly trained on
+the NUDT-SIRST dataset and tested on the single-frame
+dataset.
+   Table II lists the control group settings and the correspond-
+ing AUC results in the ablation experiment. It can be seen
+that the detection performance of the model has been greatly                   Fig. 18.     Output results of PGDN-Net2. The red box indicates that the
+                                                                               real target is detected, the green box indicates that the real target is lost,
+improved after introducing three prior target features to guide                and the yellow circle marks the clutter and false target points present in the
+the dense nested network. On the one hand, when HRs are not                    background.
+considered, it may lead the network to focus on some potential
+clutter information in the background, leading to an increase in
+false alarms, as shown in Fig. 17. Therefore, it is necessary to               the original DNA-Net model, PGDN-Net model demonstrates
+introduce HRs to improve the model’s ability to distinguish                    more significant advantages.
+targets. On the other hand, when CHs are not considered,
+the model will be interested in strong edge corners under the                                               V. C ONCLUSION
+influence of high-order Riesz and ST corner features, resulting                   This article proposes a PGDN-Net model, aiming to solve
+in pseudo-targets appearing at some edge corners, and it is                    the inherent problem of lack of prior features in IRSTD
+difficult to extract features of weak target areas, as shown                   tasks and the practical problem of imbalanced positive and
+in Fig. 18.                                                                    negative sample information in deep learning networks. The
+   In summary, the ablation experiment first proves the effec-                 PGDN-Net model achieves effective integration of low-level
+tiveness of our PGDN-Net model, and second, compared to                        detail features and high-level semantic features in the network
+
+       Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+LIU et al.: INFRARED SMALL TARGET DETECTION BASED ON PRIOR GUIDED DENSE NESTED NETWORK                                                                        5002015
+
+
+
+through a dense nested structure. It introduces HRs, CHs,                           [15] S. D. Deshpande, M. H. Er, R. Venkateswarlu, and P. Chan, “Max-
+and corner features of ST features to guide the network                                  mean and max-median filters for detection of small targets,” Proc. SPIE,
+                                                                                         vol. 3809, pp. 74–83, Oct. 1999.
+model to learn target features at different depths and ensure                       [16] X. Bai and F. Zhou, “Analysis of new top-hat transformation and the
+the preservation and recovery of target features, thereby                                application for infrared dim small target detection,” Pattern Recognit.,
+alleviating the problem of few characteristics, hard to extract,                         vol. 43, no. 6, pp. 2145–2156, Jun. 2010.
+and difficult to learn features for infrared small targets. At the                  [17] C. L. P. Chen, H. Li, Y. Wei, T. Xia, and Y. Y. Tang, “A local contrast
+                                                                                         method for small infrared target detection,” IEEE Trans. Geosci. Remote
+same time, under the action of the attention mechanism                                   Sens., vol. 52, no. 1, pp. 574–581, Jan. 2014.
+module, the attention of the entire network is focused on                           [18] S. Qi, G. Xu, Z. Mou, D. Huang, and X. Zheng, “A fast-saliency method
+the interested target area, effectively solving the problem                              for real-time infrared small target detection,” Infr. Phys. Technol., vol. 77,
+of unbalanced positive and negative sample information and                               pp. 440–450, Jul. 2016.
+                                                                                    [19] H. Yao, L. Liu, Y. Wei, D. Chen, and M. Tong, “Infrared small-target
+avoiding erroneous learning of background features in the                                detection using multidirectional local difference measure weighted by
+network. The key point of PGDN-Net is to combine traditional                             entropy,” Sustainability, vol. 15, no. 3, p. 1902, Jan. 2023.
+methods with deep learning methods to achieve robust IRSTD.                         [20] C. Gao, D. Meng, Y. Yang, Y. Wang, X. Zhou, and A. G. Hauptmann,
+Experiments on multiple datasets have shown that it achieves                             “Infrared patch-image model for small target detection in a single
+                                                                                         image,” IEEE Trans. Image Process., vol. 22, no. 12, pp. 4996–5009,
+more outstanding comprehensive detection performance, with                               Dec. 2013.
+excellent target enhancement and background suppression                             [21] Y. Dai and Y. Wu, “Reweighted infrared patch-tensor model with
+effects. Moreover, the detection results in various scenarios                            both nonlocal and local priors for single-frame small target detection,”
+                                                                                         IEEE J. Sel. Topics Appl. Earth Observ. Remote Sens., vol. 10, no. 8,
+effectively demonstrate the generalization and robustness of                             pp. 3752–3767, Aug. 2017.
+the proposed PGDN-Net model.                                                        [22] H. Wang, L. Zhou, and L. Wang, “Miss detection vs. false alarm:
+                                                                                         Adversarial learning for small object segmentation in infrared images,”
+                                                                                         in Proc. IEEE/CVF Int. Conf. Comput. Vis. (ICCV), Oct. 2019,
+                               R EFERENCES                                               pp. 8508–8517.
+                                                                                    [23] H. Zhou, C. Tian, Z. Zhang, C. Li, Y. Xie, and Z. Li, “PixelGame:
+ [1] T. Ma, G. Guo, Z. Li, and Z. Yang, “Infrared small target detection                 Infrared small target segmentation as a Nash equilibrium,” IEEE J. Sel.
+     method based on high-low-frequency semantic reconstruction,” IEEE                   Topics Appl. Earth Observ. Remote Sens., vol. 15, pp. 8010–8024, 2022.
+     Geosci. Remote Sens. Lett., vol. 21, pp. 1–5, 2024.                            [24] M. Shi and H. Wang, “Infrared dim and small target detection based
+ [2] F. Liu, C. Gao, F. Chen, D. Meng, W. Zuo, and X. Gao, “Infrared small               on denoising autoencoder network,” Mobile Netw. Appl., vol. 25, no. 4,
+     and dim target detection with transformer under complex backgrounds,”               pp. 1469–1483, Aug. 2020.
+     IEEE Trans. Image Process., vol. 32, pp. 5921–5932, 2023.                      [25] H. Fang, M. Xia, G. Zhou, Y. Chang, and L. Yan, “Infrared small UAV
+ [3] R. Kou, C. Wang, Y. Yu, Z. Peng, F. Huang, and Q. Fu, “Infrared small               target detection based on residual image prediction via global and local
+     target tracking algorithm via segmentation network and multistrategy                dilated residual networks,” IEEE Geosci. Remote Sens. Lett., vol. 19,
+     fusion,” IEEE Trans. Geosci. Remote Sens., vol. 61, Jun. 2023,                      pp. 1–5, 2022.
+     Art. no. 5612912.                                                              [26] M. Zhang, R. Zhang, Y. Yang, H. Bai, J. Zhang, and J. Guo, “ISNet:
+ [4] Y. Li, Z. Li, J. Li, J. Yang, and A. Siddique, “Robust small infrared               Shape matters for infrared small target detection,” in Proc. IEEE/CVF
+     target detection using weighted adaptive ring top-hat transformation,”              Conf. Comput. Vis. Pattern Recognit. (CVPR), Jun. 2022, pp. 877–886.
+     Signal Process., vol. 217, Apr. 2024, Art. no. 109339.                         [27] K. Wang, S. Du, C. Liu, and Z. Cao, “Interior attention-aware network
+ [5] T. Ma et al., “MDCENet: Multi-dimensional cross-enhanced network for                for infrared small target detection,” IEEE Trans. Geosci. Remote Sens.,
+     infrared small target detection,” Infr. Phys. Technol., vol. 141, Sep. 2024,        vol. 60, 2022, Art. no. 5002013.
+     Art. no. 105475.                                                               [28] Y. Dai, Y. Wu, F. Zhou, and K. Barnard, “Attentional local contrast
+ [6] D. Zhou and X. Wang, “Robust infrared small target detection using a                networks for infrared small target detection,” IEEE Trans. Geosci.
+     novel four-leaf model,” IEEE J. Sel. Topics Appl. Earth Observ. Remote              Remote Sens., vol. 59, no. 11, pp. 9813–9824, Nov. 2021.
+     Sens., vol. 17, pp. 1462–1469, 2024.                                           [29] X. Tong, B. Sun, J. Wei, Z. Zuo, and S. Su, “EAAU-net: Enhanced
+ [7] J. Han, Y. Ma, B. Zhou, F. Fan, K. Liang, and Y. Fang, “A robust infrared           asymmetric attention U-net for infrared small target detection,” Remote
+     small target detection algorithm based on human visual system,” IEEE                Sens., vol. 13, no. 16, p. 3200, Aug. 2021.
+     Geosci. Remote Sens. Lett., vol. 11, no. 12, pp. 2168–2172, Dec. 2014.         [30] S. Liu, P. Chen, and M. Woźniak, “Image enhancement-based detection
+ [8] C. Liu, F. Xie, L. Qiu, H. Ji, and Z. Shi, “Infrared small target detection         with small infrared targets,” Remote Sens., vol. 14, no. 13, p. 3232,
+     based on monogenic signal decomposition,” IEEE Trans. Geosci. Remote                Jul. 2022.
+     Sens., vol. 62, 2024, Art. no. 5004016.                                        [31] B. Li et al., “Dense nested attention network for infrared small target
+ [9] Z. Qiu, Y. Ma, F. Fan, J. Huang, and M. Wu, “Adaptive scale patch-                  detection,” IEEE Trans. Image Process., vol. 32, pp. 1745–1758, 2023.
+     based contrast measure for dim and small infrared target detection,”
+                                                                                    [32] Q. Hou, L. Zhang, F. Tan, Y. Xi, H. Zheng, and N. Li, “ISTDU-net:
+     IEEE Geosci. Remote Sens. Lett., vol. 19, pp. 1–5, 2022.
+                                                                                         Infrared small-target detection U-net,” IEEE Geosci. Remote Sens. Lett.,
+[10] A. Ciocarlan, S. Le Hegarat-Mascle, S. Lefebvre, A. Woiselle, and                   vol. 19, pp. 1–5, 2022.
+     C. Barbanson, “A contrario paradigm for yolo-based infrared small target
+     detection,” in Proc. IEEE Int. Conf. Acoust., Speech Signal Process.           [33] Y. Dai, X. Li, F. Zhou, Y. Qian, Y. Chen, and J. Yang, “One-stage
+     (ICASSP), Apr. 2024, pp. 5630–5634.                                                 cascade refinement networks for infrared small target detection,” IEEE
+                                                                                         Trans. Geosci. Remote Sens., vol. 61, 2023, Art. no. 5000917.
+[11] C. Yu et al., “Infrared small target detection based on multiscale local
+     contrast learning networks,” Infr. Phys. Technol., vol. 123, Jun. 2022,        [34] T. Soni, J. R. Zeidler, and W. H. Ku, “Performance evaluation of 2-D
+     Art. no. 104107.                                                                    adaptive prediction filters for detection of small objects in image data,”
+                                                                                         IEEE Trans. Image Process., vol. 2, no. 3, pp. 327–340, Jul. 1993.
+[12] F. Wu, H. Yu, A. Liu, J. Luo, and Z. Peng, “Infrared small target
+     detection using spatiotemporal 4-D tensor train and ring unfolding,”           [35] Y. Zhao, H. Pan, C. Du, Y. Peng, and Y. Zheng, “Bilateral two-
+     IEEE Trans. Geosci. Remote Sens., vol. 61, 2023, Art. no. 5002922.                  dimensional least mean square filter for infrared small target detection,”
+[13] W. Duan, L. Ji, S. Chen, S. Zhu, and M. Ye, “Triple-domain                          Infr. Phys. Technol., vol. 65, pp. 17–23, Jul. 2014.
+     feature learning with frequency-aware memory enhancement for moving            [36] J. Han, K. Liang, B. Zhou, X. Zhu, J. Zhao, and L. Zhao, “Infrared small
+     infrared small target detection,” IEEE Trans. Geosci. Remote Sens.,                 target detection utilizing the multiscale relative local contrast measure,”
+     vol. 62, 2024, Art. no. 5006014.                                                    IEEE Geosci. Remote Sens. Lett., vol. 15, no. 4, pp. 612–616, Apr. 2018.
+[14] S. Chen, L. Ji, J. Zhu, M. Ye, and X. Yao, “SSTNet: Sliced spatio-             [37] J. Han, S. Moradi, I. Faramarzi, C. Liu, H. Zhang, and Q. Zhao,
+     temporal network with cross-slice ConvLSTM for moving infrared dim-                 “A local contrast method for infrared small-target detection utilizing
+     small target detection,” IEEE Trans. Geosci. Remote Sens., vol. 62, 2024,           a tri-layer window,” IEEE Geosci. Remote Sens. Lett., vol. 17, no. 10,
+     Art. no. 5000912.                                                                   pp. 1822–1826, Oct. 2020.
+
+       Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+5002015                                                                            IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 63, 2025
+
+
+
+[38] C. Xia, X. Li, L. Zhao, and R. Shu, “Infrared small target detection           [61] M. Brown, R. Szeliski, and S. Winder, “Multi-image matching using
+     based on multiscale local contrast measure using local energy factor,”              multi-scale oriented patches,” in Proc. IEEE Comput. Soc. Conf.
+     IEEE Geosci. Remote Sens. Lett., vol. 17, no. 1, pp. 157–161, Jan. 2020.            Comput. Vis. Pattern Recognit. (CVPR), vol. 1, Jun. 2005, pp. 510–517.
+[39] Y. Qin, L. Bruzzone, C. Gao, and B. Li, “Infrared small target detection       [62] L. Zhang and Z. Peng, “Infrared small target detection based on partial
+     based on facet kernel and random Walker,” IEEE Trans. Geosci. Remote                sum of the tensor nuclear norm,” Remote Sens., vol. 11, no. 4, p. 382,
+     Sens., vol. 57, no. 9, pp. 7104–7118, Sep. 2019.                                    Feb. 2019.
+[40] Y. Chen, G. Zhang, Y. Ma, J. U. Kang, and C. Kwan, “Small infrared             [63] X. Kong, C. Yang, S. Cao, C. Li, and Z. Peng, “Infrared small target
+     target detection based on fast adaptive masking and scaling with iterative          detection via nonconvex tensor fibered rank approximation,” IEEE Trans.
+     segmentation,” IEEE Geosci. Remote Sens. Lett., vol. 19, pp. 1–5,                   Geosci. Remote Sens., vol. 60, 2022, Art. no. 5000321.
+     2022.                                                                          [64] B. Hui et al., “A dataset for infrared image dim-small aircraft target
+[41] M. Nasiri and S. Chehresa, “Infrared small target enhancement based                 detection and tracking under ground/air background,” Sci. Data Bank,
+     on variance difference,” Infr. Phys. Technol., vol. 82, pp. 107–119,                vol. 5, p. 12, Oct. 2019.
+     May 2017.                                                                      [65] H. Sun, J. Bai, F. Yang, and X. Bai, “Receptive-field and direction
+[42] Y. He, C. Zhang, T. Mu, T. Yan, Y. Wang, and Z. Chen, “Multiscale local             induced attention network for infrared dim small target detection with a
+     gray dynamic range method for infrared small-target detection,” IEEE                large-scale dataset IRDST,” IEEE Trans. Geosci. Remote Sens., vol. 61,
+     Geosci. Remote Sens. Lett., vol. 18, no. 10, pp. 1846–1850, Oct. 2021.              2023, Art. no. 5000513.
+                                                                                    [66] C. Gao, L. Wang, Y. Xiao, Q. Zhao, and D. Meng, “Infrared small-dim
+[43] X. Bai and Y. Bi, “Derivative entropy-based contrast measure for infrared
+                                                                                         target detection based on Markov random field guided noise modeling,”
+     small-target detection,” IEEE Trans. Geosci. Remote Sens., vol. 56, no. 4,
+                                                                                         Pattern Recognit., vol. 76, pp. 463–475, Apr. 2018.
+     pp. 2452–2466, Apr. 2018.
+                                                                                    [67] M. Zhang, R. Zhang, J. Zhang, J. Guo, Y. Li, and X. Gao, “Dim2Clear
+[44] Y. Dai, Y. Wu, Y. Song, and J. Guo, “Non-negative infrared                          network for infrared small target detection,” IEEE Trans. Geosci. Remote
+     patch-image model: Robust target-background separation via partial                  Sens., vol. 61, 2023, Art. no. 5001714.
+     sum minimization of singular values,” Infr. Phys. Technol., vol. 81,           [68] S. Xu et al., “HCF-net: Hierarchical context fusion network for infrared
+     pp. 182–194, Mar. 2017.                                                             small object detection,” in Proc. IEEE Int. Conf. Multimedia Expo
+[45] L. Zhang, L. Peng, T. Zhang, S. Cao, and Z. Peng, “Infrared small                   (ICME), Jul. 2024, pp. 1–6.
+     target detection via non-convex rank approximation minimization joint          [69] S. Yuan, H. Qin, X. Yan, N. Akhtar, and A. Mian, “SCTransNet: Spatial-
+     l2,1 norm,” Remote Sens., vol. 10, no. 11, p. 1821, Nov. 2018.                      channel cross transformer network for infrared small target detection,”
+[46] P. Zhang, L. Zhang, X. Wang, F. Shen, T. Pu, and C. Fei, “Edge                      IEEE Trans. Geosci. Remote Sens., vol. 62, 2024, Art. no. 5002615.
+     and corner awareness-based spatial–temporal tensor model for infrared
+     small-target detection,” IEEE Trans. Geosci. Remote Sens., vol. 59,
+     no. 12, pp. 10708–10724, Dec. 2021.
+[47] Y. He, M. Li, J. Zhang, and Q. An, “Small infrared target detection based
+     on low-rank and sparse representation,” Infr. Phys. Technol., vol. 68,
+     pp. 98–109, Jan. 2015.
+[48] M. Zhao, W. Li, L. Li, P. Ma, Z. Cai, and R. Tao, “Three-order tensor                                   Chang Liu received the Ph.D. degree in pattern
+     creation and Tucker decomposition for infrared small-target detection,”                                 recognition and intelligent systems from Beihang
+     IEEE Trans. Geosci. Remote Sens., vol. 60, 2022, Art. no. 5000216.                                      University, Beijing, China, in 2024.
+[49] R. Hamaguchi, A. Fujita, K. Nemoto, T. Imaizumi, and S. Hikosaka,                                         He is currently an Assistant Researcher with the
+     “Effective use of dilated convolutions for segmenting small object                                      Aerospace Information Research Institute, Chinese
+     instances in remote sensing imagery,” in Proc. IEEE Winter Conf. Appl.                                  Academy of Sciences, Beijing. His research interests
+     Comput. Vis. (WACV), Mar. 2018, pp. 1442–1450.                                                          include infrared small target detection, remote
+[50] J. Ma, H. Guo, S. Rong, J. Feng, and B. He, “Infrared dim and small                                     sensing image analysis, image quality assessment,
+     target detection based on background prediction,” Remote Sens., vol. 15,                                and image quality enhancement.
+     no. 15, p. 3749, Jul. 2023.
+[51] Y. Dai, Y. Wu, F. Zhou, and K. Barnard, “Asymmetric contextual
+     modulation for infrared small target detection,” in Proc. IEEE Winter
+     Conf. Appl. Comput. Vis. (WACV), Jan. 2021, pp. 949–958.
+[52] X. He, Q. Ling, Y. Zhang, Z. Lin, and S. Zhou, “Detecting dim small
+     target in infrared images via subpixel sampling cuneate network,” IEEE
+     Geosci. Remote Sens. Lett., vol. 19, pp. 1–5, 2022.
+                                                                                                             Xuedong Song received the master’s degree in
+[53] K. Zhao and W. Xiong, “Exploring region features in remote sensing                                      pattern recognition and intelligent systems from
+     image captioning,” Int. J. Appl. Earth Observ. Geoinf., vol. 127,                                       Beihang University, Beijing, China, in 2021.
+     Mar. 2024, Art. no. 103672.                                                                               His research interests include remote sensing
+[54] Y. Wei, L. Li, and S. Geng, “Remote sensing image captioning using                                      image processing and small object recognition.
+     hire-MLP,” in Proc. 4th Int. Conf. Comput. Vis., Image Deep Learn.
+     (CVIDL), May 2023, pp. 109–112.
+[55] Z. Ni, Z. Zong, and P. Ren, “Incorporating object counts into remote
+     sensing image captioning,” Int. J. Digit. Earth, vol. 17, no. 1, Dec. 2024,
+     Art. no. 2392847.
+[56] L. Wietzke, O. Fleischmann, and G. Sommer, “2D image analysis by
+     generalized Hilbert transforms in conformal space,” in Proc. Eur. Conf.
+     Comput. Vis. (ECCV), D. Forsyth, P. Torr, and A. Zisserman, Eds.,
+     Berlin, Germany: Springer, Jan. 2008, pp. 638–649.
+[57] M. Felsberg and G. Sommer, “The monogenic signal,” IEEE Trans.
+     Signal Process., vol. 49, no. 12, pp. 3136–3144, Dec. 2001.
+[58] N. Wadhwa, M. Rubinstein, F. Durand, and W. T. Freeman, “Riesz                                          Dianyu Yu received the B.S. degree in detection,
+     pyramids for fast phase-based video magnification,” in Proc. IEEE Int.                                  guidance, and control techniques from Beihang
+     Conf. Comput. Photography (ICCP), May 2014, pp. 1–10.                                                   University, Beijing, China, in 2023, where he is
+[59] L. Zhang, L. Zhang, and X. Mou, “RFSIM: A feature based image                                           currently pursuing the Ph.D. degree in pattern
+     quality assessment metric using Riesz transforms,” in Proc. IEEE Int.                                   recognition and intelligent system with the Image
+     Conf. Image Process., Sep. 2010, pp. 321–324.                                                           Processing Center, School of Astronautics.
+[60] C. Liu, F. Xie, X. Dong, H. Gao, and H. Zhang, “Small target                                              His research interests include infrared small target
+     detection from infrared remote sensing images using local adaptive                                      detection and multi-modal learning.
+     thresholding,” IEEE J. Sel. Topics Appl. Earth Observ. Remote Sens.,
+     vol. 15, pp. 1941–1952, 2022.
+
+       Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+LIU et al.: INFRARED SMALL TARGET DETECTION BASED ON PRIOR GUIDED DENSE NESTED NETWORK                                                                 5002015
+
+
+
+                         Linwei Qiu received the B.S. degree in detection,                                Yue Zi received the Ph.D. degree in pattern
+                         guidance, and control techniques from Beihang                                    recognition and intelligent systems from Beihang
+                         University, Beijing, China, in 2018, where he is                                 University, Beijing, China, in 2023.
+                         currently pursuing the Ph.D. degree in pattern                                     He is currently a Lecturer with the School of
+                         recognition and intelligent system with the School                               Electrical and Information Engineering, Changsha
+                         of Astronautics.                                                                 University of Science and Technology, Changsha,
+                           His research interests include low-level vision                                China. His research interests include remote sensing
+                         tasks and medical image analysis.                                                image processing, target detection, semantic seg-
+                                                                                                          mentation, and deep learning.
+
+
+
+
+                                                                                                            Zhenwei Shi (Senior Member, IEEE) is currently
+                                                                                                            a Professor and the Dean of the Image Processing
+                                                                                                            Center, School of Astronautics, Beihang University,
+                                                                                                            Beijing, China. He has authored or co-authored
+                                                                                                            over 200 scientific articles in refereed journals
+                                                                                                            and proceedings, including IEEE T RANSACTIONS
+                         Fengying Xie (Member, IEEE) received the Ph.D.                                     ON PATTERN A NALYSIS AND M ACHINE I NTEL -
+                         degree in pattern recognition and intelligent system                               LIGENCE , IEEE T RANSACTIONS ON I MAGE P RO -
+                         from Beihang University, Beijing, China, in 2009.                                  CESSING , IEEE T RANSACTIONS ON G EOSCIENCE
+                           She was a Visiting Scholar with the Labo-                                        AND R EMOTE S ENSING , the IEEE Conference on
+                         ratory for Image and Video Engineering, The                                        Computer Vision and Pattern Recognition (CVPR),
+                         University of Texas at Austin, Austin, TX, USA,         and the IEEE International Conference on Computer Vision (ICCV). His
+                         from 2010 to 2011. She is currently a Professor         research interests include remote sensing image processing and analysis,
+                         with the Image Processing Center, School of             computer vision, pattern recognition, and machine learning.
+                         Astronautics, Beihang University. Her research inter-     Prof. Shi serves as an Editor for IEEE T RANSACTIONS ON G EOSCIENCE
+                         ests include biomedical image processing, remote        AND R EMOTE S ENSING , Pattern Recognition, ISPRS Journal of Photogram-
+                         sensing image understanding and application, image      metry and Remote Sensing, and Infrared Physics and Technology. His personal
+quality assessment, and object recognition.                                      website is http://levir.buaa.edu.cn/.
+
+
+
+
+       Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on February 28,2025 at 01:27:54 UTC from IEEE Xplore. Restrictions apply.
+

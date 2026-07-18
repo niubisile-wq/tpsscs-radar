@@ -1,0 +1,66 @@
+{
+  "assets": [
+    "simMed_test.mat",
+    "simWind_test.mat"
+  ],
+  "target_bearing_items": 210,
+  "pfa_points": 7,
+  "candidate_methods": [
+    "low_rank_residual_k30_ca_cfar_local",
+    "low_rank_residual_k30_global_topk",
+    "low_rank_residual_k30_goca_cfar_local",
+    "low_rank_residual_k30_os75_cfar_local",
+    "low_rank_residual_k30_soca_cfar_local",
+    "raw_ca_cfar_local",
+    "raw_global_topk",
+    "raw_goca_cfar_local",
+    "raw_os75_cfar_local",
+    "raw_soca_cfar_local",
+    "tpsscs_finished_detector"
+  ],
+  "asset_level_comparisons": 14,
+  "asset_level_wins_vs_best_classical": 14,
+  "asset_level_ties_vs_best_classical": 0,
+  "combined_comparisons": 7,
+  "combined_wins_vs_best_classical": 7,
+  "combined_ties_vs_best_classical": 0,
+  "combined_min_delta_vs_best_classical": 0.020456696521411577,
+  "all_proposed_pfa_calibrated": true,
+  "passed_strict_best_classical": true,
+  "passed_noninferior_best_classical": true,
+  "date": "20260717",
+  "state": "D:\\百度网盘拉取包\\33低虚警雷达弱目标检测中的目标保持型结构杂波抑制_full_backup_20260717\\results\\aistap_sample\\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt",
+  "asset_info": [
+    {
+      "asset": "D:\\百度网盘拉取包\\33低虚警雷达弱目标检测中的目标保持型结构杂波抑制_full_backup_20260717\\data\\downloads\\aistap_sim\\full\\simMed_test.mat",
+      "state": "D:\\百度网盘拉取包\\33低虚警雷达弱目标检测中的目标保持型结构杂波抑制_full_backup_20260717\\results\\aistap_sample\\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt",
+      "total_frames": 128,
+      "positive_frames": 105,
+      "evaluated_positive_frames": 105,
+      "training_cells": 6,
+      "guard_cells": 2,
+      "os_percentile": 75.0
+    },
+    {
+      "asset": "D:\\百度网盘拉取包\\33低虚警雷达弱目标检测中的目标保持型结构杂波抑制_full_backup_20260717\\data\\downloads\\aistap_sim\\full\\simWind_test.mat",
+      "state": "D:\\百度网盘拉取包\\33低虚警雷达弱目标检测中的目标保持型结构杂波抑制_full_backup_20260717\\results\\aistap_sample\\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt",
+      "total_frames": 128,
+      "positive_frames": 105,
+      "evaluated_positive_frames": 105,
+      "training_cells": 6,
+      "guard_cells": 2,
+      "os_percentile": 75.0
+    }
+  ],
+  "training_cells": 6,
+  "guard_cells": 2,
+  "os_percentile": 75.0,
+  "pfa_tolerance": 1.05,
+  "artifacts": {
+    "detail_csv": "D:\\百度网盘拉取包\\33低虚警雷达弱目标检测中的目标保持型结构杂波抑制_full_backup_20260717\\results\\aistap_full_asset\\aistap_full_asset_classical_cfar_baselines_20260717.csv",
+    "summary_csv": "D:\\百度网盘拉取包\\33低虚警雷达弱目标检测中的目标保持型结构杂波抑制_full_backup_20260717\\results\\aistap_full_asset\\aistap_full_asset_classical_cfar_baselines_summary_20260717.csv",
+    "comparison_csv": "D:\\百度网盘拉取包\\33低虚警雷达弱目标检测中的目标保持型结构杂波抑制_full_backup_20260717\\results\\aistap_full_asset\\aistap_full_asset_classical_cfar_best_comparison_20260717.csv",
+    "json": "D:\\百度网盘拉取包\\33低虚警雷达弱目标检测中的目标保持型结构杂波抑制_full_backup_20260717\\results\\aistap_full_asset\\aistap_full_asset_classical_cfar_baselines_20260717.json",
+    "markdown": "D:\\百度网盘拉取包\\33低虚警雷达弱目标检测中的目标保持型结构杂波抑制_full_backup_20260717\\logs\\aistap_full_asset_classical_cfar_baselines_20260717.md"
+  }
+}

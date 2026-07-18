@@ -1,0 +1,73 @@
+{
+  "passed": true,
+  "criteria": {
+    "target_bearing_items": 105,
+    "pfa_count": 7,
+    "lowrank_method": "low_rank_residual_k30",
+    "tpsscs_method": "tpsscs_finished_detector",
+    "pfa_calibrated": true,
+    "wins_vs_raw": 7,
+    "wins_vs_lowrank": 7,
+    "comparisons": [
+      {
+        "pfa": 1e-05,
+        "tpsscs_pd": 0.184544890419632,
+        "raw_pd": 0.07833114276198547,
+        "lowrank_pd": 0.09885361114797109,
+        "beats_raw": true,
+        "beats_lowrank": true
+      },
+      {
+        "pfa": 3e-05,
+        "tpsscs_pd": 0.23292866331646775,
+        "raw_pd": 0.11489453378068923,
+        "lowrank_pd": 0.1503500214703694,
+        "beats_raw": true,
+        "beats_lowrank": true
+      },
+      {
+        "pfa": 0.0001,
+        "tpsscs_pd": 0.3631281887560889,
+        "raw_pd": 0.1955631506781725,
+        "lowrank_pd": 0.2943857234377076,
+        "beats_raw": true,
+        "beats_lowrank": true
+      },
+      {
+        "pfa": 0.0003,
+        "tpsscs_pd": 0.5154646610355453,
+        "raw_pd": 0.26856713935915477,
+        "lowrank_pd": 0.45748134897575243,
+        "beats_raw": true,
+        "beats_lowrank": true
+      },
+      {
+        "pfa": 0.001,
+        "tpsscs_pd": 0.6957533928816516,
+        "raw_pd": 0.35694212605591935,
+        "lowrank_pd": 0.6488084401825713,
+        "beats_raw": true,
+        "beats_lowrank": true
+      },
+      {
+        "pfa": 0.003,
+        "tpsscs_pd": 0.8138666025670929,
+        "raw_pd": 0.4673269223287094,
+        "lowrank_pd": 0.7763674110573479,
+        "beats_raw": true,
+        "beats_lowrank": true
+      },
+      {
+        "pfa": 0.01,
+        "tpsscs_pd": 0.8692331860864192,
+        "raw_pd": 0.6340198282838332,
+        "lowrank_pd": 0.8382638287231589,
+        "beats_raw": true,
+        "beats_lowrank": true
+      }
+    ]
+  },
+  "failures": [],
+  "input": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_full_asset\\aistap_full_asset_detector_candidate_simMed_test_20260715.csv",
+  "date": "20260715"
+}

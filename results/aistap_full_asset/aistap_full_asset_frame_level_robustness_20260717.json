@@ -1,0 +1,31 @@
+{
+  "date": "20260717",
+  "source_date": "20260715",
+  "target_method": "tpsscs_finished_detector",
+  "lowrank_method": "low_rank_residual_k30",
+  "assets": [
+    "simMed_test.mat",
+    "simWind_test.mat"
+  ],
+  "target_bearing_items": 210,
+  "pfa_points": 7,
+  "item_pfa_pairs_per_comparator": 1470,
+  "lowrank_nonnegative_item_pfa_pairs": 1470,
+  "lowrank_loss_item_pfa_pairs": 0,
+  "lowrank_win_item_pfa_pairs": 1054,
+  "raw_nonnegative_item_pfa_pairs": 1409,
+  "raw_loss_item_pfa_pairs": 61,
+  "raw_win_item_pfa_pairs": 1354,
+  "combined_lowrank_min_win_fraction": 0.45714285714285713,
+  "combined_lowrank_min_nonnegative_fraction": 1.0,
+  "combined_raw_min_win_fraction": 0.8904761904761904,
+  "combined_raw_min_nonnegative_fraction": 0.9095238095238095,
+  "combined_lowrank_min_median_delta": 0.0,
+  "combined_raw_min_median_delta": 0.08850250626566415,
+  "broad_frame_level_support": true,
+  "boundary": [
+    "frame_level_support_not_universal_per_frame_improvement_vs_raw",
+    "lowrank_comparison_has_no_negative_item_pfa_pairs_but_many_ties_at_loose_pfa",
+    "raw_comparison_has_some_negative_item_pfa_pairs_and_should_be_reported_as_broad_not_universal"
+  ]
+}

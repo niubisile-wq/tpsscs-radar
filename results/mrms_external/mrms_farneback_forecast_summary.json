@@ -1,0 +1,112 @@
+﻿{
+  "metadata": [
+    {
+      "file": "MRMS_ReflectivityAtLowestAltitude_00.50_20201014-000025.grib2",
+      "valid_time": "2020-10-14T00:00:00.000000000",
+      "shape": "(3500, 7000)",
+      "min": "-99.0",
+      "max": "62.0"
+    },
+    {
+      "file": "MRMS_ReflectivityAtLowestAltitude_00.50_20201014-000227.grib2",
+      "valid_time": "2020-10-14T00:02:00.000000000",
+      "shape": "(3500, 7000)",
+      "min": "-99.0",
+      "max": "61.0"
+    },
+    {
+      "file": "MRMS_ReflectivityAtLowestAltitude_00.50_20201014-000438.grib2",
+      "valid_time": "2020-10-14T00:04:00.000000000",
+      "shape": "(3500, 7000)",
+      "min": "-99.0",
+      "max": "60.0"
+    }
+  ],
+  "pairs": [
+    {
+      "pair": "MRMS_ReflectivityAtLowestAltitude_00.50_20201014-000025.grib2 + MRMS_ReflectivityAtLowestAltitude_00.50_20201014-000227.grib2 -> MRMS_ReflectivityAtLowestAltitude_00.50_20201014-000438.grib2",
+      "flow": {
+        "MAE": 0.29052823781967163,
+        "RMSE": 2.9147212505340576
+      },
+      "persistence": {
+        "MAE": 0.23212118446826935,
+        "RMSE": 2.7470054626464844
+      },
+      "thresholds": {
+        "20.0": {
+          "flow": {
+            "hits": 2349.0,
+            "misses": 181.0,
+            "false_alarms": 159.0,
+            "CSI": 0.8735589438452956,
+            "POD": 0.9284584980237154,
+            "FAR": 0.06339712918660287
+          },
+          "persistence": {
+            "hits": 2396.0,
+            "misses": 134.0,
+            "false_alarms": 155.0,
+            "CSI": 0.892364990689013,
+            "POD": 0.9470355731225296,
+            "FAR": 0.06076048608388867
+          }
+        },
+        "30.0": {
+          "flow": {
+            "hits": 484.0,
+            "misses": 49.0,
+            "false_alarms": 47.0,
+            "CSI": 0.8344827586206897,
+            "POD": 0.9080675422138836,
+            "FAR": 0.08851224105461393
+          },
+          "persistence": {
+            "hits": 494.0,
+            "misses": 39.0,
+            "false_alarms": 51.0,
+            "CSI": 0.8458904109589042,
+            "POD": 0.926829268292683,
+            "FAR": 0.09357798165137615
+          }
+        },
+        "40.0": {
+          "flow": {
+            "hits": 1.0,
+            "misses": 2.0,
+            "false_alarms": 1.0,
+            "CSI": 0.25,
+            "POD": 0.3333333333333333,
+            "FAR": 0.5
+          },
+          "persistence": {
+            "hits": 2.0,
+            "misses": 1.0,
+            "false_alarms": 1.0,
+            "CSI": 0.5,
+            "POD": 0.6666666666666666,
+            "FAR": 0.3333333333333333
+          }
+        },
+        "50.0": {
+          "flow": {
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0,
+            "CSI": 0.0,
+            "POD": 0.0,
+            "FAR": 0.0
+          },
+          "persistence": {
+            "hits": 0.0,
+            "misses": 0.0,
+            "false_alarms": 0.0,
+            "CSI": 0.0,
+            "POD": 0.0,
+            "FAR": 0.0
+          }
+        }
+      }
+    }
+  ]
+}

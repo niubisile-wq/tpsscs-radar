@@ -1,0 +1,4 @@
+﻿dataset,path,cpi,channels,range,doppler,midp_range,midp_dop,midp_ch,num_antenna_channels
+simMed,C:\Users\刘子轩\Desktop\第三批3\data\downloads\aistap_sim\sampledata\sampledata\simMed\simMed_sample.mat,2,6,64,1024,513.0,33.0,4.0,6.0
+simNoiseOnly,C:\Users\刘子轩\Desktop\第三批3\data\downloads\aistap_sim\sampledata\sampledata\simNoiseOnly\simNoiseOnly_sample.mat,2,6,64,1024,513.0,33.0,4.0,6.0
+simWind,C:\Users\刘子轩\Desktop\第三批3\data\downloads\aistap_sim\sampledata\sampledata\simWind\simWind_sample.mat,2,6,64,1024,513.0,33.0,4.0,6.0

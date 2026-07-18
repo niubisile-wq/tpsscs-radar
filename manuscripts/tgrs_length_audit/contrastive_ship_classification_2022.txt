@@ -1,0 +1,1115 @@
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX                                                                           1
+
+
+
+
+             Contrastive Learning for Fine-grained Ship
+              Classification in Remote Sensing Images
+       Jianqi Chen, Keyan Chen, Hao Chen, Wenyuan Li, Zhengxia Zou*, and Zhenwei Shi, Member, IEEE
+
+
+
+
+   Abstract—Fine-grained image classification can be considered
+as a discriminative learning process where images of different                       Frigate      Cruiser    Landing Craft   Destroyer   Command Ship
+subclasses are separated from each other while the same subclass
+images are clustered. Most existing methods perform synchronous
+discriminative learning in their approaches. Although achieving
+promising results in fine-grained visual classification (FGVC)
+in natural images, these methods may fail in fine-grained ship
+classification (FGSC) problem in remote sensing (RS) images
+due to the highly “imbalanced fineness” and “imbalanced ap-
+pearances” of ships among subclasses. To tackle the issue, we
+propose an asynchronous contrastive learning-based method for
+effective FGSC. The proposed method, which we refer to as
+“Push-and-Pull Network (P2 Net)”, includes a “push-out stage”
+and a “pull-in stage”, where the first stage forces all the instances
+to be de-correlated and then the second one groups them into
+each subclass. A dual-branch network is designed to separate/de-
+correlate the images with each other, while an Integration Module
+is designed to aggregate the de-correlated images into their
+corresponding subclass together with a Proxy-based Module
+designed for acceleration. In this way, the correlation between
+subclasses can be decoupled, which in turn makes the final
+classification much easier. Our method can be trained end-to-
+end and requires no additional annotations other than category
+information. Extensive experiments are conducted on two large-
+scale FGSC datasets (FGSC-23 and FGSCR-42). Our method out-
+performs other state-of-the-art approaches. Ablation experiments
+also suggest the effectiveness of our design. Our code is available
+                                                                                                             Bulk Carrier
+at https://github.com/WindVChen/Push-and-Pull-Network.
+   Index Terms—Fine-grained classification, contrastive learning,
+ship classification, remote sensing.                                          Fig. 1. The challenge of high inter-class similarity and low intra-class
+                                                                              similarity in FGSC task in RS. In the first row, ships of different subclasses
+                                                                              are similar in appearance, while in the second row, ship appearances of the
+                         I. I NTRODUCTION                                     same subclass are quite different.
+
+
+F    INE-GRAINED ship classification (FGSC) task in remote
+     sensing (RS) images aims at differentiating subclasses of
+the main ship category. FGSC has great application perspec-                   subclasses of ships are subtle, while the differences intra-class
+tives in both civil and military fields. In addition, the recent              are significant due to different imaging conditions and different
+development of many high-performance object detection meth-                   ship appearances. Fig. 1 shows an example of low intra-class
+ods [1]–[3] also provides important research foundations for                  similarity and high inter-class similarity in ship classification.
+the downstream FGSC task. Compared with coarse classifi-                         FGSC has attracted increasing attention in RS field [4]–[8].
+cation tasks that only differentiate higher-level classes (e.g.,              Existing methods of this topic can be roughly divided into
+ships, airplanes, cars, etc), the fine-grained classification task            two groups. One group focuses on hand-crafted features [4],
+is much more challenging. The cues to distinguish different                   [5] and to some extent combines with the image features
+                                                                              of convolution neural networks (CNN) [6]. The other group
+   The work was supported by the National Natural Science Foundation of       makes use of the powerful deep learning (DL) method and
+China under the Grant 62125102, and the Fundamental Research Funds for
+the Central Universities. (Corresponding author: Zhengxia Zou (zhengxia-      takes advantage of the few sample learning [7] and data
+zou@buaa.edu.cn))                                                             augmentation [8] to ease the problem of lacking enough data.
+   Jianqi Chen, Keyan Chen, Hao Chen, Wenyuan Li and Zhenwei Shi              Despite the promising results achieved, attention has been
+are with the Image Processing Center, School of Astronautics, Beihang
+University, Beijing 100191, China, and with the Beijing Key Laboratory of     paid more to learning with few samples, and less to fine-
+Digital Media, Beihang University, Beijing 100191, China, and also with the   grained classification itself. Thus previous methods may not
+State Key Laboratory of Virtual Reality Technology and Systems, School of     be well adapted to the above-mentioned inter-class and intra-
+Astronautics, Beihang University, Beijing 100191, China.
+   Zhengxia Zou is with Department of Guidance, Navigation and Control,       class problems. In other words, the power of DL has not been
+School of Astronautics, Beihang University, Beijing 100191, China.            fully utilized due to insufficient data support.
+2                                                               IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+                                                                                pushed far away and de-correlated from each other. Then, the
+                                                                Category #1     pull process is applied to enforce the separated images back to
+                   Push + Pull                                  Category #2     their corresponding subclass clusters. We refer to our method
+       Input                         Output
+                                                                Category #3
+                                                                                as “Push-and-Pull Network (P2 Net)”. Fig. 2 shows a basic
+                                                                                idea of our method. In the push-out stage, each input image is
+                             (a) One-step method                                regarded as an individual class and to be dispersed from each
+                                                                                other as much as possible. We leverage the recent advances
+                                                                                in contrastive learning (CL) and design a dual-branch network
+                     Push                          Pull                         for the data separation process. Then in the pull-in stage, an
+                                                                                Integration Module is proposed to cluster the dispersed images.
+        Input                     Internal state                   Output       We also propose a Proxy-based Module to accelerate the image
+                                                                                clustering process. Previous FGVC methods usually set single
+                    (b) Asynchronous processing method (ours)                   [28], [29] explicit or implicit proxy [30], and force the images
+                                                                                to get close to their corresponding proxies. Different from all
+Fig. 2. The main idea behind our method. (a) The synchronous push-
+pull process of previous methods (one-step). (b) The asynchronous push-pull     these approaches and by taking into account the challenges
+process of the proposed P2 Net (two-step). Different colors denote different    of FGSC, we set multiple explicit proxies to represent each
+subclasses.                                                                     subclass.
+                                                                                   Although we perform the push-and-pull process asyn-
+                                                                                chronously, our network can be trained in an end-to-end
+   Benefit from two large-scale FGSC datasets [9], [10] pro-
+                                                                                fashion and only require image-level annotation for training
+posed in the last year, the limited data problem has been
+                                                                                (weakly-supervised). We conduct experiments on two large-
+alleviated to some degree, and a very natural idea is to apply
+                                                                                scale FGSC datasets: FGSC-23 and FGSCR-42. Ablation
+the latest DL methods [11]–[25] in FGVC to FGSC. In the
+                                                                                studies and visualization are further conducted to illustrate the
+FGVC task, each subclass is almost at the same level of
+                                                                                idea of our method. The results demonstrate that the proposed
+fineness, and corresponds to one specific type of object (e.g.,
+                                                                                method achieves higher accuracy compared with other state-
+black-footed albatross in CUB 200 2011 dataset [26], 2012
+                                                                                of-the-art methods.
+BMW M3 coupe in Standford Cars dataset [27]). However,
+                                                                                   Our contributions can be summarized as follows:
+in the FGSC task in RS, the fineness of subclasses is not
+that uniform. For example, the subclasses of aircraft carrier                     1) We introduce a new method for the RS image FGSC
+and destroyer usually attract more attention and are finer than                      task. The proposed method takes an asynchronous push-
+the subclasses of fishing boat. Moreover, there is also an                           and-pull strategy to tackle the challenges in the FGSC
+imbalance of ship appearances among subclasses due to the                            task, whereas previous methods follow a synchronous
+limitations of reality. In subclasses such as aircraft carrier, ship                 discriminative learning process and thus suffer from the
+appearances are just that few worldwide, yet there are many                          “imbalanced fineness” and “imbalanced appearances” of
+in fishing boat subclass. These two phenomena in the FGSC                            RS objects.
+task, which we name “imbalanced fineness” and “imbalanced                         2) We take advantage of the recent advances in CL and
+appearances”, bring more challenges to the FGSC task.                                propose a novel push-and-pull network (P2 Net). The
+   The fine-grained classification problem is commonly viewed                        network consists of a Push-out part and a Pull-in part,
+as a push-and-pull process, i.e., images of one subclass are                         which are carefully designed to make the classification
+encouraged to get closer to their corresponding subclass while                       both efficient and effective.
+getting far away from other subclasses. Some FGVC methods                         3) The proposed P2 Net can be trained end-to-end and re-
+[23], [25] design additional loss terms for the push and pull                        quires only image-level annotations. The experimental
+purposes respectively, while the others [19]–[22] only employ                        results on the FGSC-23 and FGSCR-42 datasets validate
+the final classification loss function (often CrossEntropyLoss).                     the superiority of the P2 Net on the FGSC task compared
+However, most of these methods share the same characteristic                         with the existing methods.
+that the loss terms are attached all together at the output                        The rest of the paper are organized as follows. The related
+end of the classifier. In other words, they perform the push                    work is described in Section II. The details of our network
+and pull processes synchronously, which we refer to as one-                     are given in Section III. Experimental results and visualization
+step. However, due to the aforementioned two imbalanced                         are conducted in Section IV, and the conclusions are drawn
+problems, the synchronous discriminative learning is hard to                    in Section V.
+sufficiently separate the similar images of different subclasses
+before aggregating images of the same subclass.
+   To address the above issues, we propose an asynchronous                                           II. R ELATED W ORK
+contrastive learning-based method for effective FGSC. We
+look at the push-and-pull process from a novel perspective,                        In this part, we briefly review the recent progress in RS im-
+and the two processes in our method are conducted asyn-                         age FGSC. We then review the natural image FGVC methods
+chronously. Given a set of training images, our method first                    studied in the field of computer vision. We also review the
+takes each image as an individual one and forces them to be                     recent advances in CL, which are related to our network.
+CHEN et al.: CONTRASTIVE LEARNING FOR FINE-GRAINED SHIP CLASSIFICATION IN REMOTE SENSING IMAGES                                    3
+
+
+
+A. FGSC in Optical RS Images                                       key parts. Ding et al. [22] proposed to use pyramid structure
+   Fine-grained RS object classification has raised increasing     to determine key regions. The study found that using the key
+attention in recent years [31]–[36]. Sumbul et al. [31] focused    part location information can effectively improve the accuracy
+on fine-grained street tree classification and proposed a zero-    of fine-grained classification. However, many approaches [20],
+shot learning method. They then explored to use of multi-          [22], [42] in this direction often set pre-defined bounding
+source data for the classification task [33]. Ni et al. [32] in-   boxes like anchors in their pre-processing stage which requires
+troduced the adaptive density discrimination into fine-grained     prior knowledge and is not flexible.
+terrain classification. Nie et al. [36] proposed a classifier-        The last category of methods is based on metric learning, in
+adaptive earth mover’s distance for classification of few-         which similar research problems have been explored in face
+sample fine-grained aircraft. These methods all achieve some       identification tasks [43], [44]. Sun et al. [23] proposed con-
+good results. However, the study on the FGSC task is still in      strained pair-based loss where different features of the input
+its infancy.                                                       image pairs are pushed and pulled. Xu et al. [25] exploited
+   Previous methods of RS image FGSC are mainly based on           the discriminative feature by using both the pair-based loss
+hand-crafted features and data utilization due to the lack of      and proxy-based loss. The metric learning methods usually
+large-scale FGSC datasets. Shi et al. [5] combined the Fourier     bring no extra computational cost, as it mainly focuses on the
+transform with CNN to classify the ships, and they then fused      design of loss functions. Our P2 Net can also be classified as
+more hand-craft features in their later work [6]. Qi et al. [8]    a metric learning method. However, different from the above
+studied data augmentation in FGSC. Shi et al. [7] proposed to      methods that perform push and pull processes synchronously,
+utilize few-shot learning to solve FGSC problems.                  we propose a two-step way that can achieve better results in
+   Recently, two large-scale FGSC datasets (FGSC-23 [9] and        the FGSC task.
+FGSCR-42 [10]) are proposed. With the datasets, Zhang et
+                                                                   C. Contrastive Learning
+al. [9] proposed a DL-based method using extra attribute
+annotations. Zhao et al. [37] focused on the low-resolution           Contrastive learning is a recently emerged research topic
+FGSC task and proposed a feature balance strategy with the         in unsupervised/self-supervised representation learning [45]–
+use of both super-resolution and low-resolution images. Chen       [47]. In CL, the input batched images are first transformed
+et al. [38] introduced a hierarchy and exclusion graph to          into two views by using different augmentation strategies. The
+model the label hierarchy. Although achieving some good            views of the same image are considered the positive samples,
+results, these methods depend on extra annotations and inputs,     while the views of different images are considered negative
+thus limiting the possibility of their large-scale application.    samples. After that, the augmented images are encoded by
+In our method, we focus on weakly-supervised approaches            an encoder network and then mapped to a feature space by
+where we assume only image-level annotations are available.        a designed projection network, where a carefully designed
+Also, compared with some recent methods that focused on few        contrastive loss is applied. The contrastive loss aims to repulse
+samples [39] and the interpretability of the network [40], here    negative samples while attracting the positive ones. Thus the
+we aim to address the two issues of “imbalanced fineness” and      features of positive samples can be clustered while that of
+“imbalanced appearances”, which may bring the FGSC task            the negative ones can be dispersed. Bachman et al. [48] argue
+challenges.                                                        that the CL can maximize the mutual information among latent
+                                                                   representations of different unlabeled images, which makes CL
+                                                                   successful as an unsupervised learning way.
+B. FGVC in Natural Images                                             Recently, many effective CL methods [49]–[51] are pro-
+   FGVC also has drawn increasing attention in the computer        posed. He et al. [49] propose MoCo (Momentum Contrast)
+vision field recently. Methods in the FGVC task can be divided     method to reduce the memory cost while fusing more in-
+into three categories. The first category mainly focuses on        formation by designing a dynamic queue. Chen et al. [51]
+the representation learning ability of the network. Lin et al.     propose a much simpler siamese network by introducing a
+proposed B-CNN [11] that exploited the discriminative feature      Stop Gradient strategy. Using these CL methods, the need
+by a bilinear pooling on two local parts of an input image. Yu     for expensive image labeling can be alleviated, and a large
+et al. [13] proposed a hierarchical bilinear pooling network       number of unlabeled images can be leveraged, enabling better
+based on B-CNN. Although these methods can improve the             initialization/pretraining for neural networks. In our P2 Net, we
+classification accuracy, they usually have complex structures      also design a CL-like structure in the Push-out part, consist-
+and the computational cost is intensive.                           ing of a custom-designed contrastive loss and a projection
+   Methods of the second category focus on fine-grained            structure. However, the goal of the Push-out part is quite
+annotations among subclasses and attract the most attention        different from the common CL methods. The current CL
+currently. The early methods in this direction usually utilize     methods aim to address the insufficiency of labeled images
+auxiliary annotations as supervisions. Some research has been      and explore a better-pretrained model, while we introduce the
+done on the utilization of object’s key part [15] and image’s      CL idea into our method to tackle the “imbalanced fineness”
+key point [41] annotations. The latest research in this category   and “imbalanced appearances” issues by separating the input
+focuses on how to exploit image-level weakly-supervised            images at an image level. What else, most CL methods are
+information for fine-grained classification. Zheng et al. [19]     implemented in a two-step way (pretrain first, then finetune)
+designed a trilinear attention sampling method to detect object    in applications, whereas the P2 Net in an end-to-end way.
+4                                                                                     IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+                                                                                       Push-out part                                                     Pull-in part
+                           Transformed                                                             Push-out Head
+                         image batch (1)                                                                                                                     Proxy-based Module
+                                                                                                                                                         Image 1
+
+
+
+                                                                                                                   X2                                              Agg
+                                                                                                                                                   Sep                     Category #1
+                    T1                                                                                                                                                       proxies
+                                                                                                              X1
+
+
+
+
+                                                      Average Pooling
+                                                                                                                        Agg
+
+
+
+
+                                                                        Max Pooling
+                                                                                       Push                                        Integration                                    Category #2
+                                                                                               …                                                                                    proxies                       Output
+                                           Backbone                                   Stacks           Sep                           Module
+
+                    T2
+                                                                                                                                                                   Category #3           Image 3
+        Input                                                                                                                                                        proxies                         Linear + Softmax
+    (image batch)                                                                                                                                  Image 2
+                                                                                                               2
+                                                                                                              Xflip
+
+                           Transformed
+                         image batch (2)
+
+
+Fig. 3. The detailed structure of P2 Net. The Agg and Sep are the abbreviations of Aggregation and Separation operations. In the Push-out part, different
+colors denote different input images at an image level, while in the Pull-in part, colors denote different subclasses at a class level.
+
+
+
+                                III. M ETHODOLOGY
+   In this section, we introduce the details of the proposed
+                                                                                                                              (2048, 512) Linear                                    1x1, (2048, 512) Conv
+P2 Net, including the pipeline, network architecture, and loss
+functions.                                                                                                                       Batch norm                                                  Batch norm
+
+                                                                                                                                    ReLU                                                           ReLU
+
+A. Overview
+                                                                                                                              (512, 2048) Linear                                     3x3, (512, 512) Conv
+   In the proposed P2 Net, we have two processing stages: a
+push-out stage and a pull-in stage. Detailed structures of the                                                                   Batch norm                                                  Batch norm
+P2 Net are shown in Fig. 3. In the training phase, the P2 Net                                                                       ReLU                                                           ReLU
+takes in two randomly augmented views T 1 and T 2 from input
+image batch I and extracts the corresponding features through
+its network backbone. Then the features are processed by the                                                                    (a) Push Stack                                      (b) Integration Module
+push-out part first and then by the pull-in part. In the push-
+out part, input images are regarded as individual classes of                                                 Fig. 4. The details of the Push Stack and Integration Module. (a) Push Stack.
+                                                                                                             (b) Integration Module. Note that the structures displayed here are based on
+their own. Views of the same image are forced to get close                                                   ResNet50.
+while views of different images are forced to be far away
+from each other. The Push-out part will enforce the images to
+be projected to a feature space where the adhesion/correlation                                               have achieved amazing representation results by exploring the
+between images is reduced. Then, in the Pull-in part, each                                                   relation between unlabeled images.
+image again belongs to its corresponding subclass and is                                                        The Push-out part takes the features extracted by the back-
+forced to be close to a set of proxies which represent each                                                  bone as input. These features are first processed by a global
+subclass. In the inference phase, the Push-out part and the                                                  average/max pooling operation in the spatial dimension and
+Pull-in part can be mostly removed, thus the network has                                                     then projected to a new feature space by several designed
+almost no additional computational cost. Note that our method                                                Push Stacks. We refer to the representations of input images
+is flexible in different backbone structures such as ResNet [52],                                            after Push Stack as X i = f (T i ), i 2 {1, 2}. We design
+DenseNet [53], and so on. In this paper, we take ResNet50 as                                                 our Push Stack as a set of fully connected layers with batch
+the default backbone of our architecture. The details of the                                                 normalization and relu activations. The detailed architectures
+two parts are given in the following.                                                                        are displayed in Fig. 4. The features X 1 , X 2 will be input
+                                                                                                             to the Push-out head where the views of different images are
+B. Details of Push-out Part                                                                                  separated.
+   As we mentioned in Section I, the “imbalanced fineness”                                                      To clearly elaborate the operation of the Push-out head, we
+and “imbalanced appearances” intensify the difficulty of the                                                 provide a pseudo code in Algorithm 1 to illustrate the process.
+FGSC task. Subclasses in RS objects are usually not at the                                                   For the features X 1 , X 2 2 RB⇥C , B, C are the batch size
+same level of fineness and the problem of the intra-class                                                    and channel number respectively, we unfold them into feature
+                                                                                                                                    {1,2}    {1,2}    {1,2}         {1,2}
+dissimilarity and inter-class similarity is further exacerbated,                                             vectors: X {1,2} = {x1       , x2     , x3     , ..., xB }, x 2 RC .
+which leads to the ineffectiveness of the existing one-step                                                  The feature vectors at the same location in X 1 and X 2
+methods. Our Push-out part is to alleviate the above chal-                                                   correspond to different augmented views of the same input
+lenges by de-correlating the images. The design of the Push-                                                 image, and the different locations correspond to different input
+out part is inspired by recent CL methods [49]–[51] which                                                    images. We flip X 1 or X 2 at their sample dimension, in which
+CHEN et al.: CONTRASTIVE LEARNING FOR FINE-GRAINED SHIP CLASSIFICATION IN REMOTE SENSING IMAGES                                     5
+
+
+
+
+ Algorithm 1: The process of the Push-out head                     better process the potential relation of the previous separated
+                       {1,2}
+                                                                   features, thus speeding up the pull process.
+  Input: X {1,2} = {x1,2,...,B }, features of different               To further enforce the separated images to be pulled back
+           augmented views after Push Stack                        into their corresponding subclasses, the Proxy-based Module is
+             {1,2}      {1,2}
+  Input: Xf lip = {xB,B 1,...,1 }, the flipped version of          designed after the Integration Module. We use Z i = g(T i ) to
+           feature X                                               denote the features of different augmented views after the Inte-
+  Define: Aggregate(·), a loss function to make the                gration module. Different from the description in Section III-B,
+            augmented views of the same image close                we unfold Z {1,2} in a new form: Z {1,2} = {zm     i
+                                                                                                                        , ym }B , i 2
+            (See in Section III-D1)                                {1, 2}, m 2 {1 : B}, ym 2 {1 : K}, where B and K denote
+  Define: Separate(·), a loss function to make the                 batch size and number of subclasses respectively. Here, we
+            augmented views of different images separated          no longer look at each input image at the image level but at
+            (See in Section III-D1)                                a class level, as we assign the subclass label attribute ym to
+1 // m denotes different input images                              each zm i
+                                                                              vector. That means the feature vectors at different
+2 for m in 1 : B do                                                locations (denoted by the subscript m) can share the same
+3     // The augmented views of the same image are                 subclass attribute (denoted by ym ). Then, we construct a set
+        forced to aggregate                                        of learnable proxy vectors whose number is positively related
+4     Aggregate(x1m , x2m )                                        to the subclass number and size identical to zm
+                                                                                                                 i
+                                                                                                                    . We force each
+                                                                   feature vector to get close to the proxies of its corresponding
+5    // The augmented views of different images are                subclass. As we mentioned in Section I, the subclasses in
+       forced to separate                                          the FGSC task are not at the same level of fineness as that
+6    Separate(x1m , x2B m+1 )                                      in the FGVC task, and also consist of different numbers
+7 end                                                              of appearances. Therefore, the previous proxy-based methods
+                                                                   [28], [29] that just select one proxy vector to represent each
+                                                                   subclass are not suitable for FGSC. Different from the previous
+                    {1,2}      {1,2}   {1,2}   {1,2}
+way we can get Xf lip = {xB , xB 1 , xB 2 , ..., x1
+                                                         {1,2}
+                                                              }.   methods, for each subclass, we select multiple proxies. Sup-
+When the batch size is even, features at the same location         pose P = {pk |k 2 {1, 2, ..., N K}}, pk 2 RC represents the
+in the flipped one and the other correspond to different input     proxy vectors, where C, N, K denote the channel number, the
+images. Therefore, we force the flipped one and the other to       number of each subclass’s proxies and the subclasses number
+be far away. At the same time, we force features from the          respectively.
+same image in X 1 and X 2 to get close. To achieve the effect         We force zm  i
+                                                                                      to be close to {pk |k 2 {N (ym 1) + 1 :
+of the aggregation and separation in the Push-out head, we         N ym }}, while far away from {pk |k 2    / {N (ym 1) + 1 :
+design two loss functions, the details of which can be found       N ym }}. What else, to prevent proxies of the same subclass
+in Section III-D1.                                                 to be identical, we also force proxies to get away from each
+   Compared with the existing CL methods [49]–[51], [54],          other. Note that these proxies are explicitly set and will not
+the Push-out part explores a more efficient contrastive loss       add additional cost like the implicit way [30]. The detailed
+and a more suitable projection structure for the FGSC task.        implementation of the aggregation and separation in the Proxy-
+The final Push-out loss led by our flipped operation (See          based Module can be found in Section III-D2. The pseudo
+details in Section III-D) and the Push Stack designed can          code of our Proxy-based Module is displayed in Algorithm 2.
+save more memory space, and reduce more calculations while
+leading to higher classification accuracy, which can be verified   D. Objective Function
+in Section IV-E. Also should be noticed that the standing             The objective functions for training can be divided into
+point for the designed Push-out part is different from the         three parts: (1) the loss of the Push-out part, (2) the loss of
+current CL methods, where the Push-out part is for tackling the    the Pull-in part, and (3) the loss of the final classifier. (For
+“imbalanced fineness” and “imbalanced appearances” issues          simplicity, some variables such as B, N , K in the following,
+we discussed above, while the current CL methods are usually       if not specified, correspond to the same meaning mentioned
+for addressing the insufficiency of labeled data and model pre-    before in Section III.)
+training.                                                             1) Push-out Loss: As mentioned above, in the Push-out
+                                                                   part, each input image is enforced to be separated from each
+                                                                   other, and aggregated with augmented views of the same
+C. Details of Pull-in Part                                         origin. Here we use cosine similarity to measure the degree
+   After the Push-out ope, the input images are de-correlated      of separation and aggregation as follows:
+in their feature space. The Pull-in part includes an Integration                         Sep(a, b) = D(a, b)
+Module and a Proxy-based Module. The Integration module’s                                                                        (1)
+structure is displayed in Fig. 4. The first 1 ⇥ 1 convolution                          Agg(a, b) = D(a, b),
+layer is used for reducing the number of features from the         where D(a, b) = a · b/(kak2 · kbk2 ) denotes the cosine
+channel dimension. The second convolution layer is used for        similarity between the two input representation vectors a, b.
+information fusion from a spatial dimension with a 3 ⇥ 3             For the representation xim of each image in each view after
+kernel. Through the Integration module, the network can            Push Stack, we force it to be far away from xjn , where n =
+6                                                      IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+
+    Algorithm 2: The process of the Proxy-based Module                    that the Push-out part is a dual-branch network (one branch
+    in the Pull-in part                                                   starting with average pooling and one branch starting with max
+                                                                          pooling), we calculate the push-out loss for each branch and
+   Input: Z {1,2} = {zm    i
+                             , ym }B , features of different              then sum them up.
+            augmented views after Integration Module                         2) Pull-in Loss: In the Pull-in part, the previously separated
+   Input: P = {pk }N K , proxies of subclasses                            images are again pulled into corresponding subclass proxies.
+   Define: Aggregate(·), a loss function to make the                      Here, the objective function includes three parts: pull the
+             inputs closed (See in Section III-D2)                        images with proxies that represent the same subclass, push
+   Define: Separate(·), a loss function to make the                       the images out of proxies that represent different subclasses,
+             inputs separated (See in Section III-D2)                     and separate the proxies from each other.
+ 1 /*Pull the input features into corresponding subclass*/
+                                                                             We use the class label ym of each sample to guide its
+ 2 // i denotes different augmented views
+                                                                          representation zmi
+                                                                                             close to proxy vectors belonging to the same
+ 3 for i in {1, 2} do
+                                                                          category ym , while far away from that belonging to different
+ 4      // m denotes different input images                               categories.
+ 5      for m in 1 : B do                                                    The aggregation and separation loss between the image
+ 6          // k denotes different proxies                                feature and the proxies are defined as:
+ 7          for k in 1 : N K do
+                                                                                                                  N ym
+ 8              if k 2 {N (ym 1) + 1 : N ym } then                                       1 XX
+                                                                                                2     B           X
+                                                                                                                                   i
+ 9                   // Force z closed with the proxies of the                  Lap =                                         Agg(zm , pk )       (4)
+                                                                                        2BN i=1 m=1
+                       same subclass                                                                      k=N (ym 1)+1
+                                     i
+10                   Aggregate(zm      , pk )                                                            B
+                                                                                                       2 X
+                                                                                                       X              NK
+                                                                                                                      X
+                                                                                           1
+11              else                                                          Lsp =                                                i
+                                                                                                                              Sep(zm , pk )       (5)
+12                   // Force z away from the proxies of the                          2BN (K        1) i=1 m=1
+                                                                                                                    k=1,k2S
+                                                                                                                         /
+                       different subclasses
+                                   i                                      where S denotes the set {N (ym 1) + 1 : N ym }.
+13                   Separate(zm     , pk )
+                                                                             As each category is represented by multiple proxies, to
+14              end
+                                                                          prevent these proxies to be identical, we further define a loss
+15          end
+                                                                          to separate the proxies as:
+16      end
+17      /*Force the proxies not be identical*/                                               1
+                                                                                                              NK
+                                                                                                              X       NK
+                                                                                                                      X
+18      for k in 1 : N K do                                                     Lp =                                             Sep(pk , pk0 )   (6)
+                                                                                        2N K(N K       1)
+19          for k 0 in 1 : N K do                                                                             k=1 k0 =1,k0 6=k
+20              if k 0 6= k then                                             Our overall pull-in loss is LP ull = Lap + Lsp + Lp .
+21                   Separate(pk , pk0 )                                     3) Classifier Loss: We choose the standard cross-entropy
+22              else                                                      loss (abbreviated as CE) as the classification loss:
+23                   continue
+                                                                                                          2     B
+24              end                                                                                  1 XX
+                                                                                         LCls =                     i
+                                                                                                               CE(ŷm , ym )                      (7)
+25          end                                                                                     2B i=1 m=1
+26      end
+27 end                                                                    where ŷ is the final network prediction, y is the label of the
+                                                                          input.
+                                                                             By considering all the above losses, the final loss function
+                                                                          for training is written as:
+B + 1 m and j 6= i. The representation xjn corresponds to
+the image at the same position after flipping the batch. The                             L = ↵LP ush + LP ull + LCls                              (8)
+separation loss for one batch can be formulated as:
+                 B
+                                                                          where ↵, , and are the balancing weights of the three loss
+                 X                                                        terms and we set them all to 1 in our work.
+        Lsep =         Sep(x1m , sg(x2n )) + Sep(x1n , sg(x2m )),   (2)
+                 m=1
+                                                                               IV. E XPERIMENTAL R ESULTS AND D ISCUSSIONS
+where sg(·) denotes a stop-gradient operation and a symmet-
+rical structure is adopted, which are proven to be effective in             In this section, the FGSC datasets we adopt are first intro-
+preventing model collapse [51].                                           duced. The second part gives the implementation details of
+   To constrain similarity between the two views of the same              our method. We present the evaluation protocol in the third
+image, we define the aggregation loss as:                                 part, and then our experimental results are given.
+              B
+              X
+     Lagg =         Agg(x1m , sg(x2m )) + Agg(x2m , sg(x1m )),      (3)   A. Datasets
+              m=1                                                           We experiment on the datasets FGSC-23 [9] and FGSCR-
+  Our push-out loss is the average between the separation loss            42 [10]. In the following, we give a brief summary of these
+and the aggregation loss: LP ush = 2B 1
+                                        (Lsep + Lagg ). Note              two datasets.
+CHEN et al.: CONTRASTIVE LEARNING FOR FINE-GRAINED SHIP CLASSIFICATION IN REMOTE SENSING IMAGES                                                       7
+
+
+
+
+                                                   (a) Instances per category for the FGSC-23 dataset
+
+
+
+
+                                                  (b) Instances per category for the FGSCR-42 dataset
+
+
+Fig. 5. Number of annotated instances per category for (a) FGSC-23 and (b) FGSCR-42. The number in the front of the horizontal axis label represents the
+index of the category.
+
+
+
+   1) FGSC-23: has about 4,081 images from 23 subcate-                       set, valid set, and test set in a 3:1:1 ratio. Since the occurrence
+gories. The images are mainly from Google Earth and GF-1                     frequency is not equal between military and civil subclasses,
+Satellite. Among the subcategories, there are aircraft carrier,              both datasets have an imbalanced sample problem (FGSC-23 is
+destroyer, oil tanker, fishing boat, and so on.                              subtle while FGSCR-42 more serious). Therefore, we perform
+   2) FGSCR-42: has about 7,776 images from 42 subcate-                      augmentation to the fewer-sample subclasses in the training
+gories. The images are mainly collected from Google Earth                    set. The augmented operations include random crop and scale,
+and the previous datasets (e.g., DOTA [55]). In FGSCR-42,                    random gaussian blur, random rotation, and random horizontal
+the military ships are further divided, e.g., the aircraft carrier           and vertical flip.
+is divided into Nimitz-class, KittyHawk-class, and so on.
+   To better illustrate the existing “imbalanced fineness” and
+“imbalanced appearances” issues discussed in Section I, we                   B. Implementation Details
+present more details in Fig. 5. We can see that the military                    We implement the backbone of our network based on
+ships are usually divided into finer subclasses compared with                ResNet50 pretrained on ImageNet. The Push-out part is de-
+the civilian ships, which corresponds to the “imbalanced                     signed as a dual-branch network, where the two branches start
+fineness”. What else, considering that some categories like                  with average and max pooling respectively, and are followed
+aircraft carriers have so few ships around the world, it leads               by the same Push Stack structure. Through the branch with
+to the problem of “imbalanced appearances”.                                  average pooling, the input images can be separated at a global
+   In our experiments, the datasets are divided into a training              level, while at a local level through the max-pooling branch.
+8                                                     IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+                                                                  TABLE I
+     C OMPARISON RESULTS OF DIFFERENT APPROACHES ON FGSC-23 AND FGSCR-42 DATASETS . A LL THE METHODS ARE IMPLEMENTED BASED ON
+                     R ES N ET 50. T HE BEST RESULTS ARE MARKED IN BOLD , AND THE SECOND - BEST ONES ARE UNDERLINED .
+
+                                                                                                        AA
+                           Method                    Params (M)         FLOPs (G)
+                                                                                           FGSC-23           FGSCR-42
+
+                          ResNet50                      23.6               4.12             86.92              91.62
+
+                  HBPNet (ECCV 18 [13])                74.9                6.59             87.72              91.32
+                    DCL (CVPR 19 [56])                 23.8                4.12             85.35              90.24
+                    TASN (CVPR 19 [19])                34.8                18.7             87.03              91.85
+                    GFNet (NIPS 20 [21])               56.5                4.59             87.13              92.03
+                   API-Net (AAAI 20 [24])              23.6                4.12             87.78              91.47
+                  ProtoTree (CVPR 21 [57])             108.8               20.7             84.17              89.92
+
+                         P2 Net (ours)                  26.9               4.23             88.99              93.21
+
+
+
+                                TABLE II                              Cosine annealing strategy, while the lr of other network parts
+    T HE COMPARISONS WITH DIFFERENT PROJECTION STRUCTURES ON THE      is positively related to that of the backbone (See details in
+          FGSC-23 DATASET. T HE BEST ONES ARE MARKED IN BOLD .
+                                                                      Section IV-H). We also run 10 epochs warm-up to stabilize
+                    Projection Structure      AA
+                                                                      the training phase. All the models are trained for 100 epochs
+                                                                      with a minibatch size of 64. The number of Push Stack
+                  SimCLR [50] projection     87.44                    and proxies in each subclass are set to 2 and 3 respectively
+                  SimSiam [51] projection    87.01                    if not specified, and the commonly used Xavier Uniform
+                     Push Stack (ours)       88.99                    [58] scheme is adopted to initialize the proxies. Note that
+                                                                      in the inference phase, Push-out and Pull-in parts are mostly
+                               TABLE III                              removed, only the Integration Module being kept.
+  T HE COMPARISON RESULTS AMONG CONTRASTIVE LOSS OF S IM CLR,
+S IM S IAM , AND OUR P2 N ET ON THE FGSC-23 DATASET. T HE BEST ONES
+                         ARE MARKED IN BOLD .                         C. Evaluation Protocol
+                                                                         Considering the sample imbalance in the FGSC datasets,
+                      Push-out Loss           AA                      different from the existing methods that choose overall ac-
+                   Loss in SimCLR [50]       88.21                    curacy (OA) to evaluate the network performance, we adopt
+                  ours (remove stopgrad)     88.63                    average accuracy (AA) which is more reasonable. The AA
+                                                                      metric is defined as:
+                  Loss in SimSiam [51]       87.64
+                                                                                                        C
+                           ours              88.99                                                   1 X
+                                                                                           AA =            Acc(c)                 (9)
+                                                                                                     C c=1
+                                                                      where C denotes the number of categories, and Acc(·) denotes
+We design the Push Stack as a bottleneck-like structure that
+                                                                      the accuracy of each category.
+can fuse much information while economical.
+                                                                         We also make use of the accuracy rate (AR) and misclas-
+   The category label of the image is the only annotation
+                                                                      sification rate (MR) of each category to display the network’s
+used for training. In the training phase, the network takes
+                                                                      detailed performance, and confusion matrix (CM) for more
+two views (T1 , T2 ) transformed from the input images. The
+                                                                      intuitive visual perception (For brevity, we embed AR and
+transformations are almost the same as the augmentations in
+                                                                      MR into CM for display.). Floating Point Operations (FLOPs)
+the preprocess, except for replacing the operation of random
+                                                                      and Model Parameters (Params) are also adopted to illustrate
+crop and scale with a customized resize operation to ensure
+                                                                      the computational complexity of the network in the inference
+224⇥224⇥3 input size. We argue that the standard resize
+                                                                      phase.
+operation that directly stretches the image to fulfill a specific
+size can lose a lot of information when the input image has a
+large aspect ratio, which is very common to the ship images in        D. Comparisons with State-of-the-Art Methods
+RS. Considering that, our resize operation stretches the image           Table I shows the performance evaluation of different ap-
+while keeping its original ratio, and then pads the rest space        proaches to FGSC-23 and FGSCR-42 datasets. Since there are
+with all-zero pixel values.                                           still few effective weakly supervised FGSC in RS, we here
+   We implement our method with Pytorch and train all the             choose some state-of-the-art methods [13], [19], [21], [24],
+models on a single RTX 3090 GPU card. We adopt Stochastic             [56], [57] in the FGVC for a fair comparison. Considering
+Gradient Descent (SGD) optimizer for training with momen-             different fineness degrees of subclasses, we set the number of
+tum of 0.9 and weight decay of 1e-4. The initial learning             proxies to 3 in the FGSC-23 dataset and 2 in the FGSCR-42.
+rate (lr) of the backbone is set to 0.01 and decays in a              From the results, we can see that our method achieves the best
+CHEN et al.: CONTRASTIVE LEARNING FOR FINE-GRAINED SHIP CLASSIFICATION IN REMOTE SENSING IMAGES                                                     9
+
+
+
+
+               (a)                                   (b)                                    (c)                                   (d)
+
+
+
+
+               (e)                                    (f)                                   (g)                                   (h)
+
+
+
+
+               (i)                                    (j)                                   (k)                                    (l)
+
+
+
+
+               (m)                                   (n)                                    (o)                                   (p)
+
+
+Fig. 6. Confusion matrixes of different methods on the FGSC-23 and FGSCR-42 datasets. The horizontal and vertical coordinates are the category index
+(See details in Fig. 5). (a)-(h) are respectively the results of ResNet50, HBPNet, DCL, TASN, GFNet, API-Net, ProtoTree, and our P2 Net on the FGSC-23
+dataset. While (i)-(p) are the results on the FGSCR-42 dataset. For brevity, we filter out the values of zero in CM.
+
+
+
+AA on both FGSC-23 and FGSCR-42 datasets (2.07% and                         experiments in Section IV-F, where we can see that there
+1.59% higher than baseline ResNet50 respectively). Moreover,                will be no accuracy gain if we only have Integration Module
+our method has almost the same computation as the baseline,                 applied.
+except for the limited amount of computation introduced by                    We further display visually the CM results in Fig. 6, which
+the Integration Module, and has far less computation than the               detail the performance of different methods on each category
+methods like GFNet. To further verify that our AA improve-                  of the FGSC-23 and FGSCR-42 dataset. The values on the
+ment is not from the additional cost, we conduct ablation                   CM’s diagonal are the AR for each subclass, while the values
+10                                                 IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+                                                                 TABLE IV
+ T HE ABLATION EXPERIMENTS OF THE DIFFERENT PARTS OF P2 N ET ON THE FGSC-23 DATASET. T HE COARSE ABLATION FOCUSES ON THE P USH - OUT
+                         AND P ULL - IN PARTS , WHILE THE FINE ABLATION FOCUSES ON THE MODULES IN EACH PART.
+
+
+                                                 Push-out Part                                     Pull-in Part
+              Ablation                                                                                                          AA
+                                Average Pooling Branch     Max Pooling Branch      Integration Module      Proxy-based Module
+
+             ResNet50                     -                          -                     -                      -             86.92
+
+                                          +                        +                       -                      -             86.35
+          Coarse Ablation                 -                        -                       +                      +             88.07
+                                          +                        +                       +                      +             88.99
+
+                                          +                        -                       -                      -             87.38
+                                          -                        +                       -                      -             86.82
+                                          +                        +                       -                      -             86.35
+                         Push
+                                          -                        +                       +                      +             88.23
+                                          +                        -                       +                      +             88.78
+                                          +                        +                       +                      +             88.99
+       Fine Ablation
+                                          -                        -                       -                      +             87.95
+                                          -                        -                       +                      -             86.98
+                                          -                        -                       +                      +             88.07
+                         Pull
+                                          +                        +                       -                      +             87.32
+                                          +                        +                       +                      -             88.5
+                                          +                        +                       +                      +             88.99
+
+
+
+of the other regions are the MR. Compared with the other                 effectiveness of our Push-out loss and our flipped operation.
+methods, it can be seen that for many of the ship subclasses,            We argue that the decay of SimSiam is because it only takes
+the P2 Net achieves the best AR, while for the others, the P2 Net        into account the aggregation of different augmented views of
+also achieves a relatively good result. In a more intuitive way,         the same origin, but ignores the separation, while the decay
+we can observe in both datasets (FGSCR-42 is more obvious)               of SimCLR is more probably caused by too much separation,
+that the CM of P2 Net has fewer and darker valued regions                as it not only separates the inter-view images but also the
+off the diagonal, which corresponds to a smaller MR to other             intra-view ones.
+classes and again verifies our method’s superiority over the
+others.                                                                  F. Ablation Studies
+                                                                            In this subsection, we conduct ablation studies to evaluate
+E. Comparisons with Contrastive Learning Methods                         the contributions of each part in the proposed P2 Net.
+   We also make comparisons with other CL methods to verify                 We investigate the ablation of different parts in two ways:
+the effectiveness of the proposed projection structure and               coarse and fine. The coarse ablation refers to the experiments
+contrastive loss of our Push-out part. All experiments below             where we focus on the effect of the Push-out part and the
+are conducted on the FGSC-23 dataset [9] if not specified.               Pull-in part, while in the fine ablation, we further explore each
+   Effectiveness of Projection Structure. Previous CL meth-              component in the above two parts. As shown in Table IV, the
+ods like SimCLR [50] and SimSiam [51] do not pay specific                results are divided into four parts. The first is the baseline
+attention to the projection structure, leading the structure to be       ResNet50, the second is the coarse ablation, and the last two
+somewhat too complex (SimSiam) or too simple (SimCLR).                   are the fine ablation of the Push-out and the Pull-in part. The
+We thus propose the Push Stack to search for an optimal                  results can be summarized as follows:
+projection structure. Table II shows the performance of our                 • In the coarse ablation experiment, we can see when only
+Push Stack compared with the structure used in SimCLR [50]                    applying the Push-out part to the backbone, AA has a
+and SimSiam [51]. Compared with previous projection struc-                    0.57% decay, which is mainly because just the final linear
+tures, our Push Stack achieves a much better result (1.55%                    layer has not enough capacity to pull the separated images
+and 1.98% higher than SimCLR and SimSiam respectively).                       back. When the Pull-in part is also applied, a noticeable
+   Effectiveness of Contrastive Loss. We also mentioned in                    AA increase (2.64%) can be observed. This again verifies
+Section III-B that our contrastive loss, i.e., Push-out loss with             the effectiveness of our idea in P2 Net, that is, the fine-
+the flipped operation can achieve better results than previous                grained classification task will be much easier if we do
+CL methods. In Table III, we show the results compared                        the push and pull asynchronously.
+with SimCLR [50] and SimSiam [51]. For a fair compari-                      • In the fine ablation results of the Push-out part, the idea of
+son, when compared with SimCLR, we remove the stopgrad                        the global and local level push branch talked in Section
+operation borrowed from SimSiam. The results (0.42% better                    IV-B suggests effectiveness. When adding the Average
+than SimCLR and 1.35% than SimSiam in AA) suggest the                         Pooling Branch (APB) on the Pull-in part, there is a
+CHEN et al.: CONTRASTIVE LEARNING FOR FINE-GRAINED SHIP CLASSIFICATION IN REMOTE SENSING IMAGES                                       11
+
+
+
+                              TABLE V                                                           TABLE VII
+T HE EFFECTS OF DIFFERENT NUMBERS OF P USH S TACK ON THE FGSC-23        T HE PERFORMANCE OF P2 N ET ON DIFFERENT BACKBONES ON THE
+             DATASET. T HE BEST ONE IS MARKED IN BOLD .                    FGSC-23 DATASET. T HE BEST ONES ARE MARKED IN BOLD .
+
+                   Push Stack Number       AA                                  Backbone                Whether with P2 Net     AA
+
+                            1              88.18                                                              w/o             86.92
+                                                                            ResNet50 [52]
+                            2              88.99                                                               w              88.99
+                            3              87.60
+                                                                                                              w/o             87.36
+                                                                           DenseNet121 [53]
+                                                                                                               w              88.96
+                            TABLE VI
+                                                                                                              w/o             85.73
+ T HE EFFECTS OF DIFFERENT NUMBERS OF PROXIES IN EACH SUBCLASS               Xception [59]
+  ON THE FGSC-23 DATASET. T HE BEST ONES ARE MARKED IN BOLD .                                                  w              89.73
+
+                                                                                                              w/o             85.86
+                proxies of Each Subclass        AA                        Mobilev3 large [60]
+                                                                                                               w              87.34
+                           1                  87.77
+                                                                                                              w/o             87.74
+                           2                  88.04                        InceptionV4 [61]
+                                                                                                               w              88.89
+                           3                  88.99
+                           4                  88.99
+                           5                  88.67                                             TABLE VIII
+                                                                        T HE PERFORMANCE OF DIFFERENT TRAINING STRATEGIES ON THE
+                                                                             FGSC-23 DATASET. T HE BEST ONE IS MARKED IN BOLD .
+
+     noticeable 0.71% increase in AA, and so is the Max                                         Strategy                     AA
+     Pooling Branch (MPB), though not that obvious. We may
+                                                                            Three inputs: two transformed and one original   85.5
+     also note that when only APB is applied, there is an
+                                                                                        Pretrain, then fine tune             87.5
+     increase (0.46%) in AA, yet a little drop when MPB is
+                                                                                        End-to-end train (ours)              88.99
+     applied and a big drop when both two applied. The reason
+     behind this phenomenon may come from the balance and
+     imbalance between the power of push and pull. The push
+                                                                        1) Different Push Stack Number: Table V shows the results
+     power from APB can match with the pull power from
+                                                                     with different numbers of Push Stacks. It can be seen there
+     the last linear layer, thus it can get a good result. As the
+                                                                     are both decays when using only a single Push Stack and
+     MPB performs push power at a local level with its max-
+                                                                     three Push Stacks. We argue the decays are mainly caused by
+     pooling operation, this local push power will diminish
+                                                                     the imbalance of the push power and the pull power. On one
+     after the average pooling layer behind, thus it has little
+                                                                     hand, when using a single Push Stack, the backbone receives
+     impact on the final result. However, when we accumulate
+                                                                     more impact from the Push-out part and the images can be
+     the push power from APB and MPB, the power actually
+                                                                     farther away from each other and not easy to pull back. On
+     overwhelms that from the last linear layer, leading to an
+                                                                     the other hand, when using three Push Stacks, the adhesion
+     imbalance and an obvious deterioration in AA. That is
+                                                                     among images can not be sufficiently removed, thus similar
+     also the reason why we design the Pull-in part to keep a
+                                                                     images of different subclasses cannot be divided that easily.
+     balance.
+                                                                     Therefore, we set the number to 2.
+   • The fine ablation results of the Pull-in part further illus-
+                                                                        2) Different Number of proxies in Each Subclass: As we
+     trate the essence of our P2 Net. As we add the dual-branch
+                                                                     argued in Section III-C, the subclasses in FGSC are unequal
+     Push-out part, we can see a decrease in AA. Then when
+                                                                     to each other, e.g., more types of ships in the civil subclass
+     we again add the Integration Module and Proxy-based
+                                                                     while fewer in the military one. Thus the existing proxy-
+     Module of the Pull-in part in turn, there is a gradual
+                                                                     based methods [28], [29] that choose only one proxy for each
+     increase in AA. The effectiveness of our Integration
+                                                                     subclass are not that useful in the FGSC task. In our work,
+     Module and Proxy-based Module is thus verified in this
+                                                                     more than one proxy is chosen to represent each subclass. The
+     part. The results also show that the accuracy has just little
+                                                                     results in Table VI prove it effective to represent each subclass
+     improvement (0.06%) when only the Integration Module
+                                                                     with several proxies. It can be observed that compared with
+     applied. This further verifies that the accuracy increase
+                                                                     only one proxy, when we set the number to 3 or 4, there is
+     in the inference phase is not from the additional cost.
+                                                                     1.22% increase in AA. It also should be noticed that proxies
+   From the above analyses, the contributions of each part           should not be set too many, as it may deviate the network
+in the P2 Net can be recognized, and the thought behind our          training from our original purpose of pulling in the separated
+method is further proved effective.                                  images (there is a decay after we set the number to 5).
+
+G. Controlled Experiments                                            H. Generalization, Training Strategy and lr Setting Studies
+  Here, we investigate the effect of different settings in the          In this subsection, we investigate the generalization of our
+Push-out part and the Pull-in part.                                  P2 Net on different backbone structures, the effects of different
+12                                                IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+                                                             TABLE IX
+T HE EXPERIMENTAL RESULTS OF DIFFERENT LR SETTINGS ON FGSC-23 DATASET, WHERE DETACH DENOTES THAT LR IN DIFFERENT NETWORK PARTS
+          IS SPLIT, S CALE DENOTES HOW MANY TIMES THE LR OF OTHER PARTS IS BACKBONE ’ S . T HE BEST ONES ARE MARKED IN BOLD .
+
+
+                                                                             Scale (n*lr)
+              lr (Backbone)      Whether detach                                                                    AA
+                                                      Modules other than Proxy-based        Proxy-based Module
+
+                   0.001                                             -                              -             85.69
+                    0.01              False                          -                              -             88.17
+                    0.05                                             -                              -             85.89
+
+                                                                     1                                            87.97
+                                                                     5                             10             88.99
+                                                                    10                                            87.86
+                   0.01               True
+                                                                                                    5              87.5
+                                                                    5                              10             88.99
+                                                                                                   15             87.84
+
+
+
+training strategies and lr settings.                                 in Fig. 7 using the t-SNE method [62]. From figure (b), we
+   1) Generalization: We explore the generalization perfor-          can see when only the Push-out part is applied, images are
+mance of P2 Net on some popular backbone structures, e.g.,           separated successfully from each other. When the classifier
+DenseNet [53], Xception [59] and so on. From the results             is also applied, the separated images are pulled into the
+shown in Table VII, we can see when applied to other                 corresponding subclass, which is shown in figure (c). However,
+backbones, our P2 Net can also achieve a significant AA              since the last linear layer does not have enough pull power, the
+increase (4% especially on Xception), which proves a good            final aggregation result is not as good as the baseline ResNet50
+generalization ability.                                              in figure (a). Then, we design a much powerful Pull-in part.
+   2) Different Training Strategies: Since we combine the idea       From figure (d), we can see when the Pull-in part and classifier
+of CL, a natural question is what if we first pretrain the Push-     are combined, the images of each subclass gather much closer.
+out part and then finetune the whole P2 Net. Moreover, we            After adding the Push-out part, it can be seen from the last
+also care about whether the network can perform better when          two figures (d) and (e) that the several subclasses, which are
+it takes three inputs: two augmented views and one original          originally concentrated, are now separated. Compared with the
+one (the formal two for Push-out and Pull-in part, the latter for    result of the baseline ResNet50 in figure (a), we can see that
+classifier). With these questions, we conduct the experiments        subclasses are much farther away from each other, while the
+in Table VIII. First, we can see the pretrained training strategy    images of the same subclass get much closer.
+fails to work well, we think this is because the Push-out part
+and the Pull-in part actually complement each other and guide
+                                                                     J. Effect on Challenge of Imbalanced Samples
+each other in joint training to achieve good results. Second, the
+three-input strategy also fails (more than 3% decay in AA).             As our method mainly focuses on the “imbalanced fineness”
+We argue that it is the inconsistency of the inputs targeted         and “imbalanced appearances” issues, in the previous experi-
+by the loss functions, which may lead to ambiguity during            ments, we try to remove the effect of the imbalanced samples
+network optimization, that causes the deterioration.                 in the FGSC-23 and FGSCR-42 datasets by augmenting the
+   3) Different Settings of learning rate (lr): As mentioned in      categories with few samples as mentioned in Section IV-B.
+Section IV-B, we train our P2 Net with the backbone pretrained          Here, we further explore whether our method can benefit
+on ImageNet. However, there is no pretraining on other parts of      the issue of imbalanced samples. In Table X, we display the
+P2 Net except the backbone part. Therefore, it is not suitable to    comparisons of the performance with other methods on the
+set an lr shared with the whole network, and the non-pretrained      original FGSC-23 and FGSCR-42 datasets, that is, without
+parts should be trained with a larger lr. Moreover, we argue         pre-augmentations. From the results, we can see that the P2 Net
+the lr of the Proxy-based module be set to a further larger          keeps outperforming other methods when facing imbalanced
+value, as the network will not be able to complete the Pull-in       datasets. In the experiments on the original FGSC dataset,
+work well if the sync update of the proxies is lagging. The          all the methods encounter a reduction of accuracy compared
+experimental results are displayed in Table IX. As we can see,       with the results in TABLE IV-D. Compared with the big drop
+when we set the lr of the Proxy-based module and the other           of other methods, the P2 Net has just a bit reduction and
+modules to 10 and 5 times of backbone’s, we achieve the best         still achieves high accuracy. While on the original FGSCR-
+result.                                                              42 dataset, we can observe a general increase of accuracy
+                                                                     except for the ProtoTree method (it may verify the direct
+                                                                     augmentations are not that suitable for alleviating the effect of
+I. Visualization                                                     the imbalanced samples), and the P2 Net has a relatively big
+   To further understand the working mechanism behind our            boost (about 1%), still better than the other methods. Detailed
+P2 Net, we visualize the feature distribution of the input images    classification results on each category are further displayed
+CHEN et al.: CONTRASTIVE LEARNING FOR FINE-GRAINED SHIP CLASSIFICATION IN REMOTE SENSING IMAGES                                                            13
+
+
+
+
+                   (a) ResNet50                                    (b) Only Push-out Part
+
+
+
+
+       (c) Only Push-out Part and Classifier                 (d) Only Pull-in Part and Classifier                          (e) Final P2 Net
+
+Fig. 7. The feature distribution when applied different parts of P2 Net on FGSC-23 dataset. Different colors represent different subclasses.
+
+
+
+                               TABLE X                                          into subclasses. The proposed P2 Net leverages the idea of
+  C OMPARISON RESULTS OF DIFFERENT APPROACHES ON THE ORIGINAL                   CL and consists of a Push-out part and a Pull-in part that
+     FGSC-23 AND FGSCR-42 DATASETS . T HE DATASETS ARE NOT
+      PRE - AUGMENTED . T HE BEST RESULTS ARE MARKED IN BOLD .                  perform the above two processes respectively. With the two
+                                                                                parts, our network can decouple the subclasses, and thus
+                                                      AA                        make the classification much easier. All network components
+               Method
+                                         FGSC-23           FGSCR-42             in our method do not require extra annotations and can be
+                                                                                trained in an end-to-end fashion. Extensive experiments on
+              ResNet50                     85.68              91.85
+                                                                                two public datasets (FGSC-23 and FGSCR-42) demonstrate
+      HBPNet (ECCV 18 [13])                86.09              92.09             the superiority of our method.
+        DCL (CVPR 19 [56])                 84.31              90.65
+        TASN (CVPR 19 [19])                86.11              92.87
+                                                                                                              R EFERENCES
+        GFNet (NIPS 20 [21])               85.37              92.85
+       API-Net (AAAI 20 [24])              85.32              91.92               [1] Z. Zou and Z. Shi, “Ship detection in spaceborne optical image with
+      ProtoTree (CVPR 21 [57])             80.46              79.14                   svd networks,” IEEE Transactions on Geoscience and Remote Sensing,
+                                                                                      vol. 54, no. 10, pp. 5832–5845, 2016.
+             P2 Net (ours)                 88.56              94.19               [2] L. Li, Z. Zhou, B. Wang, L. Miao, and H. Zong, “A novel cnn-
+                                                                                      based method for accurate ship detection in hr optical remote sensing
+                                                                                      images via rotated bounding box,” IEEE Transactions on Geoscience
+                                                                                      and Remote Sensing, vol. 59, no. 1, pp. 686–699, 2021.
+in Fig. 8, where we can observe that the CM of the P2 Net                         [3] X. Zhang, G. Wang, P. Zhu, T. Zhang, C. Li, and L. Jiao, “Grs-det:
+                                                                                      An anchor-free rotation ship detector based on gaussian-mask in remote
+has fewer and darker valued regions off the diagonal, which                           sensing images,” IEEE Transactions on Geoscience and Remote Sensing,
+corresponds to a smaller MR to other classes and verifies the                         vol. 59, no. 4, pp. 3518–3531, 2021.
+effectiveness of our method.                                                      [4] Q. Oliveau and H. Sahbi, “Learning attribute representations for remote
+                                                                                      sensing ship category classification,” IEEE Journal of Selected Topics
+                                                                                      in Applied Earth Observations and Remote Sensing, vol. 10, no. 6, pp.
+                             V. C ONCLUSION                                           2830–2840, 2017.
+                                                                                  [5] Q. Shi, W. Li, and R. Tao, “2d-dfrft based deep network for ship
+   In this paper, we propose a new method called P2 Net for                           classification in remote sensing imagery,” in 2018 10th IAPR Workshop
+the FGSC task. We define two challenging phenomena in the                             on Pattern Recognition in Remote Sensing (PRRS). IEEE, 2018, pp.
+FGSC task, “imbalanced fineness” and “imbalanced appear-                              1–5.
+                                                                                  [6] Q. Shi, W. Li, R. Tao, X. Sun, and L. Gao, “Ship classification based
+ances”, which may cause many difficulties for current state-of-                       on multifeature ensemble with convolutional neural network,” Remote
+the-art methods. Different from existing methods that perform                         Sensing, vol. 11, no. 4, p. 419, 2019.
+synchronous discriminative learning, our method introduces                        [7] J. Shi, Z. Jiang, and H. Zhang, “Few-shot ship classification in optical
+                                                                                      remote sensing images using nearest neighbor prototype representation,”
+an asynchronous push-and-pull strategy where input images                             IEEE Journal of Selected Topics in Applied Earth Observations and
+are first de-correlated with each other and then aggregated                           Remote Sensing, vol. 14, pp. 3581–3590, 2021.
+14                                                            IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+
+                (a)                                     (b)                                     (c)                                       (d)
+
+
+
+
+                (e)                                     (f)                                     (g)                                       (h)
+
+
+
+
+                (i)                                     (j)                                     (k)                                       (l)
+
+
+
+
+               (m)                                      (n)                                     (o)                                       (p)
+
+
+Fig. 8. Confusion matrixes of different methods on the original FGSC-23 and FGSCR-42 datasets without pre-augmentations. The horizontal and vertical
+coordinates are the category index (See details in Fig. 5). (a)-(h) are respectively the results of ResNet50, HBPNet, DCL, TASN, GFNet, API-Net, ProtoTree,
+and our P2 Net on the original FGSC-23 dataset. While (i)-(p) are the results on the original FGSCR-42 dataset. For brevity, we filter out the values of zero
+in CM.
+
+
+ [8] Q. Xiao, B. Liu, Z. Li, W. Ni, Z. Yang, and L. Li, “Progressive data            Journal of Selected Topics in Applied Earth Observations and Remote
+     augmentation method for remote sensing ship image classification based          Sensing, vol. 13, pp. 1271–1285, 2020.
+     on imaging simulation system and neural style transfer,” IEEE Journal      [10] Y. Di, Z. Jiang, and H. Zhang, “A public dataset for fine-grained ship
+     of Selected Topics in Applied Earth Observations and Remote Sensing,            classification in optical remote sensing images,” Remote Sensing, vol. 13,
+     vol. 14, pp. 9176–9186, 2021.                                                   no. 4, p. 747, 2021.
+ [9] X. Zhang, Y. Lv, L. Yao, W. Xiong, and C. Fu, “A new benchmark             [11] T.-Y. Lin, A. RoyChowdhury, and S. Maji, “Bilinear cnn models for fine-
+     and an attribute-guided multilevel feature representation network for           grained visual recognition,” in Proceedings of the IEEE international
+     fine-grained ship classification in optical remote sensing images,” IEEE        conference on computer vision, 2015, pp. 1449–1457.
+CHEN et al.: CONTRASTIVE LEARNING FOR FINE-GRAINED SHIP CLASSIFICATION IN REMOTE SENSING IMAGES                                                             15
+
+
+
+[12] S. Cai, W. Zuo, and L. Zhang, “Higher-order integration of hierarchi-             IEEE Transactions on Geoscience and Remote Sensing, vol. 57, no. 7,
+     cal convolutional activations for fine-grained visual categorization,” in         pp. 4929–4937, 2019.
+     Proceedings of the IEEE International Conference on Computer Vision,         [34] Z. He and D. He, “Bilinear squeeze-and-excitation network for fine-
+     2017, pp. 511–520.                                                                grained classification of tree species,” IEEE Geoscience and Remote
+[13] C. Yu, X. Zhao, Q. Zheng, P. Zhang, and X. You, “Hierarchical bilinear            Sensing Letters, vol. 18, no. 7, pp. 1139–1143, 2020.
+     pooling for fine-grained visual recognition,” in Proceedings of the          [35] L. Bai, Q. Liu, C. Li, Z. Ye, M. Hui, and X. Jia, “Remote sensing image
+     European conference on computer vision (ECCV), 2018, pp. 574–589.                 scene classification using multiscale feature fusion covariance network
+[14] E. Gavves, B. Fernando, C. G. Snoek, A. W. Smeulders, and T. Tuyte-               with octave convolution,” IEEE Transactions on Geoscience and Remote
+     laars, “Fine-grained categorization by alignments,” in Proceedings of             Sensing, vol. 60, pp. 1–14, 2022.
+     the IEEE international conference on computer vision, 2013, pp. 1713–        [36] Y. Nie, C. Bian, and L. Li, “Adap-emd: Adaptive emd for aircraft fine-
+     1720.                                                                             grained classification in remote sensing,” IEEE Geoscience and Remote
+[15] C. Goring, E. Rodner, A. Freytag, and J. Denzler, “Nonparametric                  Sensing Letters, vol. 19, pp. 1–5, 2022.
+     part transfer for fine-grained recognition,” in Proceedings of the IEEE      [37] W. Zhao, T. Tong, L. Yao, Y. Liu, C. Xu, Y. He, and H. Lu, “Feature
+     Conference on Computer Vision and Pattern Recognition, 2014, pp.                  balance for fine-grained object classification in aerial images,” IEEE
+     2489–2496.                                                                        Transactions on Geoscience and Remote Sensing, vol. 60, pp. 1–13,
+[16] N. Zhang, J. Donahue, R. Girshick, and T. Darrell, “Part-based r-cnns for         2022.
+     fine-grained category detection,” in European conference on computer         [38] J. Chen and Y. Qian, “Hierarchical multilabel ship classification in
+     vision. Springer, 2014, pp. 834–849.                                              remote sensing images using label relation graphs,” IEEE Transactions
+[17] Y. Zhang, X.-S. Wei, J. Wu, J. Cai, J. Lu, V.-A. Nguyen, and M. N. Do,            on Geoscience and Remote Sensing, vol. 60, pp. 1–13, 2021.
+     “Weakly supervised fine-grained categorization with part-based image         [39] Y. Li and C. Bian, “Few-shot fine-grained ship classification with a
+     representation,” IEEE Transactions on Image Processing, vol. 25, no. 4,           foreground-aware feature map reconstruction network,” IEEE Transac-
+     pp. 1713–1725, 2016.                                                              tions on Geoscience and Remote Sensing, 2022.
+[18] J. Han, X. Yao, G. Cheng, X. Feng, and D. Xu, “P-cnn: Part-based             [40] W. Xiong, Z. Xiong, and Y. Cui, “An explainable attention network
+     convolutional neural networks for fine-grained visual categorization,”            for fine-grained ship classification using remote-sensing images,” IEEE
+     IEEE transactions on pattern analysis and machine intelligence, 2019.             Transactions on Geoscience and Remote Sensing, vol. 60, pp. 1–14,
+[19] H. Zheng, J. Fu, Z.-J. Zha, and J. Luo, “Looking for the devil in the             2022.
+     details: Learning trilinear attention sampling network for fine-grained      [41] S. Branson, G. Van Horn, S. Belongie, and P. Perona, “Bird species
+     image recognition,” in Proceedings of the IEEE/CVF Conference on                  categorization using pose normalized deep convolutional nets,” arXiv
+     Computer Vision and Pattern Recognition, 2019, pp. 5012–5021.                     preprint arXiv:1406.2952, 2014.
+[20] W. Ge, X. Lin, and Y. Yu, “Weakly supervised complementary parts             [42] Y. Peng, X. He, and J. Zhao, “Object-part attention model for fine-
+     models for fine-grained image classification from the bottom up,” in              grained image classification,” IEEE Transactions on Image Processing,
+     Proceedings of the IEEE/CVF Conference on Computer Vision and                     vol. 27, no. 3, pp. 1487–1500, 2017.
+     Pattern Recognition, 2019, pp. 3034–3043.
+                                                                                  [43] F. Schroff, D. Kalenichenko, and J. Philbin, “Facenet: A unified embed-
+[21] Y. Wang, K. Lv, R. Huang, S. Song, L. Yang, and G. Huang, “Glance
+                                                                                       ding for face recognition and clustering,” in Proceedings of the IEEE
+     and focus: a dynamic approach to reducing spatial redundancy in image
+                                                                                       conference on computer vision and pattern recognition, 2015, pp. 815–
+     classification,” arXiv preprint arXiv:2010.05300, 2020.
+                                                                                       823.
+[22] Y. Ding, Z. Ma, S. Wen, J. Xie, D. Chang, Z. Si, M. Wu, and
+                                                                                  [44] A. Hermans, L. Beyer, and B. Leibe, “In defense of the triplet loss for
+     H. Ling, “Ap-cnn: weakly supervised attention pyramid convolutional
+                                                                                       person re-identification,” arXiv preprint arXiv:1703.07737, 2017.
+     neural network for fine-grained visual classification,” IEEE Transactions
+     on Image Processing, vol. 30, pp. 2826–2836, 2021.                           [45] A. Kolesnikov, X. Zhai, and L. Beyer, “Revisiting self-supervised visual
+[23] M. Sun, Y. Yuan, F. Zhou, and E. Ding, “Multi-attention multi-class               representation learning,” in Proceedings of the IEEE/CVF conference on
+     constraint for fine-grained image recognition,” in Proceedings of the             computer vision and pattern recognition, 2019, pp. 1920–1929.
+     European Conference on Computer Vision (ECCV), 2018, pp. 805–821.            [46] M. Caron, I. Misra, J. Mairal, P. Goyal, P. Bojanowski, and A. Joulin,
+[24] P. Zhuang, Y. Wang, and Y. Qiao, “Learning attentive pairwise in-                 “Unsupervised learning of visual features by contrasting cluster assign-
+     teraction for fine-grained classification,” in Proceedings of the AAAI            ments,” arXiv preprint arXiv:2006.09882, 2020.
+     Conference on Artificial Intelligence, vol. 34, no. 07, 2020, pp. 13 130–    [47] X. Zhan, J. Xie, Z. Liu, Y.-S. Ong, and C. C. Loy, “Online deep
+     13 137.                                                                           clustering for unsupervised representation learning,” in Proceedings of
+[25] F. Xu, M. Wang, W. Zhang, Y. Cheng, and W. Chu, “Discrimination-                  the IEEE/CVF Conference on Computer Vision and Pattern Recognition,
+     aware mechanism for fine-grained representation learning,” in Proceed-            2020, pp. 6688–6697.
+     ings of the IEEE/CVF Conference on Computer Vision and Pattern               [48] P. Bachman, R. D. Hjelm, and W. Buchwalter, “Learning representations
+     Recognition, 2021, pp. 813–822.                                                   by maximizing mutual information across views,” Advances in neural
+[26] C. Wah, S. Branson, P. Welinder, P. Perona, and S. Belongie, “The                 information processing systems, vol. 32, 2019.
+     Caltech-UCSD Birds-200-2011 Dataset,” California Institute of Tech-          [49] K. He, H. Fan, Y. Wu, S. Xie, and R. Girshick, “Momentum contrast
+     nology, Tech. Rep. CNS-TR-2011-001, 2011.                                         for unsupervised visual representation learning,” in Proceedings of the
+[27] J. Krause, M. Stark, J. Deng, and L. Fei-Fei, “3d object representations          IEEE/CVF Conference on Computer Vision and Pattern Recognition,
+     for fine-grained categorization,” in 4th International IEEE Workshop on           2020, pp. 9729–9738.
+     3D Representation and Recognition (3dRR-13), Sydney, Australia, 2013.        [50] T. Chen, S. Kornblith, M. Norouzi, and G. Hinton, “A simple framework
+[28] Y. Movshovitz-Attias, A. Toshev, T. K. Leung, S. Ioffe, and S. Singh,             for contrastive learning of visual representations,” in International
+     “No fuss distance metric learning using proxies,” in Proceedings of the           conference on machine learning. PMLR, 2020, pp. 1597–1607.
+     IEEE International Conference on Computer Vision, 2017, pp. 360–368.         [51] X. Chen and K. He, “Exploring simple siamese representation learning,”
+[29] S. Kim, D. Kim, M. Cho, and S. Kwak, “Proxy anchor loss for                       in Proceedings of the IEEE/CVF Conference on Computer Vision and
+     deep metric learning,” in Proceedings of the IEEE/CVF Conference on               Pattern Recognition, 2021, pp. 15 750–15 758.
+     Computer Vision and Pattern Recognition, 2020, pp. 3238–3247.                [52] K. He, X. Zhang, S. Ren, and J. Sun, “Deep residual learning for image
+[30] Q. Qian, L. Shang, B. Sun, J. Hu, H. Li, and R. Jin, “Softtriple loss:            recognition,” in Proceedings of the IEEE conference on computer vision
+     Deep metric learning without triplet sampling,” in Proceedings of the             and pattern recognition, 2016, pp. 770–778.
+     IEEE/CVF International Conference on Computer Vision, 2019, pp.              [53] G. Huang, Z. Liu, L. Van Der Maaten, and K. Q. Weinberger, “Densely
+     6450–6458.                                                                        connected convolutional networks,” in Proceedings of the IEEE confer-
+[31] G. Sumbul, R. G. Cinbis, and S. Aksoy, “Fine-grained object recognition           ence on computer vision and pattern recognition, 2017, pp. 4700–4708.
+     and zero-shot learning in remote sensing imagery,” IEEE Transactions         [54] Z. Wu, Y. Xiong, S. X. Yu, and D. Lin, “Unsupervised feature learning
+     on Geoscience and Remote Sensing, vol. 56, no. 2, pp. 770–779, 2017.              via non-parametric instance discrimination,” in Proceedings of the IEEE
+[32] J. Ni, Y. Jia, Q. Yin, Y. Zhou, and F. Zhang, “Metric learning based fine-        conference on computer vision and pattern recognition, 2018, pp. 3733–
+     grained classification for polsar imagery,” in IGARSS 2020-2020 IEEE              3742.
+     International Geoscience and Remote Sensing Symposium. IEEE, 2020,           [55] G.-S. Xia, X. Bai, J. Ding, Z. Zhu, S. Belongie, J. Luo, M. Datcu,
+     pp. 716–719.                                                                      M. Pelillo, and L. Zhang, “Dota: A large-scale dataset for object
+[33] G. Sumbul, R. G. Cinbis, and S. Aksoy, “Multisource region attention              detection in aerial images,” in Proceedings of the IEEE conference on
+     network for fine-grained object recognition in remote sensing imagery,”           computer vision and pattern recognition, 2018, pp. 3974–3983.
+16                                                          IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. XX, NO. X, AUGUST XXXX
+
+
+
+[56] Y. Chen, Y. Bai, W. Zhang, and T. Mei, “Destruction and construction                                 Wenyuan Li received his B.S. degree from North
+     learning for fine-grained image recognition,” in Proceedings of the                                  China Electric Power University, Beijing, China in
+     IEEE/CVF Conference on Computer Vision and Pattern Recognition,                                      2017. He is currently working toward his doctorate
+     2019, pp. 5157–5166.                                                                                 degree in the Image Processing Center, School of
+[57] M. Nauta, R. van Bree, and C. Seifert, “Neural prototype trees for                                   Astronautics, Beihang University. His research in-
+     interpretable fine-grained image recognition,” in Proceedings of the                                 terests include self-supervised learning and remote
+     IEEE/CVF Conference on Computer Vision and Pattern Recognition,                                      sensing image processing.
+     2021, pp. 14 933–14 943.
+[58] X. Glorot and Y. Bengio, “Understanding the difficulty of training
+     deep feedforward neural networks,” in Proceedings of the thirteenth
+     international conference on artificial intelligence and statistics. JMLR
+     Workshop and Conference Proceedings, 2010, pp. 249–256.
+[59] F. Chollet, “Xception: Deep learning with depthwise separable convolu-
+     tions,” in Proceedings of the IEEE conference on computer vision and
+     pattern recognition, 2017, pp. 1251–1258.
+[60] A. Howard, M. Sandler, G. Chu, L.-C. Chen, B. Chen, M. Tan, W. Wang,
+     Y. Zhu, R. Pang, V. Vasudevan et al., “Searching for mobilenetv3,” in
+     Proceedings of the IEEE/CVF International Conference on Computer
+     Vision, 2019, pp. 1314–1324.
+[61] C. Szegedy, S. Ioffe, V. Vanhoucke, and A. A. Alemi, “Inception-v4,
+     inception-resnet and the impact of residual connections on learning,” in
+     Thirty-first AAAI conference on artificial intelligence, 2017.
+                                                                                                          Zhengxia Zou received his BS degree and his
+[62] L. Van der Maaten and G. Hinton, “Visualizing data using t-sne.” Journal
+                                                                                                          Ph.D. degree from Beihang University in 2013 and
+     of machine learning research, vol. 9, no. 11, 2008.
+                                                                                                          2018. He is currently an Associate Professor at the
+                                                                                                          School of Astronautics, Beihang University. During
+                                                                                                          2018-2021, he was a postdoc research fellow at the
+                                                                                                          University of Michigan, Ann Arbor. His research
+                                                                                                          interests include computer vision and related prob-
+                                                                                                          lems in remote sensing. He has published more
+                                                                                                          than 20 peer-reviewed papers in top-tier journals and
+                         Jianqi Chen received his B.S. degree from the Im-                                conferences, including TPAMI, TIP, TGRS, CVPR,
+                         age Processing Center, School of Astronautics, Bei-                              ICCV, AAAI. His research was featured in more
+                         hang University in 2021. He is currently pursuing his   than 30 global tech media and was adopted by a number of application
+                         M.S. degree in the Image Processing Center, School      platforms with over 50 million users worldwide. His personal website is
+                         of Astronautics, Beihang University. His research       https://zhengxiazou.github.io/.
+                         interests include deep learning, object detection and
+                         artificial intelligence safety.
+
+
+
+
+                                                                                                          Zhenwei Shi (Member, IEEE) received the Ph.D.
+                         Keyan Chen received the B.S. degree from the                                     degree in mathematics from the Dalian University
+                         School of Astronautics, Beihang University, Beijing,                             of Technology, Dalian, China, in 2005.
+                         China, in 2019. He is currently working toward the                                  He was a Post-Doctoral Researcher with the De-
+                         M.S. degree in the Image Processing Center, School                               partment of Automation, Tsinghua University, Bei-
+                         of Astronautics, Beihang University. His research                                jing, China, from 2005 to 2007. He was Visiting
+                         interests include image processing, machine learning                             Scholar with the Department of Electrical Engineer-
+                         and pattern recognition.                                                         ing and Computer Science, Northwestern University,
+                                                                                                          Evanston, IL, USA, from 2013 to 2014. He is
+                                                                                                          currently a Professor and the Dean of the Image
+                                                                                                          Processing Center, School of Astronautics, Beihang
+                                                                                 University, Beijing. He has authored or coauthored over 200 scientific papers
+                                                                                 in refereed journals and proceedings, including the IEEE Transactions on
+                                                                                 Pattern Analysis and Machine Intelligence, the IEEE Transactions on Image
+                                                                                 Processing, the IEEE Transactions on Geoscience and Remote Sensing,
+                                                                                 the IEEE Geoscience and Remote Sensing Letters, the IEEE Conference
+                                                                                 on Computer Vision and Pattern Recognition, and the IEEE International
+                                                                                 Conference on Computer Vision. His research interests include remote sensing
+                         Hao Chen received his B.S. degree from the Image
+                                                                                 image processing and analysis, computer vision, pattern recognition, and
+                         Processing Center School of Astronautics, Beihang
+                                                                                 machine learning.
+                         University in 2017. He is currently pursuing his doc-
+                                                                                   Dr. Shi also serves as an Editor for the Pattern Recognition, the ISPRS
+                         torate degree in the Image Processing Center, School
+                                                                                 Journal of Photogrammetry and Remote Sensing, the Infrared Physics and
+                         of Astronautics, Beihang University.His research in-
+                                                                                 Technology, and so on. His personal website is http://levir.buaa.edu.cn/.
+                         terests include machine learning, deep learning and
+                         semantic segmentation.
+

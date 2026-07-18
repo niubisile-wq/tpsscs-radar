@@ -1,0 +1,281 @@
+{
+  "date": "20260717",
+  "verdict": "claim_consistent",
+  "hard_failure_count": 0,
+  "warning_count": 0,
+  "checks": [
+    {
+      "name": "file:README.md",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "41011 bytes",
+      "evidence": "README.md"
+    },
+    {
+      "name": "file:STATUS.md",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "43288 bytes",
+      "evidence": "STATUS.md"
+    },
+    {
+      "name": "file:claim_matrix.md",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "26668 bytes",
+      "evidence": "claim_matrix.md"
+    },
+    {
+      "name": "file:logs/aistap_experimental_quality_assessment_20260717.md",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "11051 bytes",
+      "evidence": "logs/aistap_experimental_quality_assessment_20260717.md"
+    },
+    {
+      "name": "file:logs/aistap_20260717_top_tier_manuscript_insert.md",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "26523 bytes",
+      "evidence": "logs/aistap_20260717_top_tier_manuscript_insert.md"
+    },
+    {
+      "name": "file:tgrs_tpsscs_final_package_20260716/manuscript/tgrs_tpsscs_nofig_20260715.tex",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "79792 bytes",
+      "evidence": "tgrs_tpsscs_final_package_20260716/manuscript/tgrs_tpsscs_nofig_20260715.tex"
+    },
+    {
+      "name": "required:hgb_negative_boundary",
+      "status": "pass",
+      "severity": "info",
+      "detail": "HGB upper-bound failure must be stated and bounded",
+      "evidence": "tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:raw/residual\\s+HGB.*(exceeds|beats).*compact\\s+TP-SSCS, tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:not\\s+(be\\s+)?(described|claim(ed)?)\\s+as\\s+superior\\s+to\\s+all\\s+supervised|not\\s+a\\s+blanket\\s+replacement"
+    },
+    {
+      "name": "required:positive_pixel_label_boundary",
+      "status": "pass",
+      "severity": "info",
+      "detail": "positive-pixel label-efficiency claim must include winning and catch-up budgets",
+      "evidence": "tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:1,?\\s*2,?\\s*4,?\\s*(and|or|,)\\s*8\\s+positive|1`,\\s*`2`,\\s*`4`,?\\s*(and|,)\\s*`8`, tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:16\\s+positive\\s+(target\\s+)?pixels?.*(catch|exceed|competitive)"
+    },
+    {
+      "name": "required:label_cost_pareto_boundary",
+      "status": "pass",
+      "severity": "info",
+      "detail": "label-cost Pareto claim must report low-label budgets, HGB crossover budget, and full-label HGB boundary",
+      "evidence": "README.md:label-cost\\s+Pareto.*(1/2/4/8/16|1,?\\s*2,?\\s*4,?\\s*8,?\\s*(and|,)?\\s*16|1`,\\s*`2`,\\s*`4`,\\s*`8`,?\\s*(and|,)\\s*`16`), tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:HGB.*64.*(exceeds|exceed|higher|above).*compact|64.*HGB.*(exceeds|exceed|higher|above).*compact, README.md:full-label\\s+HGB.*(boundary|not)|not.*full-label\\s+HGB|does\\s+not\\s+claim.*full-label"
+    },
+    {
+      "name": "required:target_free_calibration_boundary",
+      "status": "pass",
+      "severity": "info",
+      "detail": "target-free calibration must be framed as ordering robustness plus Pfa-transfer boundary",
+      "evidence": "tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:target-free.*(positive|preserve).*margin|target-free.*7/7, tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:not\\s+fully\\s+.*(Pfa|P_FA|false-alarm).*calibrat|do\\s+not\\s+fully\\s+preserve\\s+empirical"
+    },
+    {
+      "name": "required:frame_level_robustness_boundary",
+      "status": "pass",
+      "severity": "info",
+      "detail": "frame-level robustness must include low-rank no-loss evidence and bounded raw-frame wording",
+      "evidence": "tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:1470/1470.*(low_rank_residual_k30|low-rank|rank-matched)|((low_rank_residual_k30|low-rank|rank-matched).*)1470/1470, tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:raw.*(broad\\s+but\\s+not\\s+universal|raw-favorable|61)|not\\s+universal.*raw"
+    },
+    {
+      "name": "required:paired_significance_boundary",
+      "status": "pass",
+      "severity": "info",
+      "detail": "paired significance audit must report corrected significance, effect size, and tie-handling boundary",
+      "evidence": "README.md:(BH-FDR|FDR).*2\\.945e-29|2\\.945e-29.*(BH-FDR|FDR), tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:(sign\\s+test|matched\\s+sign).*0\\.816|0\\.816.*(sign\\s+effect|matched\\s+sign), tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:sign\\s+test.*(excludes|ignores)\\s+ties|ties.*(excluded|ignored).*sign\\s+test"
+    },
+    {
+      "name": "required:log_pfa_auc_boundary",
+      "status": "pass",
+      "severity": "info",
+      "detail": "log-Pfa AUC audit must report whole-surface delta, CI, and checked-Pfa boundary",
+      "evidence": "tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:log-Pfa\\s+AUC.*0\\.0553|0\\.0553.*log-Pfa\\s+AUC, tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:(CI|bootstrap).*0\\.0491|0\\.0491.*(CI|bootstrap), tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:checked\\s+Pfa\\s+range|checked\\s+Pfa\\s+grid|1e-5\\s+to\\s+1e-2"
+    },
+    {
+      "name": "required:component_attribution_boundary",
+      "status": "pass",
+      "severity": "info",
+      "detail": "component attribution must report low-rank AUC gain and gate-only boundary",
+      "evidence": "tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:component-attribution.*0\\.0553|0\\.0553.*component-attribution|AUC.*0\\.0553.*low-rank, tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:gate-only.*(boundary|relaxed|looser Pfa|not.*universal)|trainable gate.*(boundary|relaxed|looser Pfa|not.*universal)"
+    },
+    {
+      "name": "required:runtime_boundary",
+      "status": "pass",
+      "severity": "info",
+      "detail": "runtime/complexity claim must include local CPU evidence and hardware-independent boundary",
+      "evidence": "tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:(CPU|runtime).*133\\.66|133\\.66.*(CPU|runtime), tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:not\\s+(a\\s+)?hardware-independent|not\\s+(a\\s+)?real-time|hardware-independent\\s+speed\\s+claims?\\s+remain\\s+out\\s+of\\s+scope"
+    },
+    {
+      "name": "required:external_boundary",
+      "status": "pass",
+      "severity": "info",
+      "detail": "external results must separate negative zero-shot IPIX from supervised/validated adaptation",
+      "evidence": "tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:IPIX.*zero-shot.*negative|negative\\s+IPIX\\s+zero-shot, tgrs_tpsscs_final_package_20260716\\manuscript\\tgrs_tpsscs_nofig_20260715.tex:SSDD.*supervised.*adaptation|supervised\\s+SSDD\\s+adaptation"
+    },
+    {
+      "name": "forbidden_overclaims",
+      "status": "pass",
+      "severity": "info",
+      "detail": "no unbounded overclaim patterns found",
+      "evidence": ""
+    },
+    {
+      "name": "json:hgb_boundary",
+      "status": "pass",
+      "severity": "info",
+      "detail": "JSON parsed",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_loso_feature_ensemble_baseline_20260717.json"
+    },
+    {
+      "name": "json:tpsscs_feature_hgb",
+      "status": "pass",
+      "severity": "info",
+      "detail": "JSON parsed",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_loso_tpsscs_feature_ensemble_20260717.json"
+    },
+    {
+      "name": "json:low_positive_pixel",
+      "status": "pass",
+      "severity": "info",
+      "detail": "JSON parsed",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_loso_low_positive_pixel_hgb_20260717.json"
+    },
+    {
+      "name": "json:label_cost_pareto",
+      "status": "pass",
+      "severity": "info",
+      "detail": "JSON parsed",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_label_cost_pareto_20260717.json"
+    },
+    {
+      "name": "json:target_free_calibration",
+      "status": "pass",
+      "severity": "info",
+      "detail": "JSON parsed",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_target_free_calibration_20260717.json"
+    },
+    {
+      "name": "json:frame_level_robustness",
+      "status": "pass",
+      "severity": "info",
+      "detail": "JSON parsed",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_frame_level_robustness_20260717.json"
+    },
+    {
+      "name": "json:paired_significance",
+      "status": "pass",
+      "severity": "info",
+      "detail": "JSON parsed",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_paired_significance_20260717.json"
+    },
+    {
+      "name": "json:log_pfa_auc",
+      "status": "pass",
+      "severity": "info",
+      "detail": "JSON parsed",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_log_pfa_auc_20260717.json"
+    },
+    {
+      "name": "json:component_attribution",
+      "status": "pass",
+      "severity": "info",
+      "detail": "JSON parsed",
+      "evidence": "results\\aistap_full_asset\\aistap_full_asset_component_attribution_20260717.json"
+    },
+    {
+      "name": "json:runtime_profile",
+      "status": "pass",
+      "severity": "info",
+      "detail": "JSON parsed",
+      "evidence": "results\\aistap_full_asset\\aistap_runtime_profile_20260717.json"
+    },
+    {
+      "name": "json:top_readiness",
+      "status": "pass",
+      "severity": "info",
+      "detail": "JSON parsed",
+      "evidence": "logs\\aistap_top_readiness_self_check_20260717.json"
+    },
+    {
+      "name": "evidence:hgb_boundary_negative",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "raw/residual HGB boundary must be recorded as compact TP-SSCS loss; passed=False, compact wins=0",
+      "evidence": "results/aistap_full_asset/aistap_full_asset_loso_feature_ensemble_baseline_20260717.json"
+    },
+    {
+      "name": "evidence:tpsscs_feature_hgb_bounded",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "TP-SSCS-feature HGB must beat compact but not claim strict raw/residual HGB win; compact wins=7, passed vs HGB=False",
+      "evidence": "results/aistap_full_asset/aistap_full_asset_loso_tpsscs_feature_ensemble_20260717.json"
+    },
+    {
+      "name": "evidence:positive_pixel_boundary",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "low-label claim must be limited to budgets 1/2/4/8 with HGB catch at 16; wins=['1', '2', '4', '8'], first_catch=16",
+      "evidence": "results/aistap_full_asset/aistap_full_asset_loso_low_positive_pixel_hgb_20260717.json"
+    },
+    {
+      "name": "evidence:label_cost_pareto_boundary",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "label-cost Pareto claim must be limited to low-label HGB budgets 1/2/4/8/16 and keep full-label HGB as boundary; dominated=['1', '16', '2', '4', '8'], ci_budgets=['1', '16', '2', '4', '8'], first_exceed=64, ratio=4.556429818969869, compact_auc=0.5313080161181634, full_hgb_auc=0.7156040756556384, boundary=['does_not_claim_superiority_over_full_label_hgb_boundary', 'local_cpu_runtime_not_hardware_independent', 'pareto_scope_official_aistap_full_assets_checked_pfa_grid', 'uses_existing_frozen_low_label_hgb_outputs']",
+      "evidence": "results/aistap_full_asset/aistap_full_asset_label_cost_pareto_20260717.json"
+    },
+    {
+      "name": "evidence:target_free_boundary",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "target-free audit must be positive-delta but not fully calibrated; positive=['cross_asset_target_free', 'same_asset_target_free'], calibrated=[], passed=[]",
+      "evidence": "results/aistap_full_asset/aistap_full_asset_target_free_calibration_20260717.json"
+    },
+    {
+      "name": "evidence:frame_level_robustness_boundary",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "frame-level audit must show no low-rank losses and bounded raw support; pairs=1470, lowrank_losses=0, raw_losses=61, raw_min_win=0.8904761904761904, boundary=['frame_level_support_not_universal_per_frame_improvement_vs_raw', 'lowrank_comparison_has_no_negative_item_pfa_pairs_but_many_ties_at_loose_pfa', 'raw_comparison_has_some_negative_item_pfa_pairs_and_should_be_reported_as_broad_not_universal']",
+      "evidence": "results/aistap_full_asset/aistap_full_asset_frame_level_robustness_20260717.json"
+    },
+    {
+      "name": "evidence:paired_significance_boundary",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "paired significance audit must pass all combined BH-FDR tests and keep sign-test boundaries; max_q=2.945080712825111e-29, min_effect=0.8164251207729468, boundary=['bh_fdr_applied_across_all_asset_and_combined_tests', 'does_not_claim_universal_per_frame_raw_dominance', 'paired_sign_test_excludes_ties', 'statistical_audit_over_existing_official_full_asset_rows_not_new_dataset']",
+      "evidence": "results/aistap_full_asset/aistap_full_asset_paired_significance_20260717.json"
+    },
+    {
+      "name": "evidence:log_pfa_auc_boundary",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "log-Pfa AUC audit must show positive whole-surface deltas with frame-level CI and checked-range boundary; min_delta=0.055331964094430905, min_ci_low=0.049142001404955706, max_q=1.4636666117296334e-55, boundary=['auc_integrates_checked_pfa_grid_only', 'does_not_claim_performance_outside_checked_pfa_range', 'not_new_dataset', 'paired_bootstrap_unit_is_target_bearing_frame']",
+      "evidence": "results/aistap_full_asset/aistap_full_asset_log_pfa_auc_20260717.json"
+    },
+    {
+      "name": "evidence:component_attribution_boundary",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "component attribution must show raw/low-rank AUC gains and keep gate-only as a bounded relaxed endpoint; raw_delta=0.22279949628243312, lowrank_delta=0.055331964094430905, lowrank_losses=0, gate_ci_positive=False, boundary=['auc_integrates_checked_pfa_grid_only', 'gate_only_is_relaxed_endpoint_not_selected_low_false_alarm_policy', 'not_new_dataset', 'paired_unit_is_target_bearing_frame', 'reuses_frozen_detector_candidate_csvs']",
+      "evidence": "results/aistap_full_asset/aistap_full_asset_component_attribution_20260717.json"
+    },
+    {
+      "name": "evidence:runtime_profile_boundary",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "runtime claim must be local CPU and bounded; frames=12, ratio=4.556429818969869, boundary=['does_not_claim_universal_real_time_performance', 'local_cpu_runtime_profile_not_hardware_independent_speed_benchmark', 'supports_bounded_deployment_cost_claim_only']",
+      "evidence": "results/aistap_full_asset/aistap_runtime_profile_20260717.json"
+    },
+    {
+      "name": "evidence:top_readiness_gate_status",
+      "status": "pass",
+      "severity": "hard",
+      "detail": "overall=top_ready; hard_failure_count=0; gate mismatches=[]",
+      "evidence": "logs/aistap_top_readiness_self_check_20260717.json"
+    }
+  ]
+}

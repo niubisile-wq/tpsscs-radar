@@ -1,0 +1,12 @@
+﻿Phase 0 probe
+Root: C:\Users\刘子轩\Desktop\第三批3
+Timestamp: 2026-07-13 01:52:48
+
+Checked paths:
+ - C:\Users\刘子轩\Desktop\第三批3\cards
+ - C:\Users\刘子轩\Desktop\第三批3\gates
+ - C:\Users\刘子轩\Desktop\第三批3\data
+ - C:\Users\刘子轩\Desktop\第三批3\data\manifests
+ - C:\Users\刘子轩\Desktop\第三批3\data\downloads
+ - C:\Users\刘子轩\Desktop\第三批3\logs
+ - C:\Users\刘子轩\Desktop\第三批3\runbooks

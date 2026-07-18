@@ -1,0 +1,830 @@
+﻿{
+  "date": "20260717",
+  "root": "D:\\百度网盘拉取包\\33低虚警雷达弱目标检测中的目标保持型结构杂波抑制_full_backup_20260717",
+  "package": "D:\\百度网盘拉取包\\33低虚警雷达弱目标检测中的目标保持型结构杂波抑制_full_backup_20260717\\tgrs_tpsscs_final_package_20260716",
+  "verdict": "technically_complete_metadata_blocked",
+  "hard_failure_count": 0,
+  "submission_blocker_count": 6,
+  "warning_count": 0,
+  "page_count": 12,
+  "metadata_blockers": [
+    "author_name_placeholder",
+    "email_placeholder",
+    "journal_issue_placeholder",
+    "insert_before_submission",
+    "generic_data_availability",
+    "generic_code_availability"
+  ],
+  "checks": [
+    {
+      "name": "README_PRE_SUBMISSION.md",
+      "status": "pass",
+      "detail": "17185 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "manuscript/tgrs_tpsscs_nofig_20260715.tex",
+      "status": "pass",
+      "detail": "79792 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "manuscript/tgrs_tpsscs_nofig_20260715.pdf",
+      "status": "pass",
+      "detail": "1560567 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "manuscript/tgrs_tpsscs_nofig_20260715.log",
+      "status": "pass",
+      "detail": "20419 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "figures/submitted/figure1_paradigm_shift.png",
+      "status": "pass",
+      "detail": "1270208 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "figures/submitted/figure7_official_full_asset_validation_20260716.pdf",
+      "status": "pass",
+      "detail": "54277 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "figures/submitted/figure7_official_full_asset_validation_20260716.png",
+      "status": "pass",
+      "detail": "650919 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "figures/submitted/figure7_official_full_asset_validation_20260716.svg",
+      "status": "pass",
+      "detail": "105335 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_combined_full_asset_protocol_20260715.csv",
+      "status": "pass",
+      "detail": "4827 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_combined_full_asset_bootstrap_ci_20260715.csv",
+      "status": "pass",
+      "detail": "2062 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_sample/aistap_lowrank_k1_2_3_5_8_10_15_20_30_baseline.csv",
+      "status": "pass",
+      "detail": "4378 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_sample/aistap_target_preservation_ablation_20260713.csv",
+      "status": "pass",
+      "detail": "428333 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/ipix_external/ipix_validated_residual_fusion_test_20260715.csv",
+      "status": "pass",
+      "detail": "9249095 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/ipix_external/ipix_heldout_bootstrap_delta_ci_20260715.csv",
+      "status": "pass",
+      "detail": "2401 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/ssdd_external/ssdd_external_trainable_gate_20260715.csv",
+      "status": "pass",
+      "detail": "933 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/ssdd_external/ssdd_image_annotation_bootstrap_ci_20260715.csv",
+      "status": "pass",
+      "detail": "3557 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_seed_sensitivity_20260717.csv",
+      "status": "pass",
+      "detail": "14303 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_seed_sensitivity_summary_20260717.csv",
+      "status": "pass",
+      "detail": "449 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_seed_sensitivity_by_pfa_20260717.csv",
+      "status": "pass",
+      "detail": "835 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_seed_sensitivity_20260717.json",
+      "status": "pass",
+      "detail": "4151 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_classical_cfar_baselines_20260717.csv",
+      "status": "pass",
+      "detail": "3487483 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_classical_cfar_baselines_summary_20260717.csv",
+      "status": "pass",
+      "detail": "25221 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_classical_cfar_best_comparison_20260717.csv",
+      "status": "pass",
+      "detail": "5103 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_classical_cfar_baselines_20260717.json",
+      "status": "pass",
+      "detail": "3733 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_classical_cfar_param_sweep_20260717.csv",
+      "status": "pass",
+      "detail": "27771885 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_classical_cfar_param_sweep_summary_20260717.csv",
+      "status": "pass",
+      "detail": "222161 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_classical_cfar_param_sweep_best_comparison_20260717.csv",
+      "status": "pass",
+      "detail": "5741 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_classical_cfar_param_sweep_20260717.json",
+      "status": "pass",
+      "detail": "6522 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_learned_raw_baseline_20260717.csv",
+      "status": "pass",
+      "detail": "409949 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_learned_raw_baseline_comparison_20260717.csv",
+      "status": "pass",
+      "detail": "4269 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_learned_raw_baseline_bootstrap_ci_20260717.csv",
+      "status": "pass",
+      "detail": "830 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_learned_raw_baseline_20260717.json",
+      "status": "pass",
+      "detail": "1506 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_feature_ensemble_baseline_20260717.csv",
+      "status": "pass",
+      "detail": "415611 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_feature_ensemble_baseline_comparison_20260717.csv",
+      "status": "pass",
+      "detail": "4296 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_feature_ensemble_baseline_bootstrap_ci_20260717.csv",
+      "status": "pass",
+      "detail": "883 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_feature_ensemble_baseline_20260717.json",
+      "status": "pass",
+      "detail": "1907 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_tpsscs_feature_ensemble_20260717.csv",
+      "status": "pass",
+      "detail": "412638 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_tpsscs_feature_ensemble_comparison_20260717.csv",
+      "status": "pass",
+      "detail": "4931 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_tpsscs_feature_ensemble_bootstrap_ci_20260717.csv",
+      "status": "pass",
+      "detail": "2024 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_tpsscs_feature_ensemble_20260717.json",
+      "status": "pass",
+      "detail": "2683 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_low_positive_pixel_hgb_20260717.csv",
+      "status": "pass",
+      "detail": "15358999 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_low_positive_pixel_hgb_comparison_20260717.csv",
+      "status": "pass",
+      "detail": "39932 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_low_positive_pixel_hgb_bootstrap_ci_20260717.csv",
+      "status": "pass",
+      "detail": "9276 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_loso_low_positive_pixel_hgb_20260717.json",
+      "status": "pass",
+      "detail": "29792 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_label_cost_pareto_frame_auc_20260717.csv",
+      "status": "pass",
+      "detail": "782117 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_label_cost_pareto_budget_auc_20260717.csv",
+      "status": "pass",
+      "detail": "1886 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_label_cost_pareto_points_20260717.csv",
+      "status": "pass",
+      "detail": "2484 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_label_cost_pareto_20260717.json",
+      "status": "pass",
+      "detail": "12505 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_target_free_calibration_20260717.csv",
+      "status": "pass",
+      "detail": "1725032 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_target_free_calibration_comparison_20260717.csv",
+      "status": "pass",
+      "detail": "10402 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_target_free_calibration_bootstrap_ci_20260717.csv",
+      "status": "pass",
+      "detail": "3601 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_target_free_calibration_20260717.json",
+      "status": "pass",
+      "detail": "1935 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_frame_level_robustness_20260717.csv",
+      "status": "pass",
+      "detail": "464022 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_frame_level_robustness_summary_20260717.csv",
+      "status": "pass",
+      "detail": "11224 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_frame_level_robustness_20260717.json",
+      "status": "pass",
+      "detail": "1202 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_paired_significance_20260717.csv",
+      "status": "pass",
+      "detail": "9681 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_paired_significance_20260717.json",
+      "status": "pass",
+      "detail": "1062 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_log_pfa_auc_frames_20260717.csv",
+      "status": "pass",
+      "detail": "51486 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_log_pfa_auc_deltas_20260717.csv",
+      "status": "pass",
+      "detail": "47976 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_log_pfa_auc_summary_20260717.csv",
+      "status": "pass",
+      "detail": "2123 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_log_pfa_auc_20260717.json",
+      "status": "pass",
+      "detail": "831 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_component_attribution_operating_summary_20260717.csv",
+      "status": "pass",
+      "detail": "11842 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_component_attribution_pfa_deltas_20260717.csv",
+      "status": "pass",
+      "detail": "504013 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_component_attribution_pfa_summary_20260717.csv",
+      "status": "pass",
+      "detail": "19435 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_component_attribution_frame_auc_20260717.csv",
+      "status": "pass",
+      "detail": "69616 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_component_attribution_auc_deltas_20260717.csv",
+      "status": "pass",
+      "detail": "74073 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_component_attribution_auc_summary_20260717.csv",
+      "status": "pass",
+      "detail": "3155 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_full_asset_component_attribution_20260717.json",
+      "status": "pass",
+      "detail": "97806 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_runtime_profile_components_20260717.csv",
+      "status": "pass",
+      "detail": "12397 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_runtime_profile_totals_20260717.csv",
+      "status": "pass",
+      "detail": "5898 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_runtime_profile_frames_20260717.csv",
+      "status": "pass",
+      "detail": "689 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_runtime_profile_summary_20260717.csv",
+      "status": "pass",
+      "detail": "3065 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "source_data/aistap_full_asset/aistap_runtime_profile_20260717.json",
+      "status": "pass",
+      "detail": "2260 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/plot_submission_figures_20260715.py",
+      "status": "pass",
+      "detail": "21555 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_combined_full_asset_protocol.py",
+      "status": "pass",
+      "detail": "12295 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_target_preservation_ablation.py",
+      "status": "pass",
+      "detail": "20312 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_sample_cfar.py",
+      "status": "pass",
+      "detail": "6893 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_lowrank_baseline.py",
+      "status": "pass",
+      "detail": "4761 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_ssdd_image_level_bootstrap_ci.py",
+      "status": "pass",
+      "detail": "16671 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_full_asset_seed_sensitivity.py",
+      "status": "pass",
+      "detail": "14829 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_full_asset_classical_cfar_baselines.py",
+      "status": "pass",
+      "detail": "23663 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_full_asset_classical_cfar_param_sweep.py",
+      "status": "pass",
+      "detail": "19544 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_full_asset_loso_learned_raw_baseline.py",
+      "status": "pass",
+      "detail": "22101 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_full_asset_loso_feature_ensemble_baseline.py",
+      "status": "pass",
+      "detail": "25058 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_full_asset_loso_tpsscs_feature_ensemble.py",
+      "status": "pass",
+      "detail": "27421 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_full_asset_loso_low_label_hgb.py",
+      "status": "pass",
+      "detail": "29990 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_full_asset_label_cost_pareto.py",
+      "status": "pass",
+      "detail": "16436 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_full_asset_target_free_calibration.py",
+      "status": "pass",
+      "detail": "21416 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_full_asset_frame_level_robustness.py",
+      "status": "pass",
+      "detail": "13258 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_full_asset_paired_significance.py",
+      "status": "pass",
+      "detail": "8952 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_full_asset_operating_surface_auc.py",
+      "status": "pass",
+      "detail": "11860 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_full_asset_component_attribution.py",
+      "status": "pass",
+      "detail": "21334 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_runtime_profile.py",
+      "status": "pass",
+      "detail": "21190 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/evaluate_aistap_top_readiness.py",
+      "status": "pass",
+      "detail": "66918 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "scripts/audit_aistap_claim_consistency.py",
+      "status": "pass",
+      "detail": "27823 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_submission_figures_20260715.md",
+      "status": "pass",
+      "detail": "3702 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/tgrs_quant_table_figure_insertion_20260716.md",
+      "status": "pass",
+      "detail": "1752 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_combined_full_asset_protocol_20260715.md",
+      "status": "pass",
+      "detail": "2432 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_results_methods_discussion_insert_20260715.md",
+      "status": "pass",
+      "detail": "4370 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_manuscript_submission_package_20260715.md",
+      "status": "pass",
+      "detail": "4005 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_target_preservation_ablation_20260713.md",
+      "status": "pass",
+      "detail": "3851 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_full_asset_seed_sensitivity_20260717.md",
+      "status": "pass",
+      "detail": "2280 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_top_readiness_self_check_20260717.md",
+      "status": "pass",
+      "detail": "10719 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_top_readiness_self_check_20260717.json",
+      "status": "pass",
+      "detail": "12429 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_experimental_quality_assessment_20260717.md",
+      "status": "pass",
+      "detail": "10367 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_full_asset_classical_cfar_baselines_20260717.md",
+      "status": "pass",
+      "detail": "1856 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_full_asset_classical_cfar_param_sweep_20260717.md",
+      "status": "pass",
+      "detail": "1650 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_full_asset_loso_learned_raw_baseline_20260717.md",
+      "status": "pass",
+      "detail": "2785 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_full_asset_loso_feature_ensemble_baseline_20260717.md",
+      "status": "pass",
+      "detail": "3005 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_full_asset_loso_tpsscs_feature_ensemble_20260717.md",
+      "status": "pass",
+      "detail": "3654 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_full_asset_loso_low_positive_pixel_hgb_20260717.md",
+      "status": "pass",
+      "detail": "16992 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_full_asset_label_cost_pareto_20260717.md",
+      "status": "pass",
+      "detail": "3316 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_full_asset_target_free_calibration_20260717.md",
+      "status": "pass",
+      "detail": "5672 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_full_asset_frame_level_robustness_20260717.md",
+      "status": "pass",
+      "detail": "2491 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_full_asset_paired_significance_20260717.md",
+      "status": "pass",
+      "detail": "2301 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_full_asset_log_pfa_auc_20260717.md",
+      "status": "pass",
+      "detail": "1131 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_full_asset_component_attribution_20260717.md",
+      "status": "pass",
+      "detail": "4406 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_runtime_profile_20260717.md",
+      "status": "pass",
+      "detail": "2572 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_claim_consistency_audit_20260717.md",
+      "status": "pass",
+      "detail": "4942 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_claim_consistency_audit_20260717.json",
+      "status": "pass",
+      "detail": "14064 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_supplementary_experiment_priority_20260715.md",
+      "status": "pass",
+      "detail": "8036 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "logs/aistap_20260717_top_tier_manuscript_insert.md",
+      "status": "pass",
+      "detail": "24453 bytes",
+      "severity": "info"
+    },
+    {
+      "name": "manuscript_folder_cleanliness",
+      "status": "pass",
+      "detail": "only TEX/PDF/LOG files",
+      "severity": "info"
+    },
+    {
+      "name": "compiled_pdf_page_count",
+      "status": "pass",
+      "detail": "12 pages",
+      "severity": "info"
+    },
+    {
+      "name": "latex_log:undefined_references",
+      "status": "pass",
+      "detail": "not found",
+      "severity": "info"
+    },
+    {
+      "name": "latex_log:overfull_boxes",
+      "status": "pass",
+      "detail": "not found",
+      "severity": "info"
+    },
+    {
+      "name": "latex_log:float_too_large",
+      "status": "pass",
+      "detail": "not found",
+      "severity": "info"
+    },
+    {
+      "name": "latex_log:underfull_vbox",
+      "status": "pass",
+      "detail": "not found",
+      "severity": "info"
+    },
+    {
+      "name": "metadata_placeholder:author_name_placeholder",
+      "status": "fail",
+      "detail": "3 match(es)",
+      "severity": "submission"
+    },
+    {
+      "name": "metadata_placeholder:email_placeholder",
+      "status": "fail",
+      "detail": "1 match(es)",
+      "severity": "submission"
+    },
+    {
+      "name": "metadata_placeholder:journal_issue_placeholder",
+      "status": "fail",
+      "detail": "2 match(es)",
+      "severity": "submission"
+    },
+    {
+      "name": "metadata_placeholder:insert_before_submission",
+      "status": "fail",
+      "detail": "2 match(es)",
+      "severity": "submission"
+    },
+    {
+      "name": "metadata_placeholder:generic_data_availability",
+      "status": "fail",
+      "detail": "1 match(es)",
+      "severity": "submission"
+    },
+    {
+      "name": "metadata_placeholder:generic_code_availability",
+      "status": "fail",
+      "detail": "1 match(es)",
+      "severity": "submission"
+    },
+    {
+      "name": "top_readiness_json",
+      "status": "pass",
+      "detail": "overall=top_ready; hard_failure_count=0",
+      "severity": "info"
+    }
+  ]
+}

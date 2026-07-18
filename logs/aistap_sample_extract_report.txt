@@ -1,0 +1,16 @@
+﻿AISTAP-SIM sample extraction
+Timestamp: 2026-07-15 15:48:00
+Archive: C:\Users\刘子轩\Desktop\第三批3\data\downloads\aistap_sim\sampledata.zip
+ExtractDir: C:\Users\刘子轩\Desktop\第三批3\data\downloads\aistap_sim\sampledata
+EntryCount: 9
+
+Entries:
+ - sampledata/dataset_fields_description.txt | size=3074
+ - sampledata/dataset_overview.txt | size=2683
+ - sampledata/sampleread_matlab.m | size=799
+ - sampledata/simMed/ | size=0
+ - sampledata/simMed/simMed_sample.mat | size=18350484
+ - sampledata/simNoiseOnly/ | size=0
+ - sampledata/simNoiseOnly/simNoiseOnly_sample.mat | size=18419951
+ - sampledata/simWind/ | size=0
+ - sampledata/simWind/simWind_sample.mat | size=18349559

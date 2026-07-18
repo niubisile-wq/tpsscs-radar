@@ -1,0 +1,17 @@
+﻿param(
+  [string]$Root = (Join-Path $env:USERPROFILE "Desktop\第三批3")
+)
+
+$ErrorActionPreference = "Stop"
+
+$manifest = Join-Path $Root "data\manifests\datasets.tsv"
+$content = @"
+dataset	role	access	status	url
+AISTAP-SIM	main_train	Public	confirmed	https://github.com/mit-ll/AISTAP-SIM
+RASPNet public CVNN/EXAMPLES	external_generalization	Public subset	confirmed	https://www.sdms.afrl.af.mil/index.php?collection=raspnet
+IPIX sea clutter	real_validation	Public web page	needs_download_check	http://soma.ece.mcmaster.ca/ipix/dartmouth/datasets.html
+NetRAD sea clutter	external_validation	Public repository	confirmed	https://rdr.ucl.ac.uk/articles/dataset/NetRAD_-_Monostatic_Bistatic_Sea_Clutter_Dataset/32676582
+"@
+
+$content | Set-Content -Path $manifest -Encoding utf8
+Write-Host "Wrote $manifest"

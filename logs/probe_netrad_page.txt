@@ -1,0 +1,7 @@
+﻿NetRAD page probe
+Timestamp: 2026-07-15 16:53:41
+URL: https://rdr.ucl.ac.uk/articles/dataset/NetRAD_-_Monostatic_Bistatic_Sea_Clutter_Dataset/32676582
+CurlExitCode: 0
+HttpCode: 202
+FinalUrl: https://rdr.ucl.ac.uk/articles/dataset/NetRAD_-_Monostatic_Bistatic_Sea_Clutter_Dataset/32676582
+Status: PROBED

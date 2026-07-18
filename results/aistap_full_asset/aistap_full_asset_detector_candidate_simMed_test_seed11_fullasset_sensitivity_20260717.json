@@ -1,0 +1,233 @@
+{
+  "asset": "data\\downloads\\aistap_sim\\full\\simMed_test.mat",
+  "state": "results\\aistap_sample\\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed11.pt",
+  "total_frames": 128,
+  "positive_frames": 105,
+  "evaluated_positive_frames": 105,
+  "summary": [
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 1e-05,
+      "pd_mean": 0.09885361114797112,
+      "pd_std": 0.06345246890704011,
+      "empirical_pfa_mean": 0.0,
+      "n_items": 105
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 3e-05,
+      "pd_mean": 0.1503500214703694,
+      "pd_std": 0.0701517214094052,
+      "empirical_pfa_mean": 1.526753812803079e-05,
+      "n_items": 105
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.0001,
+      "pd_mean": 0.2943857234377076,
+      "pd_std": 0.09398698462800091,
+      "empirical_pfa_mean": 9.160522876818475e-05,
+      "n_items": 105
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.0003,
+      "pd_mean": 0.45748134897575243,
+      "pd_std": 0.10624700950142126,
+      "empirical_pfa_mean": 0.00029008322443258505,
+      "n_items": 105
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.001,
+      "pd_mean": 0.6488084401825713,
+      "pd_std": 0.12164931972421404,
+      "empirical_pfa_mean": 0.0009923899783220015,
+      "n_items": 105
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.003,
+      "pd_mean": 0.7763674110573479,
+      "pd_std": 0.1333507036255745,
+      "empirical_pfa_mean": 0.002992437473094035,
+      "n_items": 105
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.01,
+      "pd_mean": 0.8382638287231589,
+      "pd_std": 0.13407209353933605,
+      "empirical_pfa_mean": 0.009992820396478995,
+      "n_items": 105
+    },
+    {
+      "method": "raw",
+      "pfa_target": 1e-05,
+      "pd_mean": 0.0783311427619855,
+      "pd_std": 0.051021219309022245,
+      "empirical_pfa_mean": 0.0,
+      "n_items": 105
+    },
+    {
+      "method": "raw",
+      "pfa_target": 3e-05,
+      "pd_mean": 0.11489453378068927,
+      "pd_std": 0.06327781665254462,
+      "empirical_pfa_mean": 1.526753812803079e-05,
+      "n_items": 105
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.0001,
+      "pd_mean": 0.19556315067817254,
+      "pd_std": 0.08230194466562753,
+      "empirical_pfa_mean": 9.160522876818475e-05,
+      "n_items": 105
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.0003,
+      "pd_mean": 0.2685671393591548,
+      "pd_std": 0.10032363942915219,
+      "empirical_pfa_mean": 0.00029008322443258505,
+      "n_items": 105
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.001,
+      "pd_mean": 0.35694212605591935,
+      "pd_std": 0.11440499890535924,
+      "empirical_pfa_mean": 0.0009923899783220015,
+      "n_items": 105
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.003,
+      "pd_mean": 0.4673269223287094,
+      "pd_std": 0.12337913660597127,
+      "empirical_pfa_mean": 0.002992437473094035,
+      "n_items": 105
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.01,
+      "pd_mean": 0.6340198282838332,
+      "pd_std": 0.11859563856677847,
+      "empirical_pfa_mean": 0.009992820396478995,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 1e-05,
+      "pd_mean": 0.1846185975147708,
+      "pd_std": 0.09282524949039118,
+      "empirical_pfa_mean": 0.0,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 3e-05,
+      "pd_mean": 0.23360052821451757,
+      "pd_std": 0.1025137032097712,
+      "empirical_pfa_mean": 1.526753812803079e-05,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.0001,
+      "pd_mean": 0.36870339227984117,
+      "pd_std": 0.1164715912433622,
+      "empirical_pfa_mean": 9.160522876818475e-05,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.0003,
+      "pd_mean": 0.5218980522973241,
+      "pd_std": 0.10941909696537692,
+      "empirical_pfa_mean": 0.00029008322443258505,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.001,
+      "pd_mean": 0.7024829065717889,
+      "pd_std": 0.11107645949859163,
+      "empirical_pfa_mean": 0.0009923899783220015,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.003,
+      "pd_mean": 0.8213373429221229,
+      "pd_std": 0.1100875617892424,
+      "empirical_pfa_mean": 0.002992437473094035,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.01,
+      "pd_mean": 0.875216054758735,
+      "pd_std": 0.10402497344456932,
+      "empirical_pfa_mean": 0.009992820396478995,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_trainable_gate",
+      "pfa_target": 1e-05,
+      "pd_mean": 0.09340974066712911,
+      "pd_std": 0.06928300700130327,
+      "empirical_pfa_mean": 0.0,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_trainable_gate",
+      "pfa_target": 3e-05,
+      "pd_mean": 0.14920573927212766,
+      "pd_std": 0.08354639443365053,
+      "empirical_pfa_mean": 1.526753812803079e-05,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_trainable_gate",
+      "pfa_target": 0.0001,
+      "pd_mean": 0.2936650004089666,
+      "pd_std": 0.10293590960203164,
+      "empirical_pfa_mean": 9.160522876818475e-05,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_trainable_gate",
+      "pfa_target": 0.0003,
+      "pd_mean": 0.515341637342091,
+      "pd_std": 0.12678896125110656,
+      "empirical_pfa_mean": 0.00029008322443258505,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_trainable_gate",
+      "pfa_target": 0.001,
+      "pd_mean": 0.739432097212934,
+      "pd_std": 0.12153706810208233,
+      "empirical_pfa_mean": 0.0009923899783220015,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_trainable_gate",
+      "pfa_target": 0.003,
+      "pd_mean": 0.8867304218092738,
+      "pd_std": 0.09605363522612378,
+      "empirical_pfa_mean": 0.002992437473094035,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_trainable_gate",
+      "pfa_target": 0.01,
+      "pd_mean": 0.9280797123274905,
+      "pd_std": 0.07863745177578443,
+      "empirical_pfa_mean": 0.009992820396478995,
+      "n_items": 105
+    }
+  ]
+}

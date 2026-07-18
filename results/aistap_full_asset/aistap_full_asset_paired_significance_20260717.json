@@ -1,0 +1,28 @@
+{
+  "date": "20260717",
+  "source_date": "20260717",
+  "source_csv": "results\\aistap_full_asset\\aistap_full_asset_frame_level_robustness_20260717.csv",
+  "target_bearing_items": 210,
+  "pfa_points": 7,
+  "comparators": [
+    "low_rank_residual_k30",
+    "raw"
+  ],
+  "tests_total": 42,
+  "combined_tests_total": 14,
+  "all_combined_significant_bh_0p05": true,
+  "lowrank_all_combined_significant_bh_0p05": true,
+  "raw_all_combined_significant_bh_0p05": true,
+  "max_combined_bh_q": 2.945080712825111e-29,
+  "max_lowrank_combined_bh_q": 2.945080712825111e-29,
+  "max_raw_combined_bh_q": 6.682649923746344e-36,
+  "min_combined_matched_sign_effect": 0.8164251207729468,
+  "min_lowrank_combined_matched_sign_effect": 1.0,
+  "min_raw_combined_matched_sign_effect": 0.8164251207729468,
+  "boundary": [
+    "paired_sign_test_excludes_ties",
+    "bh_fdr_applied_across_all_asset_and_combined_tests",
+    "statistical_audit_over_existing_official_full_asset_rows_not_new_dataset",
+    "does_not_claim_universal_per_frame_raw_dominance"
+  ]
+}

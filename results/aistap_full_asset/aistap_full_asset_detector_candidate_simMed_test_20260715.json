@@ -1,0 +1,233 @@
+{
+  "asset": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\aistap_sim\\full\\simMed_test.mat",
+  "state": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_sample\\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt",
+  "total_frames": 128,
+  "positive_frames": 105,
+  "evaluated_positive_frames": 105,
+  "summary": [
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 1e-05,
+      "pd_mean": 0.09885361114797112,
+      "pd_std": 0.06345246890704011,
+      "empirical_pfa_mean": 0.0,
+      "n_items": 105
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 3e-05,
+      "pd_mean": 0.1503500214703694,
+      "pd_std": 0.0701517214094052,
+      "empirical_pfa_mean": 1.526753812803079e-05,
+      "n_items": 105
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.0001,
+      "pd_mean": 0.2943857234377076,
+      "pd_std": 0.09398698462800091,
+      "empirical_pfa_mean": 9.160522876818475e-05,
+      "n_items": 105
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.0003,
+      "pd_mean": 0.45748134897575243,
+      "pd_std": 0.10624700950142126,
+      "empirical_pfa_mean": 0.00029008322443258505,
+      "n_items": 105
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.001,
+      "pd_mean": 0.6488084401825713,
+      "pd_std": 0.12164931972421404,
+      "empirical_pfa_mean": 0.0009923899783220015,
+      "n_items": 105
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.003,
+      "pd_mean": 0.7763674110573479,
+      "pd_std": 0.1333507036255745,
+      "empirical_pfa_mean": 0.002992437473094035,
+      "n_items": 105
+    },
+    {
+      "method": "low_rank_residual_k30",
+      "pfa_target": 0.01,
+      "pd_mean": 0.8382638287231589,
+      "pd_std": 0.13407209353933605,
+      "empirical_pfa_mean": 0.009992820396478995,
+      "n_items": 105
+    },
+    {
+      "method": "raw",
+      "pfa_target": 1e-05,
+      "pd_mean": 0.0783311427619855,
+      "pd_std": 0.051021219309022245,
+      "empirical_pfa_mean": 0.0,
+      "n_items": 105
+    },
+    {
+      "method": "raw",
+      "pfa_target": 3e-05,
+      "pd_mean": 0.11489453378068927,
+      "pd_std": 0.06327781665254462,
+      "empirical_pfa_mean": 1.526753812803079e-05,
+      "n_items": 105
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.0001,
+      "pd_mean": 0.19556315067817254,
+      "pd_std": 0.08230194466562753,
+      "empirical_pfa_mean": 9.160522876818475e-05,
+      "n_items": 105
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.0003,
+      "pd_mean": 0.2685671393591548,
+      "pd_std": 0.10032363942915219,
+      "empirical_pfa_mean": 0.00029008322443258505,
+      "n_items": 105
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.001,
+      "pd_mean": 0.35694212605591935,
+      "pd_std": 0.11440499890535924,
+      "empirical_pfa_mean": 0.0009923899783220015,
+      "n_items": 105
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.003,
+      "pd_mean": 0.4673269223287094,
+      "pd_std": 0.12337913660597127,
+      "empirical_pfa_mean": 0.002992437473094035,
+      "n_items": 105
+    },
+    {
+      "method": "raw",
+      "pfa_target": 0.01,
+      "pd_mean": 0.6340198282838332,
+      "pd_std": 0.11859563856677847,
+      "empirical_pfa_mean": 0.009992820396478995,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 1e-05,
+      "pd_mean": 0.18454489041963204,
+      "pd_std": 0.08444529593834815,
+      "empirical_pfa_mean": 0.0,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 3e-05,
+      "pd_mean": 0.23292866331646775,
+      "pd_std": 0.08946793106323835,
+      "empirical_pfa_mean": 1.526753812803079e-05,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.0001,
+      "pd_mean": 0.3631281887560889,
+      "pd_std": 0.108416905717922,
+      "empirical_pfa_mean": 9.160522876818475e-05,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.0003,
+      "pd_mean": 0.5154646610355453,
+      "pd_std": 0.1067820087664841,
+      "empirical_pfa_mean": 0.00029008322443258505,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.001,
+      "pd_mean": 0.6957533928816516,
+      "pd_std": 0.11303280293927977,
+      "empirical_pfa_mean": 0.0009923899783220015,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.003,
+      "pd_mean": 0.8138666025670929,
+      "pd_std": 0.11595718661469297,
+      "empirical_pfa_mean": 0.002992437473094035,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_finished_detector",
+      "pfa_target": 0.01,
+      "pd_mean": 0.8692331860864192,
+      "pd_std": 0.11101000335288143,
+      "empirical_pfa_mean": 0.009992820396478995,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_trainable_gate",
+      "pfa_target": 1e-05,
+      "pd_mean": 0.09546378403060993,
+      "pd_std": 0.068892066427506,
+      "empirical_pfa_mean": 0.0,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_trainable_gate",
+      "pfa_target": 3e-05,
+      "pd_mean": 0.1526749988274425,
+      "pd_std": 0.0799235528352734,
+      "empirical_pfa_mean": 1.526753812803079e-05,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_trainable_gate",
+      "pfa_target": 0.0001,
+      "pd_mean": 0.3057189210176154,
+      "pd_std": 0.09046077480861299,
+      "empirical_pfa_mean": 9.160522876818475e-05,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_trainable_gate",
+      "pfa_target": 0.0003,
+      "pd_mean": 0.5261980970561063,
+      "pd_std": 0.12144544352658249,
+      "empirical_pfa_mean": 0.00029008322443258505,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_trainable_gate",
+      "pfa_target": 0.001,
+      "pd_mean": 0.7706760841863128,
+      "pd_std": 0.11682083209609806,
+      "empirical_pfa_mean": 0.0009923899783220015,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_trainable_gate",
+      "pfa_target": 0.003,
+      "pd_mean": 0.8904128471819669,
+      "pd_std": 0.09693005046062063,
+      "empirical_pfa_mean": 0.002992437473094035,
+      "n_items": 105
+    },
+    {
+      "method": "tpsscs_trainable_gate",
+      "pfa_target": 0.01,
+      "pd_mean": 0.9271913880914379,
+      "pd_std": 0.07944473864388579,
+      "empirical_pfa_mean": 0.009992820396478995,
+      "n_items": 105
+    }
+  ]
+}

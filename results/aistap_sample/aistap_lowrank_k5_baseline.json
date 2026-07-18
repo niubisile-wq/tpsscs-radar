@@ -1,0 +1,41 @@
+﻿[
+  {
+    "dataset": "simMed",
+    "k": 5,
+    "raw_power": 9.462268270737312,
+    "residual_power": 1.7921794565615505,
+    "clutter_attenuation_db": 7.226137620688352,
+    "targ_power": 0.5781626572380665,
+    "targ_residual_power": 0.24580888112846014,
+    "target_retention_ratio": 0.4251552362500987,
+    "target_loss_db": 3.7145246774462324,
+    "midp_range": 513.0,
+    "midp_dop": 33.0
+  },
+  {
+    "dataset": "simNoiseOnly",
+    "k": 5,
+    "raw_power": 15.000100369116822,
+    "residual_power": 14.06233891644439,
+    "clutter_attenuation_db": 0.2803660437231465,
+    "targ_power": 0.5781626572380665,
+    "targ_residual_power": 0.24580888112846014,
+    "target_retention_ratio": 0.4251552362500987,
+    "target_loss_db": 3.7145246774462324,
+    "midp_range": 513.0,
+    "midp_dop": 33.0
+  },
+  {
+    "dataset": "simWind",
+    "k": 5,
+    "raw_power": 7.805641276278486,
+    "residual_power": 1.9169877057388238,
+    "clutter_attenuation_db": 6.097892609234123,
+    "targ_power": 0.5781626572380665,
+    "targ_residual_power": 0.24580888112846014,
+    "target_retention_ratio": 0.4251552362500987,
+    "target_loss_db": 3.7145246774462324,
+    "midp_range": 513.0,
+    "midp_dop": 33.0
+  }
+]

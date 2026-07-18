@@ -1,0 +1,642 @@
+IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 60, 2022                                                                                  5520512
+
+
+
+
+                  Structure–Color Preserving Network for
+                   Hyperspectral Image Super-Resolution
+                 Bin Pan , Member, IEEE, Qiaoying Qu , Xia Xu , Graduate Student Member, IEEE,
+                                                     and Zhenwei Shi , Member, IEEE
+
+
+   Abstract— Fusion-based hyperspectral super-resolution (HSR)                 fication [3]–[5] and target detection [6], [7]. However, HSIs
+algorithms usually utilize a low-resolution hyperspectral image                usually suffer from low spatial resolution due to the limita-
+(LR-HSI) and a high-resolution multispectral image (MSI) to                    tions of hardware. Researchers adopt two methods to acquire
+generate a high-resolution hyperspectral image (HR-HSI), which
+have attracted increasing attention in recent years. However,                  a high-resolution hyperspectral image (HR-HSI): improving
+how to deal with the abundant spectral information of hyper-                   the spatial resolution of low-resolution hyperspectral images
+spectral images and complex structure characteristics of MSIs                  (LR-HSI) [8]–[10] and reconstructing spectral information
+has always been the focus and difficulty of fusion-based HSR.                  from high-resolution RGB/mutispectral image (HR-RGB/HR-
+In this article, we propose a new structure–color preserving                   MSI) [11], [12]. However, since the complex correlation
+network (SCPNet) for HSR, which is developed under the basis of
+the joint attention mechanism. The SCPNet mainly includes three                among channels of hyperspectral images is difficult to be
+modules: structure-preserving module (SPM), color-preserving                   reconstructed from RGB/multispectral images (MSIs), it is
+module (CPM), and cross-fusion module. The SPM is constructed                  a more effective method to reconstruct HR-HSI by super-
+based on the spatial attention, which aims to capture and enhance              resolving LR-HSI. According to the difference of the required
+the significant structure information from the high-resolution                 inputs, current hyperspectral super-resolution (HSR) methods
+MSI. Meanwhile, the CPM is constructed based on the channel
+attention, where the spectral characteristics in the LR-HSI are                can be roughly divided into two categories: single-image-based
+preserved during the reconstruction process. Finally, we propose               super-resolution with just one input and fusion-based super-
+a cross attention-based cross-fusion strategy to integrate the                 resolution with two input images.
+features from the two branches and reconstruct the final HR-HSI.                  Single-image-based HSR methods directly rely on one
+The major contribution of SCPNet is that the structure and color               LR-HSI as the input. Since no auxiliary information is avail-
+information is described and preserved via the joint attention
+mechanism. Experimental results indicate that the proposed                     able, single-image-based methods often lead to spectral or
+SCPNet has presented advantages on three benchmark datasets                    texture distortions, especially when the upscaling factor is
+when compared with some state-of-the-art HSR methods.                          large. To solve the insufficiency of priors, researchers attempt
+   Index Terms— Attention mechanism, hyperspectral super-                      to exploit the abundant spectral correlations among spec-
+resolution (HSR), structure–color preserving.                                  tral bands. Some methods based on sparse and dictionary
+                                                                               representation or low-rank prior have been proposed [10],
+                      I. I NTRODUCTION                                         [13], [14]. Moreover, deep learning-based single-image super-
+                                                                               resolution methods have achieved excellent performance [15]–
+H      YPERSPECTRAL image sensors collect hundreds
+       of wavelengths ranging from visible to long-wave
+infrared [1], [2]. Therefore, the hyperspectral images (HSIs)
+                                                                               [18]. Based on single-image super-resolution, researchers
+                                                                               proposed many hyperspectral image super-resolution meth-
+contain abundant spectral information, which has made con-                     ods [17], [19], [20]. Liu et al. [17] employed group convo-
+tributions to quite a few applications such as image classi-                   lutions and covariance statistics-based attention mechanism to
+                                                                               explore the consecutive information. Mei et al. [20] combined
+  Manuscript received September 22, 2021; revised November 14, 2021 and        the cross-scale nonlocal prior with local and in-scale nonlocal
+November 30, 2021; accepted December 5, 2021. Date of publication Decem-
+ber 13, 2021; date of current version March 1, 2022. This work was supported   priors to improve the performance. However, single-image-
+in part by the National Key Research and Development Program of China          based HSR methods usually require critical priori information,
+under Grant 2019YFC1510905, in part by the National Natural Science            but the manually designed prior may not be well representa-
+Foundation of China under Grant 62001251 and Grant 62001252, and in part
+by the China Postdoctoral Science Foundation under Grant 2020M670631.          tions of the data.
+(Corresponding author: Xia Xu.)                                                   Fusion-based HSR refers to generating an HR-HSI using
+  Bin Pan and Qiaoying Qu are with the School of Statistics and Data Science   an LR-HSI and a registered MSI, which has attracted much
+and the Key Laboratory of Pure Mathematics and Combinatorics of Ministry
+of Education, Nankai University, Tianjin 300071, China, and also with the      attention in recent years [21], [22]. Compared with single-
+Science and Technology on Special System Simulation Laboratory, Beijing        image-based HSR, fusion-based HSR is more feasible since
+Simulation Center, Beijing 100854, China (e-mail: panbin@nankai.edu.cn;        most hyperspectral platforms usually integrate synchronous
+quqiaoying@mail.nankai.edu.cn).
+  Xia Xu is with the College of Computer Science, Nankai University, Tianjin   multispectral sensors as well. In this case, the MSIs usually
+300071, China (e-mail: xuxia@nankai.edu.cn).                                   have a higher spatial resolution, while the LR-HSIs have a
+  Zhenwei Shi is with the Image Processing Center, School of                   finer spectral resolution. Traditional methods, such as matrix
+Astronautics, Beihang University, Beijing 100191, China (e-mail:
+shizhenwei@buaa.edu.cn).                                                       factorization-based algorithms [23]–[27], are proposed first.
+  Digital Object Identifier 10.1109/TGRS.2021.3135028                          These algorithms, respectively, decompose the LR-HSI and
+                      1558-0644 © 2021 IEEE. Personal use is permitted, but republication/redistribution requires IEEE permission.
+                                    See https://www.ieee.org/publications/rights/index.html for more information.
+
+        Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on June 26,2023 at 07:14:46 UTC from IEEE Xplore. Restrictions apply.
+5520512                                                                       IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 60, 2022
+
+
+
+the high-resolution multispectral image (HR-MSI) into a coef-                   capture the significant structure information from the MSIs
+ficient matrix and a basis matrix under some priors. Moreover,                  and to introduce the structure details to the obtained HR-HSIs
+tensor decomposition-based models have also been widely                         based on the spatial attention. Meanwhile, the CPM tries to
+utilized since the hyperspectral image is a 3-D cube. In these                  preserve the spectral characteristics in the LR-HSIs during
+methods, hyperspectral images are represented as 3-D tensors                    the reconstruction process via a channel attention approach.
+and the image tensors are decomposed into the product of                        Finally, the SPM and CPM are integrated based on a new
+kernel tensors and projection matrices using tensor decompo-                    cross attention-based fusion strategy.
+sition techniques, which could account simultaneously for all                      The major contributions of SCPNet can be summarized as
+spectral–spatial information [28]–[32]. In addition to the above                follows.
+two algorithms, Bayesian rule-based algorithms have been                           1) We propose a new spatial attention-based SPM to extract
+widely applied in HSR. The dictionary is obtained through the                         the structure details from MSIs.
+Bayesian dictionary learning, and then, the HR-HSI is recon-                       2) We propose a new channel attention-based CPM to
+structed with dictionary and sparse coding matrix [33]–[36].                          provide spectral invariance from LR-HSIs.
+   Recently, deep learning techniques, especially the convo-                       3) We design a new cross attention-based cross-fusion
+lutional neural networks, have presented a promising per-                             strategy to achieve joint spatial–spectral information
+formance in HSR tasks [37]–[40]. For example, in order to                             preservation for the final obtained HR-HSIs.
+adapt to the characteristics of hyperspectral images as 3-D
+cube, some methods apply 3-D convolution to CNN [41]–[43].                                               II. M ETHODOLOGY
+Mei et al. [41] proposed a 3-D CNN-based algorithm, which                          This section presents the architecture of SCPNet, which
+showed that the 3-D CNN could achieve excellent performance                     consists of three parts: 1) SPM; 2) CPM; and 3) cross-fusion
+in HSR. These methods facilitate the representation of corre-                   strategy.
+lations among successive bands. Besides, the correlations can
+also be enhanced with sufficient capture of the residual infor-
+                                                                                A. Network Architecture
+mation among spectral bands [8], [44]. Xie et al. [8] proposed
+a network that could capture the deep residual features of                         Some notations of terms are as follows. The two inputs
+high-frequency information and utilize the learned features as                  HR-MSI and LR-HSI and the reconstructed HR-HSI are
+a priori in the HR-HSI reconstruction. For a fusion-based HSR                   denoted as X ∈ R swsh×c , Y ∈ R wh×C , and Z ∈ R swsh×C ,
+task, the cross fusion of spatial information and spectral infor-               respectively, where h and w represent the height and width of
+mation is critical to the reconstruction performance. Therefore,                LR-HSI, respectively. C and c represent the number of chan-
+researchers mostly focus on developing networks, which could                    nels of HR-MSI and LR-HSI, respectively, while s denotes the
+extract significant characteristics and integrate them [45]–[48].               upscaling factor. The degradation model is as follows:
+Han et al. [48] utilized a multilevel network to upscale the                                                X = Z S + N1                             (1.1)
+spatial resolution of LR-HSI gradually and integrated the mul-
+                                                                                                            Y = D Z + N2                             (1.2)
+tiscale loss functions during the training to avoid the gradient
+vanish. Moreover, some alternative super-resolution methods                     where S ∈ RC×c is the spectral response function and D ∈
+have been proposed. Such as unsupervised HSR [49], [50]                         Rwh×swsh is the downsampling operation.
+and HSR algorithms consider point spread function (PSF) [9].                       The flowchart of SCPNet is shown in Fig. 1. We first
+Qu et al. [49] adopted the mutual information and assumed                       use bicubic interpolation to super-resolve the LR-HSI to the
+that the characteristics follow a similar Dirichlet distribution.               specified resolution. After upsampling operation, LR-HSI is
+Kwan et al. [9] super-resolved LR-HSI with method, which                        divided into four groups on average according to the number
+incorporates PSF into the deblurring and then fuses an HR                       of spectral bands. Then, the four groups are input to branches
+color image with enhanced HSI.                                                  with the same parameters, which reduces the number of
+   However, recent deep learning-based HSR algorithms may                       parameters and improves the training speed.
+suffer from the color and structure distortions. They usually                      After a few convolution and ReLU layers, SPM and CPM
+utilize feature extractors that are not appropriate for both two                are utilized for deep feature extraction. Let Conv(·) and
+inputs. In this way, the insufficiency of feature representation                ReLU(·) denote convolution layer and ReLU function, respec-
+for the spectral information and the structure characteristics                  tively. SPM(·) and CPM(·) represent the SPM and CPM,
+leads to loss of color–structure information. Therefore, how                    respectively. Then, the feature extraction operations of SCPNet
+to design a network that simultaneously considers the color                     can be expressed as
+and structure characteristics remains a challenge.
+                                                                                                 F2 = Conv(ReLU(Conv(X)))                            (1.3)
+   In this article, we propose a structure–color preserving
+network (SCPNet) for fusion-based hyperspectral image super-                                     X  = SPM(F2 )                                      (1.4)
+resolution, which aims at extracting the spatial details from                     [Y1 , Y2 , Y3 , Y4 ] = Conv(Y )                         (1.5)
+MSIs while preserving the spectral information in the LR-                                         F1i = Conv(ReLU(Conv(Yi ))), i = 1, 2, 3, 4
+HSIs. The kernel of SCPNet is a newly developed joint
+                                                                                                                                                     (1.6)
+attention mechanism, which is composed of three modules:
+structure-preserving module (SPM), color-preserving module                                      F2i = CPM(F1i ), i = 1, 2, 3, 4                      (1.7)
+(CPM), and the fusion module. The SPM is designed to                                             Y  = [F21 , F22 , F23 , F24 ]                      (1.8)
+
+          Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on June 26,2023 at 07:14:46 UTC from IEEE Xplore. Restrictions apply.
+PAN et al.: STRUCTURE–COLOR PRESERVING NETWORK FOR HYPERSPECTRAL IMAGE SUPER-RESOLUTION                                                             5520512
+
+
+
+
+Fig. 1. Illustration of the proposed SCPNet framework. This network contains three parts: SPM, CPM, and cross-fusion strategy. SPM and CPM are proposed
+for feature extraction of HR-MSI and LR-his, while the cross-fusion strategy is proposed for the fusion of spatial–spectral information.
+
+
+
+where X  and Y  are feature maps through SPM and CPM.
+   Spatial information determines the texture and details,
+whereas spectral information determines color of an image.
+Thus, through capturing and enhancing spatial–spectral infor-
+mation, SCPNet could obtain an image with more accurate
+structure and color.
+   Most fusion-based HSR methods realize feature fusion
+by concatenating feature maps. Inspired by [50], we adopt
+a newly proposed cross-fusion strategy based on a cross
+attention mechanism. The fusion strategy realizes cross fusion
+under the guidance of spatial–spectral information, which
+ensures the preserving of structure–color characteristics. The                Fig. 2. Illustration of SPM, which consists of a spatial attention block and a
+                                                                              feature extraction block. The spatial attention block is in the yellow box and
+formula is as follows:                                                        the feature-preserving block is in the blue box.
+
+
+                          Z = CF(X  , Y  )                        (1.9)
+                                                                              be expressed as
+
+where CF(·) is the cross-fusion strategy.                                               X  = Conv(ReLU(Conv(ReLU(Conv(SAB(F2 ))))))
+                                                                                                                                 (2.1)
+                                                                                SAB(F) = Ms(F) ⊗ F                                                    (2.2)
+B. Spatial Attention-Based SPM                                                   Ms(F) = σ ( f 7×7 ([AvgPool(F), MaxPool(F)])).                       (2.3)
+
+   HR-MSI possesses abundant spatial information, which is                        AvgPool(·) represents the average pooling operation, while
+significant for the structure preserving of reconstructed HR-                 MaxPool(·) represents the maximum pooling operation.
+HSI. Thus, we propose the SPM to extract the spatial charac-                   f 7×7 (·) denotes the 7×7 convolution layer and σ (·) represents
+teristics. The architecture of SPM is shown in Fig. 2.                        the sigmoid activation function.
+   SPM consists of a spatial attention block and a feature-                       As the pixel values of an image obey a certain distribu-
+preserving block. The spatial attention block captures and                    tion, there are strong similarities among image patches in a
+enhances the spatial details important for reconstruction,                    feature map. We extract the correlated characteristics through
+while the feature-preserving block facilitates the represen-                  maximum pooling, average pooling, and sigmoid function and
+tation of details. The feature-preserving block is composed                   utilize them for subsequent feature extraction. The coherence
+of stacked convolution layers and ReLU activation functions.                  could be explicitly modeled by learning the weight of each
+Let SAB(·) denote the spatial attention block. The SPM can                    pixel.
+
+        Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on June 26,2023 at 07:14:46 UTC from IEEE Xplore. Restrictions apply.
+5520512                                                                         IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 60, 2022
+
+
+
+
+                                                                                 Fig. 4. Illustration of cross-fusion strategy. Ms module is utilized to compute
+                                                                                 the spatial weight coefficients, and the structure is the same as the spatial
+                                                                                 attention block. Meanwhile, the Mc module is adopted to compute the spectral
+Fig. 3. Illustration of CPM, which contains a color correction branch and a      weight, and the structure is the same as channel attention block.
+feature-preserving branch. The color correction module is in the red box, the
+channel attention block is in the blue box, and the feature-preserving block
+is in the yellow box.
+                                                                                    Since the spectral coherence of hyperspectral images is
+                                                                                 critical to reconstruction, we employ the channel attention
+C. Channel Attention-Based Color-Preserving Module                               block to extract and retain this feature. Average pooling
+   We propose CPM for the feature extraction of LR-HSI,                          and maximum pooling integrate feature characteristics along
+which consists of two branches: the color correction branch                      the spatial dimensions, which forces the CPM to focus on
+and the feature-preserving branch. With the color correction                     the spectral relation. Then, the sigmoid function converts
+branch, we obtain a set of weight coefficients, which could                      spectral information into weights, which explicitly expresses
+guide the feature representation of feature-preserving block.                    the spectral information. In this way, the spectral informa-
+We first apply a Gaussian blur kernel to the input feature maps                  tion and interspectral correlation significant for hyperspectral
+and then two convolution layers, a channel attention block                       reconstruction are integrated into the feature maps.
+and a sigmoid function. The blurring operation ensures that
+only the low-frequency information such as color characteristic                    Algorithm 1 Pseudocode for SCPNet
+passes through this branch, while high-frequency information                        Input: HR MSI X, LR HSI Y.
+such as fine texture of feature maps is blocked. Apart from                         Output: reconstructed HR HSI Z.
+the blur kernel, channel attention is another unit that facili-                   1 while the SCPNet has not converged yet do
+tates the color preserving. Then, the other feature-preserving                    2 For X:
+branch focuses on the representation of spectral information                      3 Shallow feature extraction:
+to promote the color preserving of reconstruction. Finally,                         F1 = Conv(ReLU (Conv(X)))
+                                                                                                                              
+we multiply the output of feature-preserving block and the                        4 Input the shallow features into the SPM: X = S P M(F1 )
+weight coefficients from the color correction branch to obtain                    5 For Y:
+the result. The structure of CPM is shown in Fig. 3.                              6 Upsampling the HR-HSI: Y1 = U psampli ng(Y )
+   Let CCM(·) represent the color correction operation. Then,                     7 Divide the upscaled image into four groups:
+the CPM can be expressed as                                                         [Y1 , Y2 , Y3 , Y4 ] = Conv(Y1 )
+                                                                                  8 Shallow feature extraction:
+           αi = CCM(F1i ), i = 1, 2, 3, 4           (3.1)                           F1i = Conv(ReLU (Conv(Yi ))) i = 1, 2, 3, 4
+            
+          F1i = Conv(ReLU(Conv(ReLU(Conv(F1i ))))),                               9 Input the shallow features into the CPM:
+
+                                   i = 1, 2, 3, 4                      (3.2)        F2i = C P M(F1i )
+                                                                                 10 Feature fusion:
+          F2i = αi ⊗ F1i ,
+                      i = 1, 2, 3, 4                                   (3.3)                            
+                                                                                 11 Z = FC(X , Y )
+   CCM(·) = σ (Conv(CAB(Conv(Blur(·)))))                               (3.4)     12 Renturn Z
+  CAB(F) = Mc(F) ⊗ F                         (3.5)
+   Mc(F) = σ (MLP(AvgPool(F)) + MLP(MaxPool(F)))
+                                                                       (3.6)
+                                                                                 D. Cross Attention-Based Cross-Fusion Strategy
+    MLP(·) = FC(ReLU(FC(·)))                                           (3.7)
+                                                                                    In order to further exploit the spatial–spectral information
+where F1i and F2i are the input and output of CPM, αi is                         from the SPM and CPM, we apply a cross-fusion strategy
+the weight coefficients from the color correction branch for                     to fuse the feature maps across branches. First, we compute
+the i th group of LR-HSI, Blur(·) represents the blur kernel,                    spatial attention weight coefficients from the branch of HR-
+CAB(·) denotes the CAB operation, MLP(·) represents the                          MSI (X’) and spectral attention weight coefficients from the
+MLP layers, which contains two fully connected layers and a                      branch of LR-HSI (Y’). Then, we multiply the input feature
+ReLU layer, and σ (·) represents the sigmoid activation fuction.                 maps with the attention weight coefficients from the other
+
+          Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on June 26,2023 at 07:14:46 UTC from IEEE Xplore. Restrictions apply.
+PAN et al.: STRUCTURE–COLOR PRESERVING NETWORK FOR HYPERSPECTRAL IMAGE SUPER-RESOLUTION                                                           5520512
+
+
+
+branch to integrate the significant information. In this way, spa-              1) ICVL: The ICVL dataset contains 201 images. These
+tial information from the HR-MSI branch could be integrated                  hyperspectral images cover a 400-700-nm spectral range with
+into the LR-HSI branch, and spectral information from the                    31 bands. Subimages with size of 31 × 256 × 256 are uti-
+LR-HSI branch could be fused into the HR-MSI branch. Then,                   lized as ground truth. Then, the corresponding LR-HSIs are
+we concatenate the feature maps after information transfer and               constructed by applying a Gaussian spatial filter on each band
+input the resulting feature map into several convolution and                 of the HR-HSI and downsampling every 2/4/8 pixels in both
+activation function layers.                                                  height and width directions. A three-band HR-MSI with size
+   As shown in Fig. 4, the cross-fusion strategy can be                      of 256 × 256 is constructed by filtering the HR-HSI with a
+expressed as                                                                 spectral responses function [27].
+                                                                                2) DFC2018 Houston: The data were obtained over the
+Ms(X  ) = σ ( f 7×7 ([AvgPool(X  ), MaxPool(X  )])) (4.1)
+                                                                             University of Houston campus and its neighborhood. These
+Mc(Y  ) = σ (MLP(AvgPool(Y  )) + MLP(MaxPool(Y  )))                       HSIs were collected with 50 spectral channels from 380 to
+                                                                   (4.2)     1050 nm. Subimages with size of 50 × 200 × 200 are used as
+                                                                         the ground truth. Then, the corresponding LR-HSI and HR-
+     X = Ms(Y ) ⊗ X                                                (4.3)
+                                                                             MSI are constructed via the same operations as ICVL.
+     Y  = Mc(X  ) ⊗ Y                                          (4.4)
+                                                                                3) TG1HRSSC: TG1HRSSC dataset is a space hyper-
+      Z = Conv(Relu(Conv(Relu(Conv(X  , Y  ))))).              (4.5)     spectral remote sensing scene classification dataset acquired
+                                                                             by Tiangong-1 hyperspectral imager. We select visible
+E. Loss Function                                                             near-infrared spectral data that cover 400–900 nm with
+   To obtain the optimal network parameter set, the losses                   54 effective bands for the experiment. Subimages with size
+between training samples and ground truth need to be min-                    of 54 × 256 × 256 are used as the ground truth. Then, the
+imized. The L2 loss is generally utilized in most methods                    corresponding LR-HSI and HR-MSI are constructed via the
+to maximize the peak signal-to-noise ratio (PSNR). However,                  same operations as ICVL.
+the L2 loss often fails to capture the underlying multimodal
+distributions of the HR patches, which results in the over-                  C. Comparison Experiments on Synthetic Datasets
+smoothness of the reconstructed images. Therefore, we select
+the L1 loss since it provides better convergence. The loss                      In order to verify the performance of the proposed method
+function is shown in the following equation:                                 SCPNet for HSR, we conduct comparison experiments on
+                                                                             three hyperspectral datasets. Also, we choose three kinds of
+                               N 
+                                                 
+                                                                           upscaling factors for experiments: 2, 4, and 8. The details and
+                   loss =         I (i ) − I(i ).               (5.1)
+                                                                             analysis of experiments can be seen as follows.
+                               i=1
+                                                                                1) Performance on ICVL Dataset: We randomly select
+  More training details are provided in Section III.                         60 subimages from the ICVL dataset for training and 20 for
+                                                                             testing. Then, we construct the corresponding LR-HSIs and
+                       III. E XPERIMENTS                                     HR-MSIs with Gaussian filter and SRF, respectively. Table I
+  This section presents the experiment results and analysis.                 summarizes the PSNR, SSIM, and SAM values of SCPNet
+To validate the superiority of SCPNet, we conduct comparison                 and comparative algorithms for different upscaling factors.
+experiments and ablation experiments on three datasets: ICVL                 SSIM reflects the structural difference between reconstructed
+dataset, DFC2018 Houston dataset, and TG1HRSSC dataset.                      images and real images, while SAM measures the spectral
+                                                                             difference between two images. Thus, the performance of
+A. Compared Methods and Performance Evaluation                               SPM and CPM can be demonstrated by the values of SSIM
+Measures                                                                     and SAM. Moreover, PSNR represents the overall difference
+                                                                             between the reconstructed image and the real one, and thus,
+   Seven methods are selected as comparative methods:
+                                                                             PSNR could also reflect the reconstruction effect. For the
+GSA [51], CNMF [23], FUMI [25], CSTF [52], GLORIA [53],
+                                                                             representative traditional optimization-based super-resolution
+TFNet [54], and HiBCD [55]. Among them, GSA, CNMF, and
+                                                                             algorithms, CNMF performs better than GSA, which indicates
+FUMI are both representative matrix factorization-based HSR
+                                                                             that appropriate prior information benefits super-resolution
+methods; GLORIA, HiBCD, TFNet, and CSTF are the state-
+                                                                             performance. FUMI provides with better results than CNMF,
+of-the-art HSR methods. GLORIA and HiBCD are based on
+                                                                             which means that sum-to-one and nonnegativity constraints
+matrix factorization, while CSTF and TFNet are factorization-
+                                                                             help improve the performance. For the state-of-the-art super-
+and deep learning-based HSR methods, respectively.
+                                                                             resolution comparative algorithms, the performance of TFNet
+   We utilize PSNR, structural similarity index (SSIM), and
+                                                                             is the worst in the ×2 case. HiBCD performs poor in the
+spectral angle mapper (SAM) to evaluate the quality of recon-
+                                                                             ×4 case. Also, in ×8 case, GLORIA is the worst. CSTF
+structed HSIs. The better the reconstruction effect, the higher
+                                                                             surpasses GLORIA, TFNet, and HiBCD a lot in both ×4
+the PSNR and SSIM value, the lower the SAM value.
+                                                                             and ×8 cases, while it gets worse performance than GLORIA
+                                                                             in the ×2 case. Compared with both deep learning- and
+B. Datasets and Settings                                                     optimization-based comparison methods, SCPNet has the best
+  The datasets we utilize are listed as follows.                             performance in all three cases. Since the SSIM and SAM of
+
+       Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on June 26,2023 at 07:14:46 UTC from IEEE Xplore. Restrictions apply.
+5520512                                                                       IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 60, 2022
+
+
+
+                                                                         TABLE I
+                                  PSNR, SSIM, AND SAM VALUES BY D IFFERENT M ETHODS ON THE ICVL DATASET
+
+
+
+
+                                                                         TABLE II
+                           PSNR, SSIM, AND SAM VALUES BY D IFFERENT M ETHODS ON THE DFC2018 H OUSTON D ATASET
+
+
+
+
+                                                                        TABLE III
+                               PSNR, SSIM, AND SAM VALUES BY D IFFERENT M ETHODS ON THE TG1HRSSC DATASET
+
+
+
+
+SCPNet are both better than others, we assume that SPM and                      and “BGU-0522-1127” are chosen as examples. For recon-
+CPM successfully capture and preserve the structure character-                  structed HR-HSIs, we select three bands of red (22nd band),
+istics and color information respectively. Especially for SAM,                  green (14th band), and blue (7th band) and then concatenate
+our SCPNet is far superior to the others. For example, when                     them to generate the synthetic RGB images. In Fig. 5, the
+the upscaling factor is 4, SCPNet is the only one with an SAM                   first and third rows list synthetic RGB images, and the
+value below 2. Even the second lowest SAM of method CSTF                        second and fourth rows represent error maps between recon-
+is almost 1.5 times bigger than that of ours. In addition, when                 structed HR-HSIs and ground truth. As can be seen from the
+the LR-HSI is upsampled eight times, the value of SSIM is                       reconstructed images, there is a color difference between the
+significantly higher than other algorithms, which means that                    ground truth and the reconstructed images obtained by HiBCD,
+the SPM could preserve the structure information effectively.                   which indicates that HiBCD does not sufficiently capture the
+   We choose four comparison methods for visualization:                         spectral information, thus leading to color distortion. What is
+TFNet, FUMI, HiBCD, and CSTF. Fig. 5 shows the visu-                            more, from the error maps, we find that other comparative
+alization results of the proposed method and the comparison                     methods fail to adequately address the deviations in texture
+method, where representative subimages of “BGU-0522-1113”                       detail. The SCPNet method performs better both in structure
+
+          Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on June 26,2023 at 07:14:46 UTC from IEEE Xplore. Restrictions apply.
+PAN et al.: STRUCTURE–COLOR PRESERVING NETWORK FOR HYPERSPECTRAL IMAGE SUPER-RESOLUTION                                                              5520512
+
+
+
+
+Fig. 5.   Visual display of ICVL dataset when the upscaling factor is 8.
+
+
+
+
+Fig. 6.   Spectral curves of the selected pixel in the reconstructed HSI from three dataset. (a) ICVL. (b) DFC2018 Houston. (c) TG1HRSSC.
+
+
+and color. To further validate the reconstruction ability of                    image obtained by the TFNet method fluctuates greatly from
+SCPNet, we randomly select one pixel from each reconstructed                    the first channel to the last channel. According to the curves
+HR-HSIs and plot their spectral curves, which are shown                         shown in Fig. 6(a), our SCPNet gets the best reconstruction
+in Fig. 6(a). From the 1st channel to the 31st channel, the                     performance.
+pixel values of image reconstructed by SCPNet are always                          2) Performance on the DFC2018 Houston Dataset: For the
+the closest to the real image. Moreover, an image obtained by                   DFC2018 Houston dataset, we randomly select 60 subimages
+the FUMI method is significantly different from the real one                    for training and 20 for testing. More details and analysis on
+in the first 20 channels, while the overall difference of the                   the DFC2018 Houston dataset are provided in Table II. For
+
+          Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on June 26,2023 at 07:14:46 UTC from IEEE Xplore. Restrictions apply.
+5520512                                                                       IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 60, 2022
+
+
+
+
+Fig. 7.   Visual display of DFC2018 Houston dataset when the upscaling factor is 8.
+
+                                                                        TABLE IV
+                                     A BLATION S TUDY ON THE ICVL DATASET W HEN THE U PSCALING FACTOR I S 8
+
+
+
+
+the representative super-resolution algorithms, FUMI performs                   in reconstruction. Though the PSNR value of SCPNet in
+better than GSA and CNMF. CNMF provides better results                          ×8 case is slightly smaller than CSTF, SSIM and SAM
+than GSA. For the state-of-the-art super-resolution comparison                  values still maintain our competitive superiority. Thus, we con-
+algorithms, the performance of CSTF is the best in all cases.                   clude that SCPNet could reconstruct more accurate HR-HSI
+HiBCD and GLORIA perform poor in both ×4 and ×8                                 than other comparison methods under quantitative assessment
+cases. In ×2 and ×4 cases, our SCPNet performs best for                         criteria.
+all the three assessments. Especially under the evaluations                        Fig. 7 shows the visualization results of the proposed
+of SSIM and SAM, SCPNet remains a significant advantage                         method and comparison methods. For reconstructed HR-HSIs,
+
+
+          Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on June 26,2023 at 07:14:46 UTC from IEEE Xplore. Restrictions apply.
+PAN et al.: STRUCTURE–COLOR PRESERVING NETWORK FOR HYPERSPECTRAL IMAGE SUPER-RESOLUTION                                                              5520512
+
+
+
+
+Fig. 8.   Visual display of TG1HRSSC dataset when the upscaling factor is 8.
+
+
+
+
+Fig. 9. Visual display of ablation experiment and SCPNet. (a) Reconstruction error map of SCPNet. (b) Reconstruction error map of network without SPM.
+(c) Spectral curves of SCPNet and network without CPM.
+
+
+
+we select three bands of red (17th band), green (11th band),                    our network preserves structure characteristics best. Compared
+and blue (5th band) and then concatenate them to generate the                   with HiBCD, our network captures spectral information and
+synthetic RGB images. From Fig. 7, we can see that in terms                     preserves color features, which can be represented in error
+of edge texture, two error maps from the proposed method                        maps too. Moreover, we also provide the reconstructed spectra
+are both darker than other algorithms, which demonstrates that                  of the DFC2018 Houston dataset in Fig. 6 (b) same as the
+
+
+          Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on June 26,2023 at 07:14:46 UTC from IEEE Xplore. Restrictions apply.
+5520512                                                                       IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 60, 2022
+
+
+
+ICVL dataset. The image obtained by our SCPNet is closest                       capture spatial and spectral information, respectively, while the
+to the real one from the first channel to the last. Also, the                   fusion strategy integrates information to reconstruct structure
+image obtained by CNMF fluctuates the most.                                     and color preserved HR-HSI. Comparison experiments demon-
+   3) Performance on the TG1HRSSC Dataset: For experi-                          strate that our SCPNet outperforms all the other methods and
+ments on the TG1HRSSC dataset, we select 40 images for                          the ablation study shows the contributions of all three modules.
+training and 7 for testing. Table III shows the numerical                       Thus, we conclude that the SCPNet is a promising algorithm
+results on TG1HRSSC dataset. Our network gets the best                          not only in numerical assessments but also in visual effects.
+SSIM values in ×2, ×4, and ×8 cases, which means that the                       Although fusion-based HSR methods have achieved excellent
+SPM contributes to preserve color characteristics effectively.                  performance, these methods do not consider the PSF, which
+Moreover, when the upscaling factor is 4 or 8, spectral infor-                  may lead to poor reconstruction results when the upsampling
+mation of HR-HSI from SCPNet is maintained since the SAM                        factor is large. Therefore, in the future, we will incorporate
+values are the smallest. However, the performance of CSTF                       PSF to improve the reconstruction performance.
+and FUMI sometimes outperforms ours on the PSNR measure.
+Thus, we need to validate the reconstruction performance
+through visualization results.                                                                                R EFERENCES
+   Fig. 8 shows the visualization results, where representative                  [1] P. Ghamisi et al., “Advances in hyperspectral image and signal process-
+images “city-015-VNI-2013041514” and “port-001-VNI-                                  ing: A comprehensive overview of the state of the art,” IEEE Geosci.
+2013010214” are chosen as examples. For reconstructed                                Remote Sens. Mag., vol. 5, no. 4, pp. 37–78, Dec. 2017.
+                                                                                 [2] J. M. Bioucas-Dias, A. Plaza, G. Camps-Valls, P. Scheunders,
+HR-HSIs, we select three bands of red (27th band), green                             N. M. Nasrabadi, and J. Chanussot, “Hyperspectral remote sensing data
+(17th band), and blue (7th band) and then concatenate them                           analysis and future challenges,” IEEE Geosci. Remote Sens. Mag., vol. 1,
+to generate the synthetic RGB images. From synthetic RGB                             no. 2, pp. 6–36, Jun. 2013.
+                                                                                 [3] S. Mei, J. Ji, Y. Geng, Z. Zhang, X. Li, and Q. Du, “Unsupervised
+images and error maps, it is obvious that results from FUMI                          spatial–spectral feature learning by 3D convolutional autoencoder for
+and HiBCD still remain distortions in structure and color.                           hyperspectral classification,” IEEE Trans. Geosci. Remote Sens., vol. 57,
+On the contrary, images from our network perform well                                no. 9, pp. 6808–6820, Dec. 2019.
+                                                                                 [4] S. Mei, X. Li, X. Liu, H. Cai, and Q. Du, “Hyperspectral image classi-
+both in terms of structure and color. Besides, spectral curves                       fication using attention-based bidirectional long short-term memory net-
+are shown in Fig. 6(c), which also shows the performance                             work,” IEEE Trans. Geosci. Remote Sens., early access, Aug. 11, 2021,
+of SCPNet.                                                                           doi: 10.1109/TGRS.2021.3102034.
+                                                                                 [5] S. Mei, X. Chen, Y. Zhang, J. Li, and A. Plaza, “Accelerating convolu-
+                                                                                     tional neural network-based hyperspectral image classification by step
+D. Ablation Study                                                                    activation quantization,” IEEE Trans. Geosci. Remote Sens., vol. 60,
+                                                                                     2022, Art. no. 5502012.
+   To verify the contribution of the SPM, CPM, and fusion                        [6] Z. Zou and Z. Shi, “Hierarchical suppression method for hyperspectral
+strategy, we conduct ablation experiments on the ICVL dataset.                       target detection,” IEEE Trans. Geosci. Remote Sens., vol. 54, no. 1,
+                                                                                     pp. 330–342, Jan. 2016.
+Table IV summarizes the numerical evaluation of comparative                      [7] Y. Zhang, B. Du, L. Zhang, and T. Liu, “Joint sparse representation
+methods by three assessments. Let the model with convolution                         and multitask learning for hyperspectral target detection,” IEEE Trans.
+layers instead of SPM, CPM, and fusion strategy be baseline.                         Geosci. Remote Sens., vol. 55, no. 2, pp. 894–906, Feb. 2017.
+   For network without SPM, the spatial information cannot                       [8] W. Xie, J. Lei, Y. Cui, Y. Li, and Q. Du, “Hyperspectral pansharpening
+                                                                                     with deep priors,” IEEE Trans. Neural Netw. Learn. Syst., vol. 31, no. 5,
+be efficiently represented, while the network without CPM                            pp. 1529–1543, May 2020.
+fails to capture the spectral details completely. Besides, since                 [9] C. Kwan, J. Choi, S. Chan, J. Zhou, and B. Budavari, “A super-resolution
+the spatial–spectral information cannot be well integrated, the                      and fusion approach to enhancing hyperspectral images,” Remote Sens.,
+                                                                                     vol. 10, no. 9, p. 1416, Sep. 2018.
+networks without cross-fusion strategy perform worse than                       [10] S. Gou, S. Liu, S. Yang, and L. Jiao, “Remote sensing image super-
+methods with it. Therefore, we conclude that the SPM, CPM,                           resolution reconstruction based on nonlocal pairwise dictionaries and
+and fusion strategy all contribute to improve the performance.                       double regularization,” IEEE J. Sel. Topics Appl. Earth Observ. Remote
+                                                                                     Sens., vol. 7, no. 12, pp. 4784–4792, Dec. 2014.
+   Fig. 9 represents the visualization results of ablation experi-              [11] L. Gao, D. Hong, J. Yao, B. Zhang, P. Gamba, and J. Chanussot,
+ments. Fig. 9(a) and (b) shows the reconstruction error maps of                      “Spectral superresolution of multispectral imagery with joint sparse and
+SCPNet and network without SPM. Obviously, SCPNet recon-                             low-rank learning,” IEEE Trans. Geosci. Remote Sens., vol. 59, no. 3,
+                                                                                     pp. 2269–2280, Mar. 2021.
+structs HR-HSI with more accurate texture, which means that                     [12] S. Mei, Y. Geng, J. Hou, and Q. Du, “Learning hyperspectral images
+SPM contributes to the preservation of structure information.                        from RGB images via a coarse-to-fine CNN,” Sci. China Inf. Sci.,
+Fig. 9(c) shows the reconstructed spectral curves of SCPNet                          vol. 65, no. 5, May 2022, Art. no. 152102.
+                                                                                [13] Y. Wang, X. Chen, Z. Han, and S. He, “Hyperspectral image super-
+and network without CPM. The reconstructed image spectrum                            resolution via nonlocal low-rank tensor approximation and total variation
+obtained by the full network is closer to the ground truth, and                      regularization,” Remote Sens., vol. 9, no. 12, p. 1286, 2017.
+thus, it proves the function of CPM.                                            [14] S. Tang, Y. Xu, L. Huang, and L. Sun, “Hyperspectral image super-
+                                                                                     resolution via adaptive dictionary learning and double 1 constraint,”
+                                                                                     Remote Sens., vol. 11, no. 23, p. 2809, Nov. 2019.
+                           IV. C ONCLUSION                                      [15] K. Jiang, Z. Wang, P. Yi, and J. Jiang, “Hierarchical dense recursive net-
+                                                                                     work for image super-resolution,” Pattern Recognit., vol. 107, Nov. 2020,
+   We propose a fusion-based HSR framework SCPNet with                               Art. no. 107475.
+three modules based on a joint attention mechanism: an SPM                      [16] E. Liu, Z. Tang, B. Pan, and Z. Shi, “Spatial–spectral feedback network
+based on spatial attention mechanism, a color-preserving mod-                        for super-resolution of hyperspectral imagery,” 2021, arXiv:2103.04354.
+                                                                                [17] D. Liu, J. Li, and Q. Yuan, “A spectral grouping and attention-driven
+ule based on channel attention mechanism, and a cross-fusion                         residual dense network for hyperspectral image super-resolution,” IEEE
+strategy based on cross attention mechanism. SPM and CPM                             Trans. Geosci. Remote Sens., vol. 59, no. 9, pp. 7711–7725, Sep. 2021.
+
+          Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on June 26,2023 at 07:14:46 UTC from IEEE Xplore. Restrictions apply.
+PAN et al.: STRUCTURE–COLOR PRESERVING NETWORK FOR HYPERSPECTRAL IMAGE SUPER-RESOLUTION                                                                 5520512
+
+
+
+[18] K. Jiang, Z. Wang, P. Yi, G. Wang, T. Lu, and J. Jiang, “Edge-enhanced       [41] S. Mei, X. Yuan, J. Ji, Y. Zhang, S. Wan, and Q. Du, “Hyperspectral
+     GAN for remote sensing image superresolution,” IEEE Trans. Geosci.                image spatial super-resolution via 3D full convolutional neural network,”
+     Remote Sens., vol. 57, no. 8, pp. 5799–5812, Jun. 2019.                           Remote Sens., vol. 9, no. 11, p. 1139, 2017.
+[19] X. Wang, J. Ma, and J. Jiang, “Hyperspectral image super-resolution          [42] Q. Li, Q. Wang, and X. Li, “Exploring the relationship between 2D/3D
+     via recurrent feedback embedding and spatial–spectral consistency                 convolution for hyperspectral image super-resolution,” IEEE Trans.
+     regularization,” IEEE Trans. Geosci. Remote Sens., vol. 60, 2022,                 Geosci. Remote Sens., vol. 59, no. 10, pp. 8693–8703, Oct. 2021.
+     Art. no. 5503113.                                                            [43] F. Palsson, J. R. Sveinsson, and M. O. Ulfarsson, “Multispectral and
+[20] Y. Mei, Y. Fan, Y. Zhou, L. Huang, T. S. Huang, and H. Shi, “Image                hyperspectral image fusion using a 3-D-convolutional neural network,”
+     super-resolution with cross-scale non-local attention and exhaustive self-        IEEE Geosci. Remote Sens. Lett., vol. 14, no. 5, pp. 639–643, May 2017.
+     exemplars mining,” in Proc. IEEE/CVF Conf. Comput. Vis. Pattern              [44] Y. Li, J. Hu, X. Zhao, W. Xie, and J. Li, “Hyperspectral image super-
+     Recognit. (CVPR), Jun. 2020, pp. 5689–5698.                                       resolution using deep convolutional neural network,” Neurocomputing,
+[21] N. Yokoya, C. Grohnfeldt, and J. Chanussot, “Hyperspectral and mul-               vol. 266, pp. 29–41, Nov. 2017.
+     tispectral data fusion: A comparative review of the recent literature,”      [45] J. Yang, Y.-Q. Zhao, and J. C.-W. Chan, “Hyperspectral and multispec-
+     IEEE Geosci. Remote Sens. Mag., vol. 5, no. 2, pp. 29–56, Jun. 2017.              tral image fusion via deep two-branches convolutional neural network,”
+[22] L. Loncan et al., “Hyperspectral pansharpening: A review,” IEEE Trans.            Remote Sens., vol. 10, no. 5, p. 800, 2018.
+     Geosci. Remote Sens., vol. 3, no. 3, pp. 27–46, Sep. 2015.                   [46] S. Mei, R. Jiang, X. Li, and Q. Du, “Spatial and spectral joint
+                                                                                       super-resolution using convolutional neural network,” IEEE Trans.
+[23] N. Yokoya, T. Yairi, and A. Iwasaki, “Coupled non-negative matrix
+                                                                                       Geosci. Remote Sens., vol. 58, no. 7, pp. 4590–4603, Jul. 2020.
+     factorization (CNMF) for hyperspectral and multispectral data fusion:
+                                                                                  [47] J.-F. Hu, T.-Z. Huang, L.-J. Deng, T.-X. Jiang, G. Vivone, and
+     Application to pasture classification,” in Proc. IEEE Int. Geosci. Remote
+                                                                                       J. Chanussot, “Hyperspectral image super-resolution via deep spa-
+     Sens. Symp., Jul. 2011, pp. 1779–1782.
+                                                                                       tiospectral attention convolutional neural networks,” IEEE Trans.
+[24] E. Wycoff, T.-H. Chan, K. Jia, W.-K. Ma, and Y. Ma, “A non-negative
+                                                                                       Neural Netw. Learn. Syst., early access, Jun. 9, 2021, doi:
+     sparse promoting algorithm for high resolution hyperspectral imaging,”
+                                                                                       10.1109/TNNLS.2021.3084682.
+     in Proc. IEEE Int. Conf. Acoust., Speech Signal Process., May 2013,
+                                                                                  [48] X.-H. Han, Y. Zheng, and Y.-W. Chen, “Multi-level and multi-scale spa-
+     pp. 1409–1413.
+                                                                                       tial and spectral fusion CNN for hyperspectral image super-resolution,”
+[25] Q. Wei, J. Bioucas-Dias, N. Dobigeon, J.-Y. Tourneret, M. Chen, and               in Proc. IEEE/CVF Int. Conf. Comput. Vis. Workshop (ICCVW),
+     S. Godsill, “Multiband image fusion based on spectral unmixing,” IEEE             Oct. 2019, pp. 4330–4339.
+     Trans. Geosci. Remote Sens., vol. 54, no. 12, pp. 7236–7249, Dec. 2016.      [49] Y. Qu, H. Qi, C. Kwan, N. Yokoya, and J. Chanussot, “Unsupervised and
+[26] R. Dian, S. Li, L. Fang, and Q. Wei, “Multispectral and hyperspectral             unregistered hyperspectral image super-resolution with mutual Dirichlet-
+     image fusion with spatial–spectral sparse representation,” Inf. Fusion,           net,” IEEE Trans. Geosci. Remote Sens., early access, May 27, 2021,
+     vol. 49, pp. 262–270, Sep. 2019.                                                  doi: 10.1109/TGRS.2021.3079518.
+[27] J. Xue, Y.-Q. Zhao, Y. Bu, W. Liao, J. C.-W. Chan, and W. Philips,           [50] J. Yao, D. Hong, J. Chanussot, D. Meng, X. Zhu, and Z. Xu, “Cross-
+     “Spatial–spectral structured sparse low-rank representation for hyper-            attention in coupled unmixing nets for unsupervised hyperspectral super-
+     spectral image super-resolution,” IEEE Trans. Image Process., vol. 30,            resolution,” in Proc. ECCV, 2020, pp. 208–224.
+     pp. 3084–3097, 2021.                                                         [51] B. Aiazzi, S. Baronti, and M. Selva, “Improving component substitution
+[28] R. Dian, L. Fang, and S. Li, “Hyperspectral image super-resolution via            pansharpening through multivariate regression of MS + pan data,” IEEE
+     non-local sparse tensor factorization,” in Proc. IEEE Conf. Comput. Vis.          Trans. Geosci. Remote Sens., vol. 45, no. 10, pp. 3230–3239, Sep. 2007.
+     Pattern Recognit., Jul. 2017, pp. 3862–3871.                                 [52] S. Li, R. Dian, L. Fang, and J. M. Bioucas-Dias, “Fusing hyperspectral
+[29] C. I. Kanatsoulis, X. Fu, N. D. Sidiropoulos, and W.-K. Ma, “Hyper-               and multispectral images via coupled sparse tensor factorization,” IEEE
+     spectral super-resolution: A coupled tensor factorization approach,”              Trans. Image Process., vol. 27, no. 8, pp. 4118–4130, Aug. 2018.
+     IEEE Trans. Signal Process., vol. 66, no. 24, pp. 6503–6517,                 [53] R. Wu, W.-K. Ma, X. Fu, and Q. Li, “Hyperspectral super-resolution via
+     Dec. 2018.                                                                        global–local low-rank matrix estimation,” IEEE Trans. Geosci. Remote
+[30] R. Dian, S. Li, and L. Fang, “Learning a low tensor-train rank repre-             Sens., vol. 58, no. 10, pp. 7125–7140, Oct. 2020.
+     sentation for hyperspectral image super-resolution,” IEEE Trans. Neural      [54] Y. Zheng, J. Li, Y. Li, K. Cao, and K. Wang, “Deep residual learning
+     Netw. Learn. Syst., vol. 30, no. 9, pp. 2672–2683, Sep. 2019.                     for boosting the accuracy of hyperspectral pansharpening,” IEEE Geosci.
+[31] Y. Xu, Z. Wu, J. Chanussot, and Z. Wei, “Nonlocal patch tensor sparse             Remote Sens. Lett., vol. 17, no. 8, pp. 1435–1439, Aug. 2020.
+     representation for hyperspectral image super-resolution,” IEEE Trans.        [55] R. Wu, C.-H. Chan, H.-T. Wai, W.-K. Ma, and X. Fu, “Hi, BCD! hybrid
+     Image Process., vol. 28, no. 6, pp. 3034–3047, Jun. 2019.                         inexact block coordinate descent for hyperspectral super-resolution,” in
+[32] K. Wang, Y. Wang, X.-L. Zhao, J. C.-W. Chan, Z. Xu, and D. Meng,                  Proc. ICASSP, Apr. 2018, pp. 2426–2430.
+     “Hyperspectral and multispectral image fusion via nonlocal low-rank
+     tensor decomposition and spectral unmixing,” IEEE Trans. Geosci.
+     Remote Sens., vol. 58, no. 11, pp. 7654–7671, Nov. 2020.
+[33] Y. Zhang, A. Duijster, and P. Scheunders, “A Bayesian restoration
+     approach for hyperspectral images,” IEEE Trans. Geosci. Remote Sens.,
+     vol. 50, no. 9, pp. 3453–3462, Sep. 2012.
+[34] N. Akhtar, F. Shafait, and A. Mian, “Bayesian sparse representation for
+     hyperspectral image super resolution,” in Proc. IEEE Conf. Comput. Vis.
+     Pattern Recognit. (CVPR), Jun. 2015, pp. 3631–3640.
+[35] Y. Chang, L. Yan, X. Zhao, H. Fang, Z. Zhang, and S. Zhong, “Weighted
+     low-rank tensor recovery for hyperspectral image restoration,” IEEE
+     Trans. Cybern., vol. 50, no. 11, pp. 4558–4572, Nov. 2020.
+[36] Q. Wei, N. Dobigeon, and J. Y. Tourneret, “Bayesian fusion of multi-
+     band images,” IEEE J. Sel. Topics Signal Process., vol. 9, no. 6,
+     pp. 1117–1127, Sep. 2015.
+[37] W. Wei, J. Nie, Y. Li, L. Zhang, and Y. Zhang, “Deep recursive network
+     for hyperspectral image super-resolution,” IEEE Trans. Comput. Imag.,                                 Bin Pan (Member, IEEE) received the B.S. and
+     vol. 6, pp. 1233–1244, 2020.                                                                          Ph.D. degrees from the School of Astronautics, Bei-
+[38] J. Li et al., “Hyperspectral image super-resolution by band atten-                                    hang University, Beijing, China, in 2013 and 2019,
+     tion through adversarial learning,” IEEE Trans. Geosci. Remote Sens.,                                 respectively.
+     vol. 58, no. 6, pp. 4304–4318, Jun. 2020.                                                               Since 2019, he has been an Associate Profes-
+[39] J. Hu, X. Jia, Y. Li, G. He, and M. Zhao, “Hyperspectral image super-                                 sor with the School of Statistics and Data Sci-
+     resolution via intrafusion network,” IEEE Trans. Geosci. Remote Sens.,                                ence, Nankai University, Tianjin, China. His research
+     vol. 58, no. 10, pp. 7459–7471, Oct. 2020.                                                            interests include machine learning, remote sensing
+[40] W. Xie, Y. Cui, Y. Li, J. Lei, Q. Du, and J. Li, “HPGAN: Hyperspectral                                image processing, and multiobjective optimization.
+     pansharpening using 3-D generative adversarial networks,” IEEE Trans.
+     Geosci. Remote Sens., vol. 59, no. 1, pp. 463–477, Jan. 2021.
+
+         Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on June 26,2023 at 07:14:46 UTC from IEEE Xplore. Restrictions apply.
+5520512                                                                          IEEE TRANSACTIONS ON GEOSCIENCE AND REMOTE SENSING, VOL. 60, 2022
+
+
+
+                         Qiaoying Qu received the B.S. degree from the Col-                               Zhenwei Shi (Member, IEEE) received the Ph.D.
+                         lege of Mathematics, Jilin University, Changchun,                                degree in mathematics from the Dalian University
+                         China, in 2021. She is currently pursuing the                                    of Technology, Dalian, China, in 2005.
+                         M.S. degree with the School of Statistics and Data                                 From 2005 to 2007, he was a Post-Doctoral
+                         Science, Nankai University, Tianjin, China.                                      Researcher with the Department of Automation,
+                           Her research interests include machine learning,                               Tsinghua      University,      Beijing,  China.
+                         hyperspectral super-resolution, and remote sensing                               From 2013 to 2014, he was a Visiting Scholar
+                         image processing.                                                                with the Department of Electrical Engineering
+                                                                                                          and Computer Science, Northwestern University,
+                                                                                                          Evanston, IL, USA. He is currently a Professor
+                                                                                                          and the Dean of the Image Processing Center,
+                                                                                  School of Astronautics, Beihang University, Beijing. He has authored
+                                                                                  or coauthored more than 100 scientific papers in related journals and
+                                                                                  proceedings, including IEEE T RANSACTIONS ON PATTERN A NALYSIS AND
+                         Xia Xu (Graduate Student Member, IEEE) received          M ACHINE I NTELLIGENCE, IEEE T RANSACTIONS ON N EURAL N ETWORKS ,
+                         the B.S. and M.S. degrees from the School of Elec-       IEEE T RANSACTIONS ON G EOSCIENCE AND R EMOTE S ENSING, IEEE
+                         trical Engineering, Yanshan University, Qinhuang-        T RANSACTIONS ON I MAGE P ROCESSING, and IEEE Conference on
+                         dao, China, in 2012 and 2015, respectively, and          Computer Vision and Pattern Recognition. His research interests include
+                         the Ph.D. degree from the School of Astronautics,        remote sensing image processing and analysis, computer vision, pattern
+                         Beihang University, Beijing, China, in 2019.             recognition, and machine learning.
+                            She is currently an Assistant Professor with the        Dr. Shi received the Best Reviewer Awards for his service to IEEE
+                         College of Computer Science, Nankai University,          T RANSACTIONS ON G EOSCIENCE AND R EMOTE S ENSING and IEEE
+                         Tianjin, China. Her research interests include hyper-    J OURNAL OF S ELECTED T OPICS IN A PPLIED E ARTH O BSERVATIONS AND
+                         spectral unmixing, multiobjective optimization, and      R EMOTE S ENSING in 2017. He has been an Associate Editor of Infrared
+                         remote sensing image processing.                         Physics and Technology since 2016.
+
+
+
+
+          Authorized licensed use limited to: BEIHANG UNIVERSITY. Downloaded on June 26,2023 at 07:14:46 UTC from IEEE Xplore. Restrictions apply.
+

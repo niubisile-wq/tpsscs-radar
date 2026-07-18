@@ -1,0 +1,25 @@
+{
+  "date": "20260717",
+  "source_date": "20260717",
+  "source_csv": "results\\aistap_full_asset\\aistap_full_asset_frame_level_robustness_20260717.csv",
+  "target_bearing_items": 210,
+  "pfa_points": 7,
+  "comparators": [
+    "low_rank_residual_k30",
+    "raw"
+  ],
+  "bootstrap_replicates": 10000,
+  "bootstrap_seed": 20260717,
+  "combined_auc_positive_vs_all": true,
+  "combined_bootstrap_ci_positive_vs_all": true,
+  "combined_significant_bh_vs_all": true,
+  "min_combined_delta_auc": 0.055331964094430905,
+  "max_combined_bh_q": 1.4636666117296334e-55,
+  "min_combined_ci95_low": 0.049142001404955706,
+  "boundary": [
+    "auc_integrates_checked_pfa_grid_only",
+    "paired_bootstrap_unit_is_target_bearing_frame",
+    "not_new_dataset",
+    "does_not_claim_performance_outside_checked_pfa_range"
+  ]
+}
