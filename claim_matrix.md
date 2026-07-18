@@ -1,4 +1,4 @@
-# Third Batch 3 Claim Matrix
+﻿# TP-SSCS project Claim Matrix
 
 ## Proven claims
 
@@ -147,7 +147,7 @@
 - Claims that the trainability check alone is a finished detector result.
 - Claims that the public-sample detector-candidate evaluation alone is a finished detector result.
 - Claims that the `simMed_test.mat` full-test result alone establishes cross-dataset or external-validation superiority.
-- Claims that the current self-check proves direct acceptance by a CAS一区 Top journal.
+- Claims that the current self-check proves direct acceptance by a CAS涓€鍖?Top journal.
 - Claims that the stress grid proves universal robustness.
 - Claims that the current paper already beats the five-reference set in a final, unconditional sense.
 - Claims that compact TP-SSCS beats the strong raw/residual HGB feature ensemble.
@@ -168,3 +168,4 @@
 ## Usage
 
 Use this matrix to keep the README, STATUS, manuscript draft, and log files aligned as the paper is tightened for submission.
+

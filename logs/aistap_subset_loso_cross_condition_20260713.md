@@ -1,5 +1,5 @@
 ﻿AISTAP subset leave-one-subset-out cross-condition evaluation
-Root: C:\Users\刘子轩\Desktop\第三批3
+Root: C:\Users\刘子轩\Desktop\TP-SSCS项目
 Subsets: simMed, simNoiseOnly, simWind
 Seeds: 7, 11, 23
 Hyperparams: rank=30, hidden=16, steps=150, lr=0.02

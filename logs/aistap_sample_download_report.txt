@@ -2,7 +2,8 @@
 Timestamp: 2026-07-13 02:01:30
 Mode: archive
 Assets: 
-Directory: C:\Users\刘子轩\Desktop\第三批3\data\downloads\aistap_sim
+Directory: C:\Users\刘子轩\Desktop\TP-SSCS项目\data\downloads\aistap_sim
 
 Files:
  - sampledata.zip | size=54758203 | expected=54758203
+

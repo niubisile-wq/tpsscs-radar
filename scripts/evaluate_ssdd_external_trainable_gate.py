@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -387,7 +387,7 @@ def write_outputs(
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "第三批3"))
+    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "绗笁鎵?"))
     parser.add_argument("--date", default=datetime.now().strftime("%Y%m%d"))
     parser.add_argument("--seed", type=int, default=20260715)
     parser.add_argument("--max-target-per-image", type=int, default=800)
@@ -468,3 +468,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

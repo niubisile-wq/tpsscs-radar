@@ -1,6 +1,6 @@
 ﻿AISTAP sample inventory
-Root: C:\Users\刘子轩\Desktop\第三批3
-Sample root: C:\Users\刘子轩\Desktop\第三批3\data\downloads\aistap_sim\sampledata\sampledata
+Root: C:\Users\刘子轩\Desktop\TP-SSCS项目
+Sample root: C:\Users\刘子轩\Desktop\TP-SSCS项目\data\downloads\aistap_sim\sampledata\sampledata
 Files: 3
 
 Rows:

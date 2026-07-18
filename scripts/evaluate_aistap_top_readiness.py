@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -1408,9 +1408,9 @@ def write_outputs(root: Path, gates: list[Gate], date_tag: str) -> tuple[Path, P
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "第三批3"))
+    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "绗笁鎵?"))
     parser.add_argument("--power-root", default=str(Path.home() / "Desktop" / "power_se"))
-    parser.add_argument("--battery-root", default=str(Path.home() / "Desktop" / "已完成项目" / "锂电池故障检测论文"))
+    parser.add_argument("--battery-root", default=str(Path.home() / "Desktop" / "宸插畬鎴愰」鐩? / "閿傜數姹犳晠闅滄娴嬭鏂?))
     parser.add_argument("--date", default=datetime.now().strftime("%Y%m%d"))
     args = parser.parse_args()
 
@@ -1449,3 +1449,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

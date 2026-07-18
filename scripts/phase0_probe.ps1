@@ -1,5 +1,5 @@
 ﻿param(
-  [string]$Root = (Join-Path $env:USERPROFILE "Desktop\第三批3")
+  [string]$Root = (Join-Path $env:USERPROFILE "Desktop\TP-SSCS项目")
 )
 
 $ErrorActionPreference = "Stop"
@@ -33,3 +33,4 @@ foreach ($p in $paths) {
 
 $lines | Set-Content -Path $report -Encoding utf8
 Write-Host "Wrote $report"
+

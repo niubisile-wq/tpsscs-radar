@@ -1,4 +1,4 @@
-# Third Batch 3: AISTAP-TP-SSCS Execution Repo
+﻿# TP-SSCS project: AISTAP-TP-SSCS Execution Repo
 
 ## Objective
 
@@ -55,7 +55,7 @@
 - `data/downloads/ssdd/`, `scripts/evaluate_ssdd_external_trainable_gate.py`, `logs/ssdd_external_trainable_gate_20260715.md`, and `results/ssdd_external/ssdd_external_trainable_gate_20260715.json` archive the second independent external radar family: official SSDD SAR ship imagery passes a trainable-gate adaptation test on `231` official-test images and `545` ship annotations.
 - `scripts/evaluate_ssdd_image_level_bootstrap_ci.py`, `logs/ssdd_image_level_bootstrap_ci_20260715.md`, and `results/ssdd_external/ssdd_image_annotation_bootstrap_ci_20260715.csv` archive the SSDD image-level / annotation-level robustness supplement; non-fallback image-level raw comparisons and all image-level low-rank comparisons have positive bootstrap CIs.
 - `logs/second_external_source_feasibility_20260715.md` records the second-source feasibility check: RASPNet's SDMS/Globus routes are not scriptable in this shell, NetRAD exposes only one 122.73 GB Figshare archive, and SSDD is the successful second external radar source used in this turn.
-- `logs/aistap_top_readiness_self_check_20260715.md` and `logs/aistap_top_readiness_self_check_20260715.json` archive the automatic CAS一区-top readiness self-check.
+- `logs/aistap_top_readiness_self_check_20260715.md` and `logs/aistap_top_readiness_self_check_20260715.json` archive the automatic CAS涓€鍖?top readiness self-check.
 - `logs/aistap_vs_power_se_battery_comprehensive_comparison_20260715.md` records the comprehensive comparison against the local distribution-network / `power_se` and battery manuscript packages; AISTAP now leads on top-tier experimental strength, while the battery package remains the most manuscript-mature.
 - `logs/aistap_supplementary_experiment_priority_20260715.md` records the remaining high-value supplementary experiment opportunities and adds bootstrap CI evidence for AISTAP full assets and IPIX held-out recordings.
 - `logs/aistap_top_readiness_self_check_20260717.md` and `logs/aistap_top_readiness_self_check_20260717.json` archive the refreshed automatic top-readiness self-check after the seed-sensitivity, parameter-swept classical-baseline, LOSO learned-baseline, strong feature-ensemble boundary, positive-pixel label-efficiency, label-cost Pareto, target-free calibration-boundary, frame-level robustness, paired-significance, log-Pfa AUC, component-attribution, and runtime-complexity supplements.
@@ -280,3 +280,4 @@ The paper frames the public AISTAP-SIM evidence as a target-preserving, low-fals
 - Tighten the boundary before expanding claims.
 - Make the public sample and scaffold robust before writing stronger conclusions.
 - Every new claim must map back to `logs/`, `cards/`, or `gates/` evidence.
+

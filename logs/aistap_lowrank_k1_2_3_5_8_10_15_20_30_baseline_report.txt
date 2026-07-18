@@ -1,5 +1,5 @@
 ﻿AISTAP low-rank baseline
-Root: C:\Users\刘子轩\Desktop\第三批3
+Root: C:\Users\刘子轩\Desktop\TP-SSCS项目
 ks: 1,2,3,5,8,10,15,20,30
 
 - simMed: clutter_attenuation_db=2.197, target_loss_db=0.925

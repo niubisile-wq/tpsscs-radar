@@ -1,4 +1,4 @@
-# Third Batch 3 Status
+﻿# TP-SSCS project Status
 
 ## Current stage
 
@@ -51,7 +51,7 @@ Public sample + scaffold completed; current focus is final submission integratio
 - `data/downloads/ssdd/`, `scripts/evaluate_ssdd_external_trainable_gate.py`, `logs/ssdd_external_trainable_gate_20260715.md`, and `results/ssdd_external/ssdd_external_trainable_gate_20260715.json` now archive the second independent external radar family: official SSDD SAR ship imagery passes a trainable-gate adaptation test on `231` official-test images and `545` ship annotations.
 - `scripts/evaluate_ssdd_image_level_bootstrap_ci.py`, `logs/ssdd_image_level_bootstrap_ci_20260715.md`, and `results/ssdd_external/ssdd_image_annotation_bootstrap_ci_20260715.csv` now archive the SSDD image-level / annotation-level robustness supplement; non-fallback image-level raw comparisons and all image-level low-rank comparisons have positive bootstrap CIs.
 - `logs/second_external_source_feasibility_20260715.md` now records the second-source feasibility check: RASPNet's SDMS/Globus routes are not scriptable in this shell, NetRAD exposes only one 122.73 GB Figshare archive, and SSDD is the successful second external radar source used in this turn.
-- `logs/aistap_top_readiness_self_check_20260715.md` and `logs/aistap_top_readiness_self_check_20260715.json` now provide an automatic CAS一区-top readiness gate against the current evidence, `power_se`, and the local battery manuscript package.
+- `logs/aistap_top_readiness_self_check_20260715.md` and `logs/aistap_top_readiness_self_check_20260715.json` now provide an automatic CAS涓€鍖?top readiness gate against the current evidence, `power_se`, and the local battery manuscript package.
 - `logs/aistap_top_readiness_self_check_20260717.md` and `logs/aistap_top_readiness_self_check_20260717.json` now provide the refreshed automatic top-readiness gate after the seed-sensitivity, parameter-swept classical-baseline, LOSO learned-baseline, strong feature-ensemble boundary, positive-pixel label-efficiency, label-cost Pareto, target-free calibration, frame-level robustness, paired-significance, log-Pfa AUC, component-attribution, and runtime-complexity supplements.
 - `logs/aistap_experimental_quality_assessment_20260717.md` now records the current zone-level judgment: Q2 secure, CAS Q1 strong, and Q1-top experiment candidate under careful claim boundaries.
 - `scripts/audit_tgrs_submission_readiness.py`, `logs/tgrs_submission_readiness_audit_20260717.md`, `logs/tgrs_submission_readiness_audit_20260717.json`, and `logs/tgrs_submission_metadata_fillin_template_20260717.md` now archive the final submission-readiness audit: the TGRS package has `0` hard file/build failures, `0` warnings, and `6` remaining submission metadata blockers.
@@ -244,3 +244,4 @@ Public sample + scaffold completed; current focus is final submission integratio
 1. Integrate the new evidence into Results, Methods, Discussion, figures, tables, and the claim matrix.
 2. Use the five-reference matrix to keep each new experiment tied to a concrete external standard.
 3. Turn the dense operating-surface note, target-preservation diagnostic note, minimal trainability note, and stress-grid note into the Figure 2/3/4/Results rewrite.
+

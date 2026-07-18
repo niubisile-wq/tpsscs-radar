@@ -1,10 +1,10 @@
-# AISTAP Final Comparison Dossier
+﻿# AISTAP Final Comparison Dossier
 
 Date: 2026-07-13
 
 ## Purpose
 
-This dossier summarizes the current Third Batch 3 AISTAP / TP-SSCS paper against the five-reference target set and against the internal standards established in the comparison matrix, gap audit, and final submission lock.
+This dossier summarizes the current TP-SSCS project AISTAP / TP-SSCS paper against the five-reference target set and against the internal standards established in the comparison matrix, gap audit, and final submission lock.
 
 ## Bottom line
 
@@ -86,3 +86,4 @@ The paper is now competitive on evidence layering, boundary discipline, and oper
 ## Use in the final package
 
 This dossier should be treated as the final comparison snapshot for the current public-sample evidence set. It is the document to cite when explaining why the manuscript is locked, what it already beats on evidence structure, and which claims remain out of scope.
+

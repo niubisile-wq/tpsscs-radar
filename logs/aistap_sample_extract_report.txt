@@ -1,7 +1,7 @@
 ﻿AISTAP-SIM sample extraction
 Timestamp: 2026-07-15 15:48:00
-Archive: C:\Users\刘子轩\Desktop\第三批3\data\downloads\aistap_sim\sampledata.zip
-ExtractDir: C:\Users\刘子轩\Desktop\第三批3\data\downloads\aistap_sim\sampledata
+Archive: C:\Users\刘子轩\Desktop\TP-SSCS项目\data\downloads\aistap_sim\sampledata.zip
+ExtractDir: C:\Users\刘子轩\Desktop\TP-SSCS项目\data\downloads\aistap_sim\sampledata
 EntryCount: 9
 
 Entries:
@@ -14,3 +14,4 @@ Entries:
  - sampledata/simNoiseOnly/simNoiseOnly_sample.mat | size=18419951
  - sampledata/simWind/ | size=0
  - sampledata/simWind/simWind_sample.mat | size=18349559
+

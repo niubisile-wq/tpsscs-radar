@@ -1,6 +1,6 @@
 ﻿AISTAP sample low-rank audit
-Root: C:\Users\刘子轩\Desktop\第三批3
-Sample root: C:\Users\刘子轩\Desktop\第三批3\data\downloads\aistap_sim\sampledata\sampledata
+Root: C:\Users\刘子轩\Desktop\TP-SSCS项目
+Sample root: C:\Users\刘子轩\Desktop\TP-SSCS项目\data\downloads\aistap_sim\sampledata\sampledata
 Rows: 3
 
 - simMed: raw rank1=0.3970, rank5=0.8106, rank10=0.8744

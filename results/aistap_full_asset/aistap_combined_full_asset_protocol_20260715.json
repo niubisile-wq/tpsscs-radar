@@ -1,4 +1,4 @@
-{
+﻿{
   "target_method": "tpsscs_finished_detector",
   "lowrank_method": "low_rank_residual_k30",
   "assets": [
@@ -19,8 +19,8 @@
   "pfa_tolerance": 1.05,
   "bootstrap_replicates": 2000,
   "artifacts": {
-    "comparison_csv": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_full_asset\\aistap_combined_full_asset_protocol_20260715.csv",
-    "ci_csv": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_full_asset\\aistap_combined_full_asset_bootstrap_ci_20260715.csv",
-    "markdown_log": "C:\\Users\\刘子轩\\Desktop\\第三批3\\logs\\aistap_combined_full_asset_protocol_20260715.md"
+    "comparison_csv": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\results\\aistap_full_asset\\aistap_combined_full_asset_protocol_20260715.csv",
+    "ci_csv": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\results\\aistap_full_asset\\aistap_combined_full_asset_bootstrap_ci_20260715.csv",
+    "markdown_log": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\logs\\aistap_combined_full_asset_protocol_20260715.md"
   }
 }

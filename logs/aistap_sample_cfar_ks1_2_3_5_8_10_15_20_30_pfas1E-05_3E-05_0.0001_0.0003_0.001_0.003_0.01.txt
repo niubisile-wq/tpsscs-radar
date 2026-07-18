@@ -1,5 +1,5 @@
 ﻿AISTAP sample CFAR audit
-Root: C:\Users\刘子轩\Desktop\第三批3
+Root: C:\Users\刘子轩\Desktop\TP-SSCS项目
 ks: 1,2,3,5,8,10,15,20,30
 pfas: 1E-05,3E-05,0.0001,0.0003,0.001,0.003,0.01
 

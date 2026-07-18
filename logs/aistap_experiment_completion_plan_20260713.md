@@ -1,10 +1,10 @@
-# AISTAP Experiment Strengthening Plan
+﻿# AISTAP Experiment Strengthening Plan
 
 Date: 2026-07-13
 
 ## Purpose
 
-This plan focuses only on the Third Batch 3 AISTAP / TP-SSCS paper. The goal is to turn the current public-sample evidence into a stronger submission-grade experiment package without widening the claim beyond the evidence.
+This plan focuses only on the TP-SSCS project AISTAP / TP-SSCS paper. The goal is to turn the current public-sample evidence into a stronger submission-grade experiment package without widening the claim beyond the evidence.
 
 The current paper already has a readable manuscript draft, a figure/table pack, a claim crosswalk, and public-sample low-rank / CFAR evidence. The weak point is now submission integration: the public-sample experiments are measured, but the manuscript still needs to absorb them cleanly and keep the boundary tight.
 
@@ -290,3 +290,4 @@ Update: Phase B, Phase C, Phase D, and Phase E are now measured on the public sa
 If the plan succeeds, the paper can safely claim:
 
 The public AISTAP-SIM sample shows that low-rank clutter suppression creates a measurable clutter-attenuation / weak-target-loss trade-off. A dense CFAR operating surface shows that the best suppression rank depends on the false-alarm target, target-preservation diagnostics improve the operating frontier under bounded assumptions, the scaffold is trainable on the public sample, and the stress grid shows that the operating conclusion shifts but does not collapse under perturbation. TP-SSCS is therefore motivated as a target-preserving, low-false-alarm detection framework, with the current evidence limited to public-sample development and scaffold-level validation unless a trained TP-SSCS result beats the defined baselines.
+

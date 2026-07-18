@@ -1,6 +1,6 @@
-{
-  "asset": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\aistap_sim\\full\\simWind_test.mat",
-  "state": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_sample\\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt",
+﻿{
+  "asset": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\aistap_sim\\full\\simWind_test.mat",
+  "state": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\results\\aistap_sample\\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt",
   "total_frames": 128,
   "positive_frames": 105,
   "evaluated_positive_frames": 105,

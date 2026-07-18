@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -167,7 +167,7 @@ def evaluate(root: Path, model: MinimalTrainableTPSSCS, pfas: list[float], lowra
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "第三批3"))
+    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "绗笁鎵?"))
     parser.add_argument("--state", required=True)
     parser.add_argument("--lowrank-rank", type=int, default=30)
     parser.add_argument("--pfas", default="1e-5,3e-5,1e-4,3e-4,1e-3,3e-3,1e-2")
@@ -246,7 +246,7 @@ def main() -> int:
             "",
             "- This is a public-sample detector-candidate evaluation.",
             "- It proves a reusable model-state-to-CFAR evaluation path.",
-            "- It does not by itself prove finished-detector status, cross-dataset superiority, or CAS一区 top readiness.",
+            "- It does not by itself prove finished-detector status, cross-dataset superiority, or CAS涓€鍖?top readiness.",
         ]
     )
     note_path.write_text("\n".join(lines), encoding="utf-8")
@@ -259,3 +259,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

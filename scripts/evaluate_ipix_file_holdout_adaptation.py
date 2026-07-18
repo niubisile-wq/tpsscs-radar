@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -327,7 +327,7 @@ def summarize_protocol(df: pd.DataFrame, lowrank_method: str, pfa_tolerance: flo
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "第三批3"))
+    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "绗笁鎵?"))
     parser.add_argument("--state", default="results/aistap_sample/tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt")
     parser.add_argument("--train-files", default="19931107_135603_starea.cdf,19931107_141630_starea.cdf")
     parser.add_argument("--test-files", default="19931107_145028_starea.cdf")
@@ -439,3 +439,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

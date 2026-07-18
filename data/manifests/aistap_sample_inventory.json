@@ -1,7 +1,7 @@
 ﻿[
   {
     "dataset": "simMed",
-    "path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simMed\\simMed_sample.mat",
+    "path": "C:\\Users\\刘子轩\\Desktop\\TP-SSCS项目\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simMed\\simMed_sample.mat",
     "rd_img_shape": [
       2,
       6,
@@ -14325,7 +14325,7 @@
   },
   {
     "dataset": "simNoiseOnly",
-    "path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simNoiseOnly\\simNoiseOnly_sample.mat",
+    "path": "C:\\Users\\刘子轩\\Desktop\\TP-SSCS项目\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simNoiseOnly\\simNoiseOnly_sample.mat",
     "rd_img_shape": [
       2,
       6,
@@ -28649,7 +28649,7 @@
   },
   {
     "dataset": "simWind",
-    "path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simWind\\simWind_sample.mat",
+    "path": "C:\\Users\\刘子轩\\Desktop\\TP-SSCS项目\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simWind\\simWind_sample.mat",
     "rd_img_shape": [
       2,
       6,

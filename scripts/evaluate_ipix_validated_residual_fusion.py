@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -215,7 +215,7 @@ def select_beta(
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "第三批3"))
+    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "绗笁鎵?"))
     parser.add_argument("--state", default="results/aistap_sample/tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt")
     parser.add_argument("--development-files", default="19931107_135603_starea.cdf")
     parser.add_argument("--validation-files", default="19931107_141630_starea.cdf")
@@ -353,3 +353,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

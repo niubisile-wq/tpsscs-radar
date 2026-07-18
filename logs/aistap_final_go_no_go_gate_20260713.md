@@ -1,10 +1,10 @@
-# AISTAP Final Go/No-Go Gate
+﻿# AISTAP Final Go/No-Go Gate
 
 Date: 2026-07-13
 
 ## Question
 
-Is Third Batch 3 now at a true "go" state for claiming it has beaten the five-reference set?
+Is TP-SSCS project now at a true "go" state for claiming it has beaten the five-reference set?
 
 ## Answer
 
@@ -33,3 +33,4 @@ No.
 ## Operational rule
 
 Until at least one missing item is proven, the correct state is "no-go for unconditional victory claim".
+

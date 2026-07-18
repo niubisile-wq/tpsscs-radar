@@ -1,5 +1,5 @@
 ﻿param(
-  [string]$Root = (Join-Path $env:USERPROFILE "Desktop\第三批3")
+  [string]$Root = (Join-Path $env:USERPROFILE "Desktop\TP-SSCS项目")
 )
 
 $ErrorActionPreference = "Stop"
@@ -15,3 +15,4 @@ NetRAD sea clutter	external_validation	Public repository	confirmed	https://rdr.u
 
 $content | Set-Content -Path $manifest -Encoding utf8
 Write-Host "Wrote $manifest"
+

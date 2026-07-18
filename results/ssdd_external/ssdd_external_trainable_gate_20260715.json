@@ -1,7 +1,7 @@
-{
+﻿{
   "date": "20260715",
   "source": "Official SSDD SAR Ship Detection Dataset",
-  "dataset_root": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ssdd\\extracted\\Official-SSDD-OPEN\\BBox_RBox_PSeg_SSDD\\coco_style",
+  "dataset_root": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ssdd\\extracted\\Official-SSDD-OPEN\\BBox_RBox_PSeg_SSDD\\coco_style",
   "development_meta": {
     "images": 741,
     "target_samples": 530315,

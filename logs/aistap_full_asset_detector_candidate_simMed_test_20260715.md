@@ -1,11 +1,11 @@
-# AISTAP Full-Asset Detector Candidate Evaluation
+﻿# AISTAP Full-Asset Detector Candidate Evaluation
 
 Date: 20260715
 
 ## Setup
 
-- Asset: `C:\Users\刘子轩\Desktop\第三批3\data\downloads\aistap_sim\full\simMed_test.mat`
-- State: `C:\Users\刘子轩\Desktop\第三批3\results\aistap_sample\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt`
+- Asset: `C:\Users\鍒樺瓙杞‐Desktop\绗笁鎵?\data\downloads\aistap_sim\full\simMed_test.mat`
+- State: `C:\Users\鍒樺瓙杞‐Desktop\绗笁鎵?\results\aistap_sample\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt`
 - Total frames: `128`
 - Target-bearing frames in asset: `105`
 - Evaluated target-bearing frames: `105`

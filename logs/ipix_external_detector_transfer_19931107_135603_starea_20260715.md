@@ -1,11 +1,11 @@
-# IPIX External Detector Transfer
+﻿# IPIX External Detector Transfer
 
 Date: 20260715
 
 ## Setup
 
-- CDF: `C:\Users\刘子轩\Desktop\第三批3\data\downloads\ipix\19931107_135603_starea.cdf`
-- State: `C:\Users\刘子轩\Desktop\第三批3\results\aistap_sample\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt`
+- CDF: `C:\Users\鍒樺瓙杞‐Desktop\绗笁鎵?\data\downloads\ipix\19931107_135603_starea.cdf`
+- State: `C:\Users\鍒樺瓙杞‐Desktop\绗笁鎵?\results\aistap_sample\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt`
 - Windows: `128`
 - Window/stride: `1024` / `1024` sweeps
 - Primary target bin: `9` (1-indexed)

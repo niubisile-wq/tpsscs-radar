@@ -1,10 +1,10 @@
-# AISTAP Cross-Paper Positioning Memo
+﻿# AISTAP Cross-Paper Positioning Memo
 
 Date: 2026-07-13
 
 ## Purpose
 
-This memo records where the current Third Batch 3 AISTAP / TP-SSCS evidence stack sits relative to the local `power_se` and battery paper packages.
+This memo records where the current TP-SSCS project AISTAP / TP-SSCS evidence stack sits relative to the local `power_se` and battery paper packages.
 
 It is a positioning note, not a victory claim.
 
@@ -58,3 +58,4 @@ The current AISTAP stack is submission-locked and evidence-rich.
 It is now materially stronger than a sparse experiment notebook, but it is still not a finished detector and not a universal cross-domain winner.
 
 If the objective ever reopens, the next leverage point is a deployable target-preservation branch plus a broader external validation layer.
+

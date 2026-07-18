@@ -1,4 +1,4 @@
-# IPIX File-Holdout Adaptation
+﻿# IPIX File-Holdout Adaptation
 
 Date: 20260715
 
@@ -6,7 +6,7 @@ Date: 20260715
 
 - Train files: `19931107_135603_starea.cdf, 19931107_141630_starea.cdf`
 - Test files: `19931107_145028_starea.cdf`
-- State: `C:\Users\刘子轩\Desktop\第三批3\results\aistap_sample\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt`
+- State: `C:\Users\鍒樺瓙杞‐Desktop\绗笁鎵?\results\aistap_sample\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt`
 - Train rows: `196608` (`65536` positive, `131072` negative)
 - Features: robust per-window score features from raw, low-rank residual, saved TP-SSCS residual/gate, and range-contrast; no range-bin index feature is used.
 

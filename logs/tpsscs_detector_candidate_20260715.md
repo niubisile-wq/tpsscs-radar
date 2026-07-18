@@ -1,10 +1,10 @@
-# TP-SSCS Detector Candidate Evaluation
+﻿# TP-SSCS Detector Candidate Evaluation
 
 Date: 20260715
 
 ## Setup
 
-- State: `C:\Users\刘子轩\Desktop\第三批3\results\aistap_sample\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt`
+- State: `C:\Users\鍒樺瓙杞‐Desktop\绗笁鎵?\results\aistap_sample\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt`
 - Low-rank comparator: `k=30`
 - Evaluated target-bearing items: `3`
 - CFAR threshold policy: `conservative_topk_strict_gt` (`score > threshold`; per-item false alarms are capped at `floor(Pfa * background_count)`).
@@ -47,4 +47,4 @@ Date: 20260715
 
 - This is a public-sample detector-candidate evaluation.
 - It proves a reusable model-state-to-CFAR evaluation path.
-- It does not by itself prove finished-detector status, cross-dataset superiority, or CAS一区 top readiness.
+- It does not by itself prove finished-detector status, cross-dataset superiority, or CAS涓€鍖?top readiness.

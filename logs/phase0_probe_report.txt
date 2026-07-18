@@ -1,12 +1,13 @@
 ﻿Phase 0 probe
-Root: C:\Users\刘子轩\Desktop\第三批3
+Root: C:\Users\刘子轩\Desktop\TP-SSCS项目
 Timestamp: 2026-07-13 01:52:48
 
 Checked paths:
- - C:\Users\刘子轩\Desktop\第三批3\cards
- - C:\Users\刘子轩\Desktop\第三批3\gates
- - C:\Users\刘子轩\Desktop\第三批3\data
- - C:\Users\刘子轩\Desktop\第三批3\data\manifests
- - C:\Users\刘子轩\Desktop\第三批3\data\downloads
- - C:\Users\刘子轩\Desktop\第三批3\logs
- - C:\Users\刘子轩\Desktop\第三批3\runbooks
+ - C:\Users\刘子轩\Desktop\TP-SSCS项目\cards
+ - C:\Users\刘子轩\Desktop\TP-SSCS项目\gates
+ - C:\Users\刘子轩\Desktop\TP-SSCS项目\data
+ - C:\Users\刘子轩\Desktop\TP-SSCS项目\data\manifests
+ - C:\Users\刘子轩\Desktop\TP-SSCS项目\data\downloads
+ - C:\Users\刘子轩\Desktop\TP-SSCS项目\logs
+ - C:\Users\刘子轩\Desktop\TP-SSCS项目\runbooks
+

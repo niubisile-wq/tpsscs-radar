@@ -1,10 +1,10 @@
-# AISTAP Current Comparison Judgment Card
+﻿# AISTAP Current Comparison Judgment Card
 
 Date: 2026-07-13
 
 ## Short answer
 
-Third Batch 3 is now stronger than a smoke-test package and stronger than the early scaffold-only version, but it is not yet a clean unconditional win over the five-reference set.
+TP-SSCS project is now stronger than a smoke-test package and stronger than the early scaffold-only version, but it is not yet a clean unconditional win over the five-reference set.
 
 ## What is currently ahead
 
@@ -34,3 +34,4 @@ Third Batch 3 is now stronger than a smoke-test package and stronger than the ea
 ## Final sentence
 
 The paper is now a locked, evidence-rich scaffold-stage TP-SSCS manuscript with a clear improvement path, but it is not yet a final winner over all five reference packages.
+

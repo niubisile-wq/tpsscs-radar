@@ -1,4 +1,4 @@
-{
+﻿{
   "passed": true,
   "criteria": {
     "asset_count": 2,
@@ -197,8 +197,8 @@
     }
   ],
   "inputs": [
-    "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_full_asset\\aistap_full_asset_detector_candidate_simMed_test_20260715.csv",
-    "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_full_asset\\aistap_full_asset_detector_candidate_simWind_test_20260715.csv"
+    "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\results\\aistap_full_asset\\aistap_full_asset_detector_candidate_simMed_test_20260715.csv",
+    "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\results\\aistap_full_asset\\aistap_full_asset_detector_candidate_simWind_test_20260715.csv"
   ],
   "date": "20260715",
   "boundary": "This is AISTAP-SIM official cross-condition evidence. It is method-level transfer across official conditions, not independent non-AISTAP external-dataset validation."

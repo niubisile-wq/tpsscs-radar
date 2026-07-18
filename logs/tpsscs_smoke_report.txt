@@ -1,5 +1,5 @@
 ﻿subset: simMed
-path: C:\Users\刘子轩\Desktop\第三批3\data\downloads\aistap_sim\sampledata\sampledata\simMed\simMed_sample.mat
+path: C:\Users\刘子轩\Desktop\TP-SSCS项目\data\downloads\aistap_sim\sampledata\sampledata\simMed\simMed_sample.mat
 image_index: 0
 input_shape: [6, 64, 1024]
 suppressed_shape: [6, 64, 1024]

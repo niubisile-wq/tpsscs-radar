@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -125,7 +125,7 @@ def evaluate(
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "第三批3"))
+    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "绗笁鎵?"))
     parser.add_argument("--inputs", default="")
     parser.add_argument("--min-assets", type=int, default=2)
     parser.add_argument("--min-items-per-asset", type=int, default=100)
@@ -216,3 +216,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

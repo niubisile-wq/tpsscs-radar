@@ -1,10 +1,10 @@
-# AISTAP Five-Reference Win/Loss Tracker
+﻿# AISTAP Five-Reference Win/Loss Tracker
 
 Date: 2026-07-13
 
 ## Purpose
 
-This tracker gives the current verdict against each of the five reference packages used for Third Batch 3. It is a factual comparison ledger, not a victory claim.
+This tracker gives the current verdict against each of the five reference packages used for TP-SSCS project. It is a factual comparison ledger, not a victory claim.
 
 ## Reference 1: closed submission / package hygiene
 
@@ -132,3 +132,4 @@ What it still lacks for a true win:
 - a finished detector result,
 - a new data source,
 - and a claim boundary that could honestly support an unconditional cross-reference victory statement.
+

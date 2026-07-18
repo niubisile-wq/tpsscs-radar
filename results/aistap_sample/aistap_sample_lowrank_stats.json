@@ -1,7 +1,7 @@
 ﻿[
   {
     "dataset": "simMed",
-    "file": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simMed\\simMed_sample.mat",
+    "file": "C:\\Users\\刘子轩\\Desktop\\TP-SSCS项目\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simMed\\simMed_sample.mat",
     "raw_power": 9.462268270737312,
     "targ_power": 0.5781626572380665,
     "raw_to_targ_power_ratio_db": 12.139452191093872,
@@ -16,7 +16,7 @@
   },
   {
     "dataset": "simNoiseOnly",
-    "file": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simNoiseOnly\\simNoiseOnly_sample.mat",
+    "file": "C:\\Users\\刘子轩\\Desktop\\TP-SSCS项目\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simNoiseOnly\\simNoiseOnly_sample.mat",
     "raw_power": 15.000100369116822,
     "targ_power": 0.5781626572380665,
     "raw_to_targ_power_ratio_db": 14.14044127294961,
@@ -31,7 +31,7 @@
   },
   {
     "dataset": "simWind",
-    "file": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simWind\\simWind_sample.mat",
+    "file": "C:\\Users\\刘子轩\\Desktop\\TP-SSCS项目\\data\\downloads\\aistap_sim\\sampledata\\sampledata\\simWind\\simWind_sample.mat",
     "raw_power": 7.805641276278486,
     "targ_power": 0.5781626572380665,
     "raw_to_targ_power_ratio_db": 11.303585508052818,

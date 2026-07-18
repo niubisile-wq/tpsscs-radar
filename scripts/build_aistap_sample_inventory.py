@@ -94,7 +94,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--root",
-        default=str(Path.home() / "Desktop" / "第三批3"),
+        default=str(Path.home() / "Desktop" / "TP-SSCS项目"),
         help="Repository root.",
     )
     args = parser.parse_args()
@@ -195,3 +195,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

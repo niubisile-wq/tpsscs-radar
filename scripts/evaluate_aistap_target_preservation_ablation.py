@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -361,7 +361,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--root",
-        default=str(Path.home() / "Desktop" / "第三批3"),
+        default=str(Path.home() / "Desktop" / "绗笁鎵?"),
         help="Repository root.",
     )
     parser.add_argument("--ranks", default="5,20,30")
@@ -523,3 +523,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

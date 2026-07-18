@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -298,7 +298,7 @@ def train_fold(
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "第三批3"))
+    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "绗笁鎵?"))
     parser.add_argument("--rank", type=int, default=30)
     parser.add_argument("--hidden", type=int, default=16)
     parser.add_argument("--steps", type=int, default=150)
@@ -393,7 +393,7 @@ def main() -> int:
         pd_std = "nan" if pd.isna(row["pd_std"]) else f"{row['pd_std']:.4f}"
         pfa_std = "nan" if pd.isna(row["pfa_std"]) else f"{row['pfa_std']:.4f}"
         summary_lines.append(
-            f"- holdout={row['held_out_subset']} method={row['method']} pfa={row['pfa_target']:.0e} Pd={row['pd_mean']:.4f}±{pd_std} Pfa={row['pfa_mean']:.4f}±{pfa_std}"
+            f"- holdout={row['held_out_subset']} method={row['method']} pfa={row['pfa_target']:.0e} Pd={row['pd_mean']:.4f}卤{pd_std} Pfa={row['pfa_mean']:.4f}卤{pfa_std}"
         )
     summary_lines.append("")
     summary_lines.append("Snapshot summary:")
@@ -434,3 +434,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

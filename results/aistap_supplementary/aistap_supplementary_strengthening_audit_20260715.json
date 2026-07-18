@@ -1,4 +1,4 @@
-{
+﻿{
   "date": "20260715",
   "bootstrap_replicates": 2000,
   "seed": 20260715,
@@ -61,8 +61,8 @@
     }
   ],
   "artifacts": {
-    "aistap_ci_csv": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_supplementary\\aistap_full_asset_bootstrap_delta_ci_20260715.csv",
-    "ipix_ci_csv": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_supplementary\\ipix_heldout_bootstrap_delta_ci_20260715.csv",
-    "markdown_log": "C:\\Users\\刘子轩\\Desktop\\第三批3\\logs\\aistap_supplementary_experiment_priority_20260715.md"
+    "aistap_ci_csv": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\results\\aistap_supplementary\\aistap_full_asset_bootstrap_delta_ci_20260715.csv",
+    "ipix_ci_csv": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\results\\aistap_supplementary\\ipix_heldout_bootstrap_delta_ci_20260715.csv",
+    "markdown_log": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\logs\\aistap_supplementary_experiment_priority_20260715.md"
   }
 }

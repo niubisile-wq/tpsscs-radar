@@ -1,4 +1,4 @@
-{
+﻿{
   "date": "20260715",
   "source": "Official SSDD SAR Ship Detection Dataset",
   "train_auc_on_sample": 0.989208978280459,
@@ -40,10 +40,10 @@
     "requires_image_level_lowrank_ci_positive_for_all_pfas": true
   },
   "artifacts": {
-    "image_csv": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\ssdd_external\\ssdd_image_level_robustness_20260715.csv",
-    "annotation_csv": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\ssdd_external\\ssdd_annotation_level_robustness_20260715.csv",
-    "ci_csv": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\ssdd_external\\ssdd_image_annotation_bootstrap_ci_20260715.csv",
-    "threshold_csv": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\ssdd_external\\ssdd_global_thresholds_20260715.csv",
-    "markdown_log": "C:\\Users\\刘子轩\\Desktop\\第三批3\\logs\\ssdd_image_level_bootstrap_ci_20260715.md"
+    "image_csv": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\results\\ssdd_external\\ssdd_image_level_robustness_20260715.csv",
+    "annotation_csv": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\results\\ssdd_external\\ssdd_annotation_level_robustness_20260715.csv",
+    "ci_csv": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\results\\ssdd_external\\ssdd_image_annotation_bootstrap_ci_20260715.csv",
+    "threshold_csv": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\results\\ssdd_external\\ssdd_global_thresholds_20260715.csv",
+    "markdown_log": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\logs\\ssdd_image_level_bootstrap_ci_20260715.md"
   }
 }

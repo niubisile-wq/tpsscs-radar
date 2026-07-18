@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -299,7 +299,7 @@ def make_figure(df: pd.DataFrame, out_path: Path) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "第三批3"))
+    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "绗笁鎵?"))
     parser.add_argument("--state-path", default="")
     parser.add_argument("--rank-grid", default="1,3,5,8,10,15,20,30")
     parser.add_argument("--pfas", default="1e-5,3e-5,1e-4,3e-4,1e-3,3e-3,1e-2")
@@ -468,3 +468,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

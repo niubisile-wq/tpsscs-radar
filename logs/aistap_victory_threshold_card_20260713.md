@@ -1,10 +1,10 @@
-# AISTAP Victory Threshold Card
+﻿# AISTAP Victory Threshold Card
 
 Date: 2026-07-13
 
 ## Purpose
 
-This card defines the minimum evidence threshold required to honestly claim that Third Batch 3 beats the five-reference set.
+This card defines the minimum evidence threshold required to honestly claim that TP-SSCS project beats the five-reference set.
 
 ## To count as a true win, the paper would need all of the following:
 
@@ -29,3 +29,4 @@ The paper is not yet at the threshold required for an unconditional "beat the fi
 ## Use
 
 Use this card as the strict gate before any future claim of victory. If any item remains unproven, the objective is not complete.
+

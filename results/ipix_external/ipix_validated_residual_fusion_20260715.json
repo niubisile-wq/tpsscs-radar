@@ -1,6 +1,6 @@
-{
+﻿{
   "date": "20260715",
-  "state": "C:\\Users\\刘子轩\\Desktop\\第三批3\\results\\aistap_sample\\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt",
+  "state": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\results\\aistap_sample\\tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt",
   "development_files": [
     "19931107_135603_starea.cdf"
   ],
@@ -68,7 +68,7 @@
   ],
   "development_info": [
     {
-      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931107_135603_starea.cdf",
+      "cdf_path": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ipix\\19931107_135603_starea.cdf",
       "window": 1024,
       "stride": 1024,
       "windows": 128,
@@ -95,7 +95,7 @@
   ],
   "validation_info": [
     {
-      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931107_141630_starea.cdf",
+      "cdf_path": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ipix\\19931107_141630_starea.cdf",
       "window": 1024,
       "stride": 1024,
       "windows": 128,
@@ -122,7 +122,7 @@
   ],
   "test_info": [
     {
-      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931107_145028_starea.cdf",
+      "cdf_path": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ipix\\19931107_145028_starea.cdf",
       "window": 1024,
       "stride": 1024,
       "windows": 128,
@@ -147,7 +147,7 @@
       ]
     },
     {
-      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931108_213827_starea.cdf",
+      "cdf_path": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ipix\\19931108_213827_starea.cdf",
       "window": 1024,
       "stride": 1024,
       "windows": 128,
@@ -172,7 +172,7 @@
       ]
     },
     {
-      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931108_220902_starea.cdf",
+      "cdf_path": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ipix\\19931108_220902_starea.cdf",
       "window": 1024,
       "stride": 1024,
       "windows": 128,
@@ -197,7 +197,7 @@
       ]
     },
     {
-      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931109_191449_starea.cdf",
+      "cdf_path": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ipix\\19931109_191449_starea.cdf",
       "window": 1024,
       "stride": 1024,
       "windows": 128,
@@ -222,7 +222,7 @@
       ]
     },
     {
-      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931109_202217_starea.cdf",
+      "cdf_path": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ipix\\19931109_202217_starea.cdf",
       "window": 1024,
       "stride": 1024,
       "windows": 128,
@@ -247,7 +247,7 @@
       ]
     },
     {
-      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931110_001635_starea.cdf",
+      "cdf_path": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ipix\\19931110_001635_starea.cdf",
       "window": 1024,
       "stride": 1024,
       "windows": 128,
@@ -272,7 +272,7 @@
       ]
     },
     {
-      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931111_163625_starea.cdf",
+      "cdf_path": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ipix\\19931111_163625_starea.cdf",
       "window": 1024,
       "stride": 1024,
       "windows": 128,
@@ -297,7 +297,7 @@
       ]
     },
     {
-      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931118_023604_stareC0000.cdf",
+      "cdf_path": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ipix\\19931118_023604_stareC0000.cdf",
       "window": 1024,
       "stride": 1024,
       "windows": 128,
@@ -322,7 +322,7 @@
       ]
     },
     {
-      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931118_035737_stareC0000.cdf",
+      "cdf_path": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ipix\\19931118_035737_stareC0000.cdf",
       "window": 1024,
       "stride": 1024,
       "windows": 128,
@@ -347,7 +347,7 @@
       ]
     },
     {
-      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931118_162155_stareC0000.cdf",
+      "cdf_path": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ipix\\19931118_162155_stareC0000.cdf",
       "window": 1024,
       "stride": 1024,
       "windows": 128,
@@ -372,7 +372,7 @@
       ]
     },
     {
-      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931118_162658_stareC0000.cdf",
+      "cdf_path": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ipix\\19931118_162658_stareC0000.cdf",
       "window": 1024,
       "stride": 1024,
       "windows": 128,
@@ -397,7 +397,7 @@
       ]
     },
     {
-      "cdf_path": "C:\\Users\\刘子轩\\Desktop\\第三批3\\data\\downloads\\ipix\\19931118_174259_stareC0000.cdf",
+      "cdf_path": "C:\\Users\\鍒樺瓙杞‐\Desktop\\绗笁鎵?\\data\\downloads\\ipix\\19931118_174259_stareC0000.cdf",
       "window": 1024,
       "stride": 1024,
       "windows": 128,

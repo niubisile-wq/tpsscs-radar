@@ -1,10 +1,10 @@
-# AISTAP Final Submission Lock
+﻿# AISTAP Final Submission Lock
 
 Date: 2026-07-13
 
 ## Lock status
 
-The Third Batch 3 AISTAP / TP-SSCS paper is now at final submission lock for the current public-sample evidence set.
+The TP-SSCS project AISTAP / TP-SSCS paper is now at final submission lock for the current public-sample evidence set.
 
 ## Frozen evidence stack
 
@@ -35,3 +35,4 @@ The Third Batch 3 AISTAP / TP-SSCS paper is now at final submission lock for the
 ## Final rule
 
 Do not expand the experiment set unless a new data source or a deployable target-preservation branch changes the evidence class.
+

@@ -1,4 +1,4 @@
-# AISTAP Comparison Evidence Index
+﻿# AISTAP Comparison Evidence Index
 
 Date: 2026-07-13
 
@@ -6,7 +6,7 @@ Date: 2026-07-13
 
 This index maps each of the five reference packages to the concrete evidence files that support the current comparison verdicts. It is a navigation aid, not a new claim layer.
 
-## 1. 第二批1
+## 1. 绗簩鎵?
 
 ### Current verdict
 
@@ -24,7 +24,7 @@ Behind overall on submission closure.
 
 This package is the cleanest submission-closure reference. It shows what a fully closed manuscript bundle looks like.
 
-## 2. 第二批2
+## 2. 绗簩鎵?
 
 ### Current verdict
 
@@ -44,7 +44,7 @@ Tied to slightly behind on claim hygiene and validation layering.
 
 This package sets the standard for explicit claim separation and boundary control.
 
-## 3. 第三批1
+## 3. 绗笁鎵?
 
 ### Current verdict
 
@@ -125,3 +125,4 @@ This package is the best reference for protocol-sensitive ranking, split-level r
 ## Use
 
 When you want to inspect one reference package, start from this index, then open the evidence files listed under that package. That keeps the comparison grounded in files rather than memory.
+

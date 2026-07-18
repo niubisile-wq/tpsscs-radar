@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -144,7 +144,7 @@ def evaluate_protocol(df: pd.DataFrame, min_items: int, pfa_tolerance: float) ->
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "第三批3"))
+    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "绗笁鎵?"))
     parser.add_argument("--input", default="")
     parser.add_argument("--min-items", type=int, default=100)
     parser.add_argument("--pfa-tolerance", type=float, default=1.05)
@@ -224,3 +224,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

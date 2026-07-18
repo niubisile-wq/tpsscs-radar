@@ -1,10 +1,10 @@
-# AISTAP Five-Reference Gap Audit
+﻿# AISTAP Five-Reference Gap Audit
 
 Date: 2026-07-13
 
 ## Purpose
 
-This note records the current position of the Third Batch 3 AISTAP / TP-SSCS paper against the five-reference comparison set.
+This note records the current position of the TP-SSCS project AISTAP / TP-SSCS paper against the five-reference comparison set.
 
 It is not a victory claim. It is a boundary audit for what is now measured, what is still missing, and what the final manuscript can safely say.
 
@@ -56,3 +56,4 @@ The current paper now has dense rank/Pfa evidence and trainability/stress diagno
 ## Conclusion
 
 The paper is now much closer to the five-reference target set on evidence density, boundary discipline, and robustness language. The remaining work is final integration and claim tightening, not new scope expansion.
+

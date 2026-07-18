@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import json
@@ -205,7 +205,7 @@ def evaluate(asset_path: Path, state_path: Path, pfas: list[float], max_positive
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "第三批3"))
+    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "绗笁鎵?"))
     parser.add_argument("--asset", default="data/downloads/aistap_sim/full/simMed_test.mat")
     parser.add_argument("--state", default="results/aistap_sample/tpsscs_minimal_train_state_rank30_hidden16_steps150_lr0p02_seed7.pt")
     parser.add_argument("--max-positive", type=int, default=128)
@@ -294,3 +294,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

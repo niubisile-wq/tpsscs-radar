@@ -1,11 +1,11 @@
-# AISTAP Finished Detector Protocol Gate
+﻿# AISTAP Finished Detector Protocol Gate
 
 Date: 20260715
 
 ## Verdict
 
 - Passed: `true`
-- Input: `C:\Users\刘子轩\Desktop\第三批3\results\aistap_full_asset\aistap_full_asset_detector_candidate_simMed_test_20260715.csv`
+- Input: `C:\Users\鍒樺瓙杞‐Desktop\绗笁鎵?\results\aistap_full_asset\aistap_full_asset_detector_candidate_simMed_test_20260715.csv`
 - Target-bearing items: `105`
 - TP-SSCS method: `tpsscs_finished_detector`
 - Low-rank comparator: `low_rank_residual_k30`

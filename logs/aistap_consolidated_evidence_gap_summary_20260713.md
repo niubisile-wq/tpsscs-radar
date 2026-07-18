@@ -1,4 +1,4 @@
-# AISTAP Consolidated Evidence-Gap Summary
+﻿# AISTAP Consolidated Evidence-Gap Summary
 
 ## One-line verdict
 
@@ -28,7 +28,7 @@ The paper is submission-locked, evidence-rich, and clearly stronger than the ear
 
 - Second Batch 1: submission closure discipline.
 - Second Batch 2: claim hygiene and validation layering.
-- Third Batch 1: reproducibility-first benchmarking and strong-baseline acquisition.
+- reference package 1: reproducibility-first benchmarking and strong-baseline acquisition.
 - `power_se`: scaling stability and claim separation.
 - `battery`: frontier maturity and layered result framing.
 
@@ -48,3 +48,4 @@ The right current framing is:
 - comparison complete
 - target-preservation now has a trainable candidate, but not a finished detector
 - unconditional win not yet proven
+

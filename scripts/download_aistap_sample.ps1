@@ -1,5 +1,5 @@
 ﻿param(
-  [string]$Root = (Join-Path $env:USERPROFILE "Desktop\第三批3"),
+  [string]$Root = (Join-Path $env:USERPROFILE "Desktop\TP-SSCS项目"),
   [ValidateSet("archive","all")]
   [string]$Mode = "archive",
   [switch]$Force
@@ -67,3 +67,4 @@ foreach ($asset in $sampleAssets) {
 }
 $lines | Set-Content -Path $report -Encoding utf8
 Write-Host "Wrote $report"
+

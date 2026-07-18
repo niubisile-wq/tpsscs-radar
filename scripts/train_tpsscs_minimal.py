@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import argparse
 import csv
@@ -226,7 +226,7 @@ def aggregate_curve(rows: list[dict[str, Any]]) -> pd.DataFrame:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "第三批3"))
+    parser.add_argument("--root", default=str(Path.home() / "Desktop" / "绗笁鎵?"))
     parser.add_argument("--rank", type=int, default=20)
     parser.add_argument("--hidden", type=int, default=8)
     parser.add_argument("--steps", type=int, default=100)
@@ -456,3 +456,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
