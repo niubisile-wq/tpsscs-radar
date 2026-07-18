@@ -1,0 +1,25 @@
+{
+  "upload_type": "software",
+  "title": "Target-Preserving Structured-Clutter Suppression for Low-False-Alarm Radar Detection",
+  "publication_date": "2026-07-18",
+  "description": "Code, manuscript, logs, figures, and analysis artifacts for the TP-SSCS radar detection project. The repository contains the implementation, evaluation scripts, derived results, and manuscript package supporting the associated submission.",
+  "creators": [
+    {
+      "name": "Zixuan Liu",
+      "affiliation": "Hubei University of Technology"
+    },
+    {
+      "name": "Wei Xiong",
+      "affiliation": "Hubei University of Technology"
+    }
+  ],
+  "access_right": "open",
+  "keywords": [
+    "radar",
+    "clutter suppression",
+    "target preservation",
+    "low false alarm",
+    "AISTAP-SIM"
+  ],
+  "notes": "GitHub release v1.0.0"
+}

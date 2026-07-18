@@ -1,2 +1,3 @@
-﻿pair,flow_mae,persist_mae,flow_rmse,persist_rmse,flow_csi20,persist_csi20,flow_csi30,persist_csi30
-MRMS_ReflectivityAtLowestAltitude_00.50_20201014-000025.grib2 + MRMS_ReflectivityAtLowestAltitude_00.50_20201014-000227.grib2 -> MRMS_ReflectivityAtLowestAltitude_00.50_20201014-000438.grib2,0.29052823781967163,0.23212118446826935,2.9147212505340576,2.7470054626464844,0.8735589438452956,0.892364990689013,0.8344827586206897,0.8458904109589042
+version https://git-lfs.github.com/spec/v1
+oid sha256:340ff91107bacb43b8131ec9dfe9587de2c4d0217744ae33657d55d494fbc45b
+size 448

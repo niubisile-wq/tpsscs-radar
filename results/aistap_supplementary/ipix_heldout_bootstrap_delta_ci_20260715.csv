@@ -1,15 +1,3 @@
-source,pfa,target_method,comparator,n_units,unit,mean_delta_pd,ci95_low,ci95_high,positive_unit_fraction,nonnegative_unit_fraction
-ipix_heldout,1e-05,ipix_validated_residual_fusion,raw,12,held-out recording,0.013077418009440104,0.002391258875528971,0.025011618932088208,0.5,0.5
-ipix_heldout,1e-05,ipix_validated_residual_fusion,low_rank_residual_k30,12,held-out recording,0.06406656901041667,0.017901611328125,0.12423397699991859,1.0,1.0
-ipix_heldout,3e-05,ipix_validated_residual_fusion,raw,12,held-out recording,0.013077418009440104,0.0017128467559814455,0.02515449523925781,0.5,0.5
-ipix_heldout,3e-05,ipix_validated_residual_fusion,low_rank_residual_k30,12,held-out recording,0.06406656901041667,0.018022489547729493,0.12408463160196939,1.0,1.0
-ipix_heldout,0.0001,ipix_validated_residual_fusion,raw,12,held-out recording,0.016317367553710938,0.003596067428588867,0.029641564687093096,0.5833333333333334,0.6666666666666666
-ipix_heldout,0.0001,ipix_validated_residual_fusion,low_rank_residual_k30,12,held-out recording,0.06907399495442708,0.023221270243326823,0.12935101191202794,1.0,1.0
-ipix_heldout,0.0003,ipix_validated_residual_fusion,raw,12,held-out recording,0.018778483072916668,0.0052935759226481124,0.033184337615966786,0.6666666666666666,0.6666666666666666
-ipix_heldout,0.0003,ipix_validated_residual_fusion,low_rank_residual_k30,12,held-out recording,0.07628504435221355,0.026902182896931966,0.13594360351562493,1.0,1.0
-ipix_heldout,0.001,ipix_validated_residual_fusion,raw,12,held-out recording,0.02399762471516927,0.00717935562133789,0.04037197430928548,0.75,0.75
-ipix_heldout,0.001,ipix_validated_residual_fusion,low_rank_residual_k30,12,held-out recording,0.08814684549967448,0.03442536989847819,0.15756751696268703,1.0,1.0
-ipix_heldout,0.003,ipix_validated_residual_fusion,raw,12,held-out recording,0.030742645263671875,0.012005456288655599,0.05255285898844401,0.75,0.75
-ipix_heldout,0.003,ipix_validated_residual_fusion,low_rank_residual_k30,12,held-out recording,0.10276158650716145,0.04580839474995931,0.17025129000345862,1.0,1.0
-ipix_heldout,0.01,ipix_validated_residual_fusion,raw,12,held-out recording,0.04020118713378906,0.015052509307861327,0.07003496487935382,0.8333333333333334,0.8333333333333334
-ipix_heldout,0.01,ipix_validated_residual_fusion,low_rank_residual_k30,12,held-out recording,0.12783495585123697,0.06573875745137533,0.20429131189982097,1.0,1.0
+version https://git-lfs.github.com/spec/v1
+oid sha256:197f796adad5132aef588fc4cfa44477f2859d4d54e51030cbf9c0fb41b0ca34
+size 2401

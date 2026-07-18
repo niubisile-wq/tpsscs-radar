@@ -287,7 +287,7 @@ def figure5(
     )
     zero_json = json.loads(
         (ROOT / "results" / "ipix_external" / f"ipix_external_detector_transfer_19931107_135603_starea_{DATE}.json").read_text(
-            encoding="utf-8"
+            encoding="utf-8-sig"
         )
     )
     zero_comp = {float(row["pfa"]): row for row in zero_json.get("comparisons", [])}
@@ -365,8 +365,6 @@ def figure5(
         fontsize=6.2,
         bbox={"facecolor": "white", "edgecolor": COLORS["grid"], "boxstyle": "round,pad=0.25"},
     )
-    if include_suptitle:
-        fig.suptitle("Figure 5 | Bounded external radar-family validation", x=0.02, y=0.995, ha="left", fontsize=10, fontweight="bold")
     return save_figure(fig, stem, fig_dir)
 
 

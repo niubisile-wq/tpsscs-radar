@@ -1,13 +1,3 @@
-﻿asset,image_index,target_pixels,background_pixels,shape,channels,doppler_bins,range_bins
-simMed_test.mat,0,43,65493,6x64x1024,6,64,1024
-simMed_test.mat,27,59,65477,6x64x1024,6,64,1024
-simMed_test.mat,50,25,65511,6x64x1024,6,64,1024
-simMed_test.mat,76,27,65509,6x64x1024,6,64,1024
-simMed_test.mat,101,51,65485,6x64x1024,6,64,1024
-simMed_test.mat,127,33,65503,6x64x1024,6,64,1024
-simWind_test.mat,0,43,65493,6x64x1024,6,64,1024
-simWind_test.mat,27,59,65477,6x64x1024,6,64,1024
-simWind_test.mat,50,25,65511,6x64x1024,6,64,1024
-simWind_test.mat,76,27,65509,6x64x1024,6,64,1024
-simWind_test.mat,101,51,65485,6x64x1024,6,64,1024
-simWind_test.mat,127,33,65503,6x64x1024,6,64,1024
+version https://git-lfs.github.com/spec/v1
+oid sha256:bb528878a0f29d37c1879564e8962932bc969f15b694785157a522ec96b972da
+size 689

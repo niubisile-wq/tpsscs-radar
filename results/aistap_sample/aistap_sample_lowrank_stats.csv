@@ -1,5 +1,3 @@
-﻿dataset,file,raw_power,targ_power,raw_to_targ_power_ratio_db,raw_rank1_energy,raw_rank5_energy,raw_rank10_energy,targ_rank1_energy,targ_rank5_energy,targ_rank10_energy,midp_range,midp_dop
-simMed,C:\Users\刘子轩\Desktop\TP-SSCS项目\data\downloads\aistap_sim\sampledata\sampledata\simMed\simMed_sample.mat,9.462268270737312,0.5781626572380665,12.139452191093872,0.3970417403494948,0.8105972685107665,0.8743769685543521,0.19186207480364023,0.5748447637508957,0.8209995964221608,513.0,33.0
-simNoiseOnly,C:\Users\刘子轩\Desktop\TP-SSCS项目\data\downloads\aistap_sim\sampledata\sampledata\simNoiseOnly\simNoiseOnly_sample.mat,15.000100369116822,0.5781626572380665,14.14044127294961,0.0141774849611311,0.06251701185967784,0.1156276533785653,0.19186207480364023,0.5748447637508957,0.8209995964221608,513.0,33.0
-simWind,C:\Users\刘子轩\Desktop\TP-SSCS项目\data\downloads\aistap_sim\sampledata\sampledata\simWind\simWind_sample.mat,7.805641276278486,0.5781626572380665,11.303585508052818,0.37084822743347173,0.7544099660889374,0.8234414892250234,0.19186207480364023,0.5748447637508957,0.8209995964221608,513.0,33.0
-
+version https://git-lfs.github.com/spec/v1
+oid sha256:5a8b342ada16a790bb846736e7e609dc774a8b27fd190beda07b58352e384306
+size 1129

@@ -1,0 +1,10 @@
+﻿Dear Editor,
+
+We submit the manuscript entitled "Target-Preserving Structured-Clutter Suppression for Low-False-Alarm Radar Detection" for consideration in IEEE Transactions on Geoscience and Remote Sensing.
+
+The manuscript presents TP-SSCS, a target-preserving structured-clutter suppression policy for low-false-alarm radar detection. The study evaluates calibrated detection behavior rather than residual appearance alone, using public AISTAP-SIM audits, official AISTAP-SIM full-test validation, and bounded external checks on IPIX and SSDD.
+
+The work uses public datasets and includes code/data availability information in the manuscript. The authors confirm that the manuscript is original and is not under consideration elsewhere.
+
+Sincerely,
+Zixuan Liu and Wei Xiong

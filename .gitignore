@@ -9,9 +9,14 @@ __pycache__/
 *.blg
 *.fdb_latexmk
 *.fls
+*.log
 *.synctex.gz
 *.toc
 *.out
 *.lof
 *.lot
 
+/TGRS终稿.pdf
+*.bak_before_remove_infigure_caption
+manuscripts/layout_contact*.png
+manuscripts/layout_pages/
