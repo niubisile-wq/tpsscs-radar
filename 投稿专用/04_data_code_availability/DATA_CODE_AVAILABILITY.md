@@ -1,10 +1,10 @@
-﻿# Data and Code Availability for Submission
+# Data and Code Availability for Submission
 
 Manuscript data availability statement:
-The AISTAP-SIM, Dartmouth IPIX, and SSDD datasets are publicly available from their respective sources. The derived outputs, evaluation logs, and intermediate result files used in this study are stored under the project data, results, and logs directories. The code and analysis artifacts are archived at Zenodo (https://doi.org/10.5281/zenodo.21425836) and the repository is available at GitHub (https://github.com/niubisile-wq/tpsscs-radar).
+The AISTAP-SIM, Dartmouth IPIX, and SSDD datasets are publicly available from their respective sources. The derived outputs, evaluation logs, and intermediate result files used in this study are stored under the project data, results, and logs directories. The code and analysis artifacts are archived at Zenodo (https://doi.org/10.5281/zenodo.21463506) and the repository is available at GitHub (https://github.com/niubisile-wq/tpsscs-radar).
 
 Code availability statement:
-The analysis scripts used for AISTAP-SIM validation, IPIX fusion, SSDD adaptation, and bootstrap checks are documented in the repository at https://github.com/niubisile-wq/tpsscs-radar. The archived release is available at Zenodo (https://doi.org/10.5281/zenodo.21425836).
+The analysis scripts used for AISTAP-SIM validation, IPIX fusion, SSDD adaptation, and bootstrap checks are documented in the repository at https://github.com/niubisile-wq/tpsscs-radar. The archived release is available at Zenodo (https://doi.org/10.5281/zenodo.21463506).
 
 Recommended net-disk upload package:
 - data/

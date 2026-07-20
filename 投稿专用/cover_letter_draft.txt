@@ -1,4 +1,4 @@
-﻿Dear Editor,
+Dear Editor,
 
 We submit the manuscript entitled "Target-Preserving Structured-Clutter Suppression for Low-False-Alarm Radar Detection" for consideration in IEEE Transactions on Geoscience and Remote Sensing.
 
