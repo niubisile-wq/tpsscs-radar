@@ -1,0 +1,8 @@
+{
+  "asset": "simMed_test.mat",
+  "image_index": 124,
+  "raw_pd_at_1e-5": 0.12,
+  "adaptive_pd_at_1e-5": 0.0,
+  "raw_minus_adaptive_pd": 0.12,
+  "heatmap": "D:\\百度网盘拉取包\\TPSSCS_TGRS_返修备份_20260719\\results\\revision_enhancement_20260722\\p2_failure_case_heatmap_aistap_official_pfa1e5.png"
+}

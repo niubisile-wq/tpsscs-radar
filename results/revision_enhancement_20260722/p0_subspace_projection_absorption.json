@@ -1,0 +1,44 @@
+{
+  "rank": 30,
+  "n_target_cells": 129,
+  "pearson_projection_vs_relative_absorption": 0.8914597601702642,
+  "spearman_projection_vs_relative_absorption": 0.9497372540250447,
+  "summary": [
+    {
+      "projection_bin": "Q1_low",
+      "n": 33,
+      "projection_fraction_mean": 0.038567414183647716,
+      "relative_absorption_mean": 0.2164650476217648,
+      "residual_absorption_mean": 204.07467245699266,
+      "raw_score_mean": 846.6278740297555,
+      "residual_score_mean": 642.5532015727629
+    },
+    {
+      "projection_bin": "Q2",
+      "n": 32,
+      "projection_fraction_mean": 0.16596655415918746,
+      "relative_absorption_mean": 0.4958597404447576,
+      "residual_absorption_mean": 575.2139576384734,
+      "raw_score_mean": 999.8235516041769,
+      "residual_score_mean": 424.6095939657036
+    },
+    {
+      "projection_bin": "Q3",
+      "n": 32,
+      "projection_fraction_mean": 0.43777523483870706,
+      "relative_absorption_mean": 0.7445366676759952,
+      "residual_absorption_mean": 1388.6629095159037,
+      "raw_score_mean": 1757.4502233799035,
+      "residual_score_mean": 368.78731386399977
+    },
+    {
+      "projection_bin": "Q4_high",
+      "n": 32,
+      "projection_fraction_mean": 0.8695842672752994,
+      "relative_absorption_mean": 0.9655945977450087,
+      "residual_absorption_mean": 5840.617286868214,
+      "raw_score_mean": 5972.464508481608,
+      "residual_score_mean": 131.84722161339423
+    }
+  ]
+}
