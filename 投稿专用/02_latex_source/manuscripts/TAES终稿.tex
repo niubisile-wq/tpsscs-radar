@@ -1,0 +1,516 @@
+\documentclass[journal]{IEEEtran}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{bm}
+\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{balance}
+\usepackage{tabularx}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{8pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\makeatother
+\renewcommand{\topfraction}{0.96}
+\renewcommand{\bottomfraction}{0.96}
+\renewcommand{\textfraction}{0.03}
+\renewcommand{\floatpagefraction}{0.88}
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\dbltextfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\dblfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{6pt plus 1pt minus 1pt}
+\setlength{\abovedisplayskip}{4pt plus 1pt minus 1pt}
+\setlength{\belowdisplayskip}{4pt plus 1pt minus 1pt}
+\setlength{\abovedisplayshortskip}{3pt plus 1pt minus 1pt}
+\setlength{\belowdisplayshortskip}{3pt plus 1pt minus 1pt}
+\flushbottom
+
+\newcommand{\TightSubsection}[1]{%
+  \par\vspace{0.25\baselineskip}%
+  \noindent\textit{#1}\par\vspace{0.20\baselineskip}%
+}
+
+\newcommand{\NonFloatTableBlock}[3]{%
+  \par\vspace{0.05em}
+  \par\noindent\begin{minipage}{\columnwidth}
+  \centering
+  \refstepcounter{table}\label{#1}%
+  {\footnotesize\textbf{TABLE~\thetable. #2}}\\[0.45em]
+  #3%
+  \end{minipage}
+  \par\vspace{0.18em}
+}
+
+\newcommand{\NonFloatFigureBlock}[3]{%
+  \par\vspace{0.03em}
+  \par\noindent\begin{minipage}{\columnwidth}
+  \centering
+  \refstepcounter{figure}\label{#1}%
+  #2%
+  \par\vspace{0.20em}
+  {\footnotesize\textbf{FIG.~\thefigure. #3}}%
+  \end{minipage}
+  \par\vspace{0.06em}
+}
+
+\begin{document}
+
+\title{Target-Preserving Detector Policy for Structured-Clutter Suppression at Low False-Alarm Rates}
+
+\author{Zixuan Liu and Wei Xiong%
+\thanks{Z. Liu is with the Detroit Green Technology Institute, Hubei University of Technology, Wuhan 430068, China (e-mail: 2411621306@hbut.edu.cn). ORCID: 0009-0008-4941-5641. W. Xiong is with the School of Electrical and Electronic Engineering, Hubei University of Technology, Wuhan 430068, China, and also with the Department of Computer Science and Engineering, University of South Carolina, Columbia, SC 29201, USA (e-mail: xw@mail.hbut.edu.cn). Corresponding author: W. Xiong.}%
+\thanks{We used public AISTAP-SIM assets, Dartmouth IPIX sea-clutter recordings, and the SSDD SAR ship detection dataset.}}
+
+% TAES submission draft. IEEE Transactions on Aerospace and Electronic Systems
+% uses the standard IEEEtran journal layout; this running head is updated for
+% the destination journal. Replace it with the production header if requested
+% after acceptance.
+\markboth{IEEE Transactions on Aerospace and Electronic Systems}%
+{Liu and Xiong: Target-Preserving Detector Policy}
+
+\maketitle
+\linespread{0.96}\selectfont
+
+\begin{abstract}
+In low-false-alarm radar detection, a cleaner residual is not necessarily a better detector: structured-clutter suppression can remove the weak target support needed after threshold calibration. We frame this as a detector-policy problem. TP-SSCS keeps the rank-matched residual branch and adds a compact raw-evidence rescue branch, so the final decision is the union of the two under the stated false-alarm rule. On public AISTAP-SIM samples, stronger low-rank attenuation increases target loss, while the trainable branch cuts mean target loss from 6.191 dB to 0.197 dB without collapsing detector behavior. We then test the frozen policy on two official AISTAP-SIM full-test assets. Across 210 target-bearing frames and seven operating points, TP-SSCS improves $P_{\mathrm{D}}$ over both raw maps and low-rank residuals; at $P_{\mathrm{FA}}=10^{-5}$ it reaches 0.1845, compared with 0.0800 and 0.1015, and at $10^{-2}$ it reaches 0.8678, compared with 0.6551 and 0.8388. Target-free threshold transfer preserves the ordering but not the nominal false-alarm rate, so it is treated as a calibration boundary. IPIX and SSDD remain boundary checks: direct IPIX transfer is negative, whereas validation-selected IPIX fusion and supervised SSDD adaptation provide narrower external evidence.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Radar detection, adaptive radar signal processing, clutter suppression, constant false-alarm rate, target preservation.
+\end{IEEEkeywords}
+
+\section{Introduction}
+
+Radar surveillance has to detect weak targets in structured clutter at very low false-alarm rates. The hard part is that a cleaner residual is not always a better detector: suppressing coherent background can also suppress weak target support.
+
+Classical STAP and CFAR methods treat false-alarm control as the central requirement \cite{reed1974adaptive,melvin2004stap,melvin2014stap,rohling1983cfar,kelly1986adaptive,gandhi1988cfar}; low-rank models exploit coherent clutter structure \cite{candes2011rpca,vaswani2018robustsubspace}; and learned radar/SAR models produce richer score representations \cite{zhu2017deeprs,zhu2021deeplearningsar,eldarymli2016saratr}. What is missing is a detector-level rule for deciding when residual evidence is trustworthy and when raw evidence must be kept.
+
+TP-SSCS addresses this gap. It keeps the rank-matched residual detector and adds a learned raw-evidence rescue branch. The residual branch controls the background tail; the rescue branch protects weak targets when residualization would otherwise absorb them. We evaluate the method as a detector decision, not as a prettier residual.
+
+The contribution is specific: target preservation and false-alarm calibration should be treated as one detector-policy problem. Public AISTAP-SIM samples establish the failure mode. The local-rescue ablation checks whether the rescue branch is actually needed. The frozen policy is then tested on two official AISTAP-SIM full-test assets. IPIX and SSDD are used only to bound external transfer; they do not substitute for the main in-domain result.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig1_tp_sscs_nature_style_v2.pdf}
+\caption{TP-SSCS schematic. The detector policy keeps a rank-matched residual branch for background-tail control and a raw-evidence rescue gate for weak-target preservation. The lower panels summarize the evidence ladder from public-sample mechanism audit to official frozen-policy validation and bounded external checks.}
+\label{fig:tp-sscs-overview}
+\end{figure*}
+
+\section{Related Work}
+
+Classical radar detection has long been built around STAP, CFAR, and matched-filter style thresholds, with background control as the main concern rather than explicit target preservation. That line remains the right starting point for low-false-alarm sensing, but it does not answer what happens when the suppressor itself removes weak target support.
+
+Low-rank and robust-subspace methods attack structured clutter by exploiting background coherence. They work when the target survives the suppression step, but they can also erase target energy when the target and clutter occupy nearby subspaces. That is the failure mode we measure directly on public AISTAP-SIM samples.
+
+Learned radar and SAR models provide a different route: instead of only suppressing clutter, they learn richer score representations from raw or residual inputs. Most of them still optimize score quality, classification accuracy, or reconstruction fidelity rather than the final detector policy under a fixed background-tail constraint. TP-SSCS sits in the middle: it keeps the residual branch but adds a raw-evidence rescue branch, so the learned part is tied to detector behavior rather than residual prettiness.
+
+Cross-dataset transfer is a separate question. Zero-shot transfer across radar families is often brittle because the background statistics, sensing geometry, and label structure all change at once. For that reason, we treat IPIX and SSDD as boundary checks instead of folding them into the main claim.
+
+\section{Method}
+
+\subsection{Problem Formulation}
+
+\noindent\textbf{Empirical conflict.} The first question is whether stronger structured-clutter suppression monotonically improves detector readiness. It does not. The public AISTAP-SIM samples let us measure this failure mode directly because target-only reference tensors are available. On \texttt{simMed}, increasing the low-rank truncation from $k=1$ to $k=20$ raised clutter attenuation from 2.197 dB to 11.268 dB but also raised target loss from 0.925 dB to 13.906 dB; the same pattern appeared on \texttt{simWind} and \texttt{simNoiseOnly}. Rank therefore cannot be treated as a denoising hyperparameter alone.
+
+This conflict is visible before the method is introduced: the low-rank setting that removes more structured background can also remove more target support. Representative values in dB are as follows: at $k=1$, clutter attenuation is 2.197 on \texttt{simMed}, 2.012 on \texttt{simWind}, and 0.062 on \texttt{simNoiseOnly}, while target loss is 0.925; at $k=20$, clutter attenuation rises to 11.268, 9.339, and 1.022 while target loss rises to 13.906; at $k=30$, clutter attenuation rises further to 12.951, 10.813, and 1.506 while target loss rises to 19.525. Here $C_{\mathrm{att}}$ denotes clutter attenuation and $L_{\mathrm{tgt}}$ denotes target loss.
+
+The implication is not that residualization is useless. Low-rank residuals often improve the background tail and remain a strong baseline on the official AISTAP-SIM assets. The problem is local reliability: when residualization removes structured clutter while retaining a compact target, the detector should trust the residual; when it likely absorbs a weak target, the detector must retain raw evidence. As shown in Fig.~\ref{fig:mechanism-audit}, this conflict is visible on the public AISTAP-SIM samples. That is the decision TP-SSCS is built to make.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig2_mechanism_audit.pdf}
+\caption{Mechanism audit on public AISTAP-SIM samples. Stronger low-rank suppression increases clutter attenuation, but it also raises target loss, so residual cleanliness and detector readiness do not move together.}
+\label{fig:mechanism-audit}
+\end{figure}
+
+\noindent\textbf{Detection model.} Let $X \in \mathbb{C}^{M \times N}$ denote a range-Doppler or image-domain radar observation, where the two axes may represent range-Doppler cells, azimuth-range pixels, or another two-dimensional radar measurement grid depending on the dataset. A conventional structured-clutter suppression pipeline estimates a background component $L$ and evaluates a residual
+\begin{equation}
+    R = X - L .
+\end{equation}
+The residual can then be transformed into a scalar score map $S(R)$ and thresholded for detection. When $L$ is a low-rank approximation, a common rank-$k$ residual can be written as
+\begin{equation}
+    R_k = X - U_k \Sigma_k V_k^{H},
+\end{equation}
+where $U_k \Sigma_k V_k^{H}$ is a truncated singular-value approximation of $X$ or of an appropriate real-valued magnitude representation.
+
+This formulation is attractive because structured clutter often occupies a coherent subspace, but weak targets are not guaranteed to lie outside that subspace. A residual method can therefore increase clutter attenuation while decreasing target preservation, and the loss can reduce $P_{\mathrm{D}}$ after low-$P_{\mathrm{FA}}$ threshold calibration.
+
+Two quantities are therefore useful before a detector score is even reported. The first is clutter attenuation, measured as the reduction of background energy after suppression. The second is target loss, measured as the attenuation of target support when target-only or target-bearing reference information is available. These quantities need not move in the same direction. A suppressor can be excellent by the first measure and harmful by the second. The AISTAP-SIM public samples are valuable because they allow this conflict to be measured directly, rather than inferred from a final ROC curve alone.
+
+The mechanism behind residual absorption is that a low-rank estimate is a structural approximation, not a semantic clutter mask. When the truncation rank is high enough, the residual operator can change the target-bearing subspace estimate itself, so target energy can be lost even when the target is not strongly contained in a fixed clutter-only subspace. We checked this explicitly on the public AISTAP-SIM samples by constructing clutter-only tensors $C=X-T$, estimating the rank-$k$ subspace from $C$, and projecting the held-out target tensor $T$ onto that clutter-derived subspace. At the trained rank $k=30$, the mean two-sided clutter-subspace target overlap remained small: 0.0028 on \texttt{simMed}, 0.0054 on \texttt{simWind}, and 0.0075 on \texttt{simNoiseOnly}. In contrast, the target-bearing residual-operator response $F_k(X)-F_k(C)$ showed larger sensitivity, with mean nonlinear target-loss values of 4.416 dB on \texttt{simMed} and 3.667 dB on \texttt{simWind}. The gate responded in the expected direction: across the three target-bearing public-sample rows at rank 30, relative target absorption and target-cell raw weight had Pearson correlation 0.823. These values support a bounded mechanism claim: TP-SSCS addresses target-bearing subspace-estimation sensitivity and residual absorption, not a guarantee that every target lies outside a fixed clutter-only subspace.
+
+The detection objective considered here is therefore
+\begin{equation}
+    \max_{\theta} \; P_{\mathrm{D}}(S_\theta, \tau_\alpha)
+    \quad \mathrm{s.t.} \quad
+    \widehat{P}_{\mathrm{FA}}(S_\theta, \tau_\alpha) \leq \alpha ,
+\end{equation}
+where $S_\theta$ is a detector score parameterized by policy parameters $\theta$, $\tau_\alpha$ is a threshold selected for target false-alarm probability $\alpha$, and $\widehat{P}_{\mathrm{FA}}$ is the empirical false-alarm rate on background cells or windows. This objective differs from residual denoising because it places target preservation and threshold calibration inside the evaluation criterion.
+
+The formulation also separates scores and detector decisions from their thresholds. Raw magnitude, low-rank residual magnitude, and TP-SSCS gate scores may have different distributions and scales, while the finished TP-SSCS policy joins two thresholded branches. A shared numeric threshold would therefore be meaningless. Instead, each standalone score is mapped to its own empirical threshold, and the finished policy is checked after its branch decisions are joined. The comparison then asks which detector produces more target detections under the same background-tail constraint. This is the detector-level analogue of comparing classifiers at matched specificity rather than at an arbitrary score cutoff.
+
+\noindent\textbf{Calibration and units.} The empirical false-alarm estimate depends on the dataset unit. AISTAP-SIM uses target-bearing frames and background cells; IPIX reports uncertainty over held-out recordings; SSDD calibrates on background pixels outside dilated ship boxes and checks robustness over images and annotations. For each score map, $\tau_\alpha$ is selected from background samples so that the empirical false-alarm rate is not larger than $\alpha$. The same rule is applied to raw, residual, and TP-SSCS scores, because their numeric scales are not directly comparable.
+
+The independent unit for uncertainty is also dataset-specific. For AISTAP-SIM, the relevant unit is the target-bearing frame because detections within the same frame share background, target placement, and simulation conditions. For IPIX, the relevant unit is the held-out recording because adjacent range-time samples within a recording are not independent evidence of external generalization. For SSDD, image-level and annotation-level summaries answer different questions: image-level bootstraps test scene robustness, whereas annotation-level summaries test ship-instance coverage. The recovered SSDD COCO test annotation file lists 232 images and 546 annotations, while the archived evaluated set used for the reported metrics contains 231 images and 545 annotations after file and mask availability checks. The protocol uses the coarsest defensible unit for each claim so that positive intervals are not created by pooled-pixel dependence.
+
+The tested scores are not monotone transformations of one another. Low-rank residualization can compress the background tail while also changing the target amplitude, and a trainable gate can change local score contrast without preserving the original score ordering. Comparing such scores at a common numeric threshold would therefore mix background-tail compression, target-support preservation, and arbitrary score scaling. By recalibrating each score family on its own background support, the comparison depends on the relative separation between targets and the background tail. We additionally audit thresholds estimated only from target-free frames to test whether the ordering depends on target-bearing background support. That stricter threshold-transfer audit is not used as the primary low-$P_{\mathrm{FA}}$ claim because it does not fully preserve empirical false-alarm control on target-bearing frames.
+
+\noindent\textbf{Claim boundary.} The claim is intentionally bounded. We do not claim production deployment or unmodified zero-shot transfer across radar families. We claim that target preservation and false-alarm calibration are necessary for evaluating structured-clutter suppression as detection, and that TP-SSCS improves AISTAP-SIM full-asset detection under the stated empirical background protocol over raw and low-rank residual comparators. Independent target-free threshold transfer is treated as a boundary audit: it preserves the TP-SSCS ordering advantage but is not fully false-alarm calibrated. IPIX supports only validation-selected residual-aware fusion, and SSDD supports only supervised trainable-gate adaptation.
+
+\subsection{TP-SSCS Detector Policy}
+
+\noindent\textbf{Overview.}
+
+TP-SSCS makes one local decision: use residual evidence where it is reliable, but preserve raw evidence where residualization may have absorbed a weak target. For an input $X$, TP-SSCS computes a rank-$k$ residual $R_k$ and a compact raw-evidence gate from the two test-time score channels $\log(1+S_{\mathrm{raw}})$ and $\log(1+S_{\mathrm{res}})$. The gate output is a raw-evidence weight, not a residual weight. The trainable branch forms a complex-valued gated map
+\begin{equation}
+    G_\phi =
+    g_\phi(Z)\odot X + [1-g_\phi(Z)]\odot R_k ,
+\end{equation}
+where $g_\phi(Z)\in[0,1]$ is the raw-branch weight. Its scalar gate score is
+\begin{equation}
+    S_{\mathrm{gate}} = \sum_c |G_{\phi,c}|^2 .
+\end{equation}
+The finished AISTAP-SIM detector used for the primary result is not a single fused-score threshold. It is the union of a rank-matched residual detector and a zero-false-gate rescue detector,
+\begin{equation}
+    D_\alpha =
+    \mathbb I(S_{\mathrm{res}}>\tau_{\mathrm{res},\alpha})
+    \lor
+    \mathbb I(S_{\mathrm{gate}}>\tau_{\mathrm{gate},0}) .
+\end{equation}
+Here $S_{\mathrm{res}}=\sum_c|R_{k,c}|^2$, $\tau_{\mathrm{res},\alpha}$ is the residual-branch threshold at the target false-alarm operating point, and $\tau_{\mathrm{gate},0}$ is the gate-branch threshold set above the background maximum under the same conservative strict-greater threshold convention. This policy is named \texttt{residual\_cfar\_plus\_zero\_false\_gate\_union} in the evaluation code. The raw observation is therefore preserved through the gate-rescue branch, while the residual branch remains the primary calibrated detector.
+
+The trainable branch is a local rescue score, not an image-enhancement endpoint. When $g_\phi(Z)$ is close to one, $G_\phi$ preserves raw evidence; when it is close to zero, the branch behaves like the residual. Intermediate values retain both sources. TP-SSCS cannot obtain its benefit by simply erasing the raw observation: the finished policy must still improve detection under the same false-alarm accounting as the raw and rank-matched residual comparators.
+
+Algebraically, for a target cell $i$, the gated complex map satisfies
+\begin{equation}
+    G_{\phi,i} - R_{k,i}
+    = g_\phi(Z_i)(X_i-R_{k,i}) .
+\end{equation}
+Thus, the gate weight directly controls how much raw evidence is restored relative to the residual map. This statement is algebraic rather than a theorem about unseen data: it explains what the gate must learn, and the subsequent experiments test whether the learned gate actually follows that behavior. TP-SSCS therefore does not require a universal monotone relation between residual magnitude and target preservation. It requires the weaker and testable condition that the two local score channels contain evidence for when raw rescue is needed.
+
+The public-sample gate diagnostic supports this condition. When target cells were grouped by residual absorption, the mean residual-equivalent weight decreased from 0.305 in the lowest absorption quartile to 0.0037 in the highest absorption quartile. Equivalently, the raw weight increased from 0.695 to 0.996 across the same bins. The learned gate therefore moved toward the raw branch where residualization removed the most target score.
+
+\noindent\textbf{Score construction.}
+
+The raw feature is the dataset-specific magnitude or intensity score, and the residual feature is obtained by subtracting a structured low-rank estimate and normalizing the result. The AISTAP-SIM full-asset comparator is \texttt{low\_rank\_residual\_k30}; TP-SSCS uses the same rank as the residual detector and as the residual input to the gate-rescue branch, so any gain over the residual baseline cannot be attributed to a different residual setting. No target-bearing test labels, target-bin identifiers, or IPIX range-bin index features are used at test time.
+
+Raw and residual maps do not have commensurate scales. A raw magnitude score may preserve target energy but include a broad background distribution, whereas a residual score may have a narrower background tail and a different target amplitude range. The gate therefore receives two local channels, $\log(1+S_{\mathrm{raw}})$ and $\log(1+S_{\mathrm{res}})$, and the convolutional gate may infer local contrast and raw--residual discrepancy from those channels. These contrast and discrepancy relations are not separate hand-entered test-time features in the frozen implementation. This distinction matters because the official result is tied to a specific detector policy rather than to a broad class of possible feature-engineered gates.
+
+The residual branch is intentionally tied to the low-rank comparator. If TP-SSCS were allowed to choose a different residual rank from the baseline, improvements could be attributed to rank selection rather than to target-preserving rescue. The use of \texttt{low\_rank\_residual\_k30} as both a comparator and a TP-SSCS branch therefore creates a stricter test: the residual evidence is identical in origin, but TP-SSCS adds a learned raw-evidence rescue branch whose detections are admitted only under the zero-false gate rule.
+
+The gate is not given the target label or the final threshold; it sees only the local two-channel raw/residual score representation. The learned convolutional filters are expected to respond to local score scale and raw--residual disagreement. A large residual response with stable raw support suggests useful clutter reduction, whereas a strong raw response that vanishes in the residual suggests target absorption. The final decision, however, is made only after the residual and gate-rescue branches are thresholded by the stated detector policy.
+
+\noindent\textbf{Learning local residual reliability.}
+
+The gate is trained to reduce target loss while retaining detector usefulness. Public AISTAP-SIM items provide target-bearing samples for learning the preservation behavior, while the official full-test assets are held out for fixed-policy evaluation. The training objective combines a target-mask BCE term, a target/background score-margin term, and a small gate penalty. This objective differs from training a binary target classifier, because the official detector still applies the residual branch and the zero-false gate-rescue rule after training. The training stage produces the gate score; the finished operating policy is selected later by the detector thresholds.
+
+The compact architecture is a methodological choice rather than a resource constraint. A large network could fit public samples, but it would make the fixed-policy AISTAP-SIM validation less interpretable and would increase the risk of dataset-specific artifacts. TP-SSCS uses a small hidden width, short training schedule, and fixed seed so that the learned component behaves like a gate over interpretable evidence rather than like an opaque detector. The design is therefore closer to calibrated local reliability estimation than to end-to-end target classification. This is also why the method reports target loss and clutter attenuation alongside $P_{\mathrm{D}}$: the gate is expected to change the suppression-preservation balance, not merely to produce a higher score on a development split.
+
+\noindent\textbf{Gate behavior check.}
+
+The trainable branch is intentionally compact: rank $k=30$, hidden width 16, 150 training steps, learning rate 0.02, and seed 7. On public target-bearing AISTAP-SIM items, the low-rank residual baseline reached mean $P_{\mathrm{D}}=0.256$ with 6.191 dB mean target loss; the trainable branch reached mean $P_{\mathrm{D}}=0.253$ while reducing mean target loss to 0.197 dB and retaining 7.594 dB clutter attenuation. Three seeds and perturbation checks did not show numerical collapse, so the branch is treated as a fixed detector component rather than as an oracle diagnostic.
+
+The preservation result should not be interpreted as a development-set victory by itself. The mean public-sample $P_{\mathrm{D}}$ of the trainable branch is close to the residual baseline, while the target-loss reduction is large. This means that the gate is not simply increasing scores everywhere; it is changing how evidence is retained. The decisive test is therefore the official full-asset evaluation, where the saved policy is applied without retuning. The public-sample experiment supplies the mechanism, the local-rescue ablation tests whether the strict low-$P_{\mathrm{FA}}$ gain can be replaced by simpler combinations, and the official AISTAP-SIM experiment supplies the detector validation.
+
+The local-rescue ablation supports a bounded conclusion: local gate-rescue is necessary at the strictest operating point, but a fixed mixture can slightly exceed TP-SSCS in seven-point AUC, so the claim is not all-threshold dominance.
+
+\noindent\textbf{False-alarm-calibrated detection.}
+
+All detector scores are evaluated at fixed target false-alarm probabilities. For raw maps, low-rank residuals, and standalone gate scores, a threshold is selected from background scores and checked against the empirical false-alarm rate. For the finished TP-SSCS policy, the residual branch is thresholded at the target operating point and the gate-rescue branch is admitted only above its background maximum; the reported empirical false-alarm rate is measured on the resulting union decision. The operating grid is
+\begin{equation}
+    \alpha \in \{10^{-5}, 3\times10^{-5}, 10^{-4}, 3\times10^{-4},
+    10^{-3}, 3\times10^{-3}, 10^{-2}\}.
+\end{equation}
+Detection probability is computed on AISTAP-SIM frames, IPIX recordings, and SSDD images or annotations, with paired bootstrap intervals over the corresponding independent units.
+
+This calibration step is repeated separately for every standalone score family, and the finished TP-SSCS detector is checked after the residual and gate-rescue decisions are joined. Raw maps, low-rank residuals, TP-SSCS gate scores, IPIX detector scores, and SSDD adapted scores each receive their own background-derived threshold when reported as scores. The finished AISTAP-SIM TP-SSCS number is instead reported for the named detector policy \texttt{residual\_cfar\_plus\_zero\_false\_gate\_union}. The comparison is therefore not sensitive to arbitrary score scaling. It also ensures that a learned score cannot gain apparent $P_{\mathrm{D}}$ by increasing all responses, because branch detections must survive the background-derived thresholds before contributing to the final decision.
+
+\noindent\textbf{External adaptation policies.}
+
+The external protocols use the TP-SSCS principle but make weaker claims. On IPIX, direct transfer of the AISTAP-SIM detector was negative. The positive IPIX result instead uses
+\begin{equation}
+    S_{\mathrm{IPIX}} = z_{\mathrm{raw}} + \beta
+    (z_{\mathrm{raw}} - z_{\mathrm{TPres}}),
+\end{equation}
+where $z_{\mathrm{raw}}$ and $z_{\mathrm{TPres}}$ are normalized raw and TP-SSCS residual scores. The coefficient $\beta=1.5$ is selected on one validation recording and tested on 12 disjoint recordings.
+
+On SSDD, the method is adapted as a supervised pixel-level gate over raw SAR intensity and residual features. It is trained on the official train split with deterministic validation and evaluated only on the official test split. Raw fallback is used at $P_{\mathrm{FA}} \leq 10^{-4}$ to avoid perturbing the extreme background tail; the learned gate is used at higher operating points. This fallback is not an ad hoc rescue of the method. At these extreme operating points, the number of admissible false alarms is very small, so a learned pixel-level gate can be dominated by a few tail samples. The protocol therefore uses the raw score when validation selects it at $10^{-5}$, $3\times10^{-5}$, and $10^{-4}$, and switches to the gate only from $3\times10^{-4}$ upward, where the validated gate improves detection while remaining false-alarm calibrated.
+
+The external policies are therefore not pooled into a single universal detector. Table~\ref{tab:threshold-source-audit} reports the threshold-source audit that supports this boundary treatment. They are deliberately separated because the data modalities and label structures differ. IPIX provides sea-clutter recordings without the same target-label structure as AISTAP-SIM, so a validation-selected fusion coefficient is the appropriate bounded claim. SSDD provides image-level SAR ship annotations and official splits, so supervised gate adaptation is the appropriate bounded claim. The common principle is target-preserving detector policy under false-alarm accounting; the implementation details are constrained by each dataset.
+
+\section{Experimental Setup}
+
+Public AISTAP-SIM samples diagnose the mechanism, the official AISTAP-SIM assets test the frozen detector, and IPIX/SSDD only bound transfer outside the main claim. Table~\ref{tab:dataset_protocol} summarizes the dataset groups, evaluation units, and protocol roles used to support that split.
+
+The experimental evidence is drawn from three dataset groups. Public AISTAP-SIM samples are used for the low-rank audit, target-loss diagnostics, trainable-branch selection, and stress checks. The two official AISTAP-SIM full-test assets, \texttt{simMed\_test.mat} and \texttt{simWind\_test.mat}, are reserved for frozen-policy validation and contribute 210 target-bearing frames \cite{vega2024aistap}. The public AISTAP-SIM release describes a two-meter Ku-band antenna, a 50 ms GMTI coherent processing interval, 100 m range resolution, six evenly spaced antenna channels, and a 50 km standoff from beam center. The data are distributed as Matlab v7.3/HDF5 arrays with nominal dimensions $N\times C\times D\times R$, where $N=2048$, $C=6$, $D=64$, and $R=1024$. The \texttt{simMed} scenario is the standard GMTI ground-clutter case with low wind, \texttt{simWind} uses the same setting with much higher wind speeds, and \texttt{simNoiseOnly} contains Gaussian noise without ground clutter. Dartmouth IPIX supplies one validation recording for selecting $\beta$ and 12 disjoint held-out sea-clutter recordings \cite{haykin2002seaclutter,dewind2010database}. SSDD supplies official train/test SAR ship splits; the recovered test annotation file contains 232 images and 546 ship annotations, and the archived evaluated subset used in the reported external-adaptation metrics contains 231 images and 545 ship annotations after file and mask availability checks \cite{wang2019ssdd,zhang2021ssdd}.
+
+\begin{table*}[!t]
+\centering
+\caption{Datasets and protocol roles used in the paper.}
+\label{tab:dataset_protocol}
+\scriptsize
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.10}
+\begin{tabularx}{\textwidth}{@{}>{\raggedright\arraybackslash}p{0.22\textwidth} >{\raggedright\arraybackslash}p{0.24\textwidth} >{\raggedright\arraybackslash}p{0.16\textwidth} X@{}}
+\toprule
+Dataset & Role in this paper & Evaluation unit & Protocol summary \\
+\midrule
+Public AISTAP-SIM samples & Mechanism audit, trainable-branch selection, stress checks & Target-bearing frame / sample row & Low-rank attenuation audit, target-loss diagnostics, and gate behavior checks \\
+Official AISTAP-SIM full-test assets & Frozen-policy validation & Target-bearing frame & Fixed TP-SSCS policy on \path{simMed\_test.mat} and \path{simWind\_test.mat} \\
+Dartmouth IPIX recordings & Boundary transfer audit & Held-out recording & One validation recording for $\beta$ selection and 12 disjoint test recordings \\
+SSDD SAR ship dataset & Supervised external boundary audit & Image / annotation & Official train/test split with raw fallback at the strictest operating points \\
+\bottomrule
+\end{tabularx}
+\vspace{0.2em}
+\parbox{\textwidth}{\scriptsize Values are in dB; $C_{\mathrm{att}}$ is clutter attenuation and $L_{\mathrm{tgt}}$ is target loss.}
+\end{table*}
+
+Three families are compared under the same false-alarm accounting: raw maps, rank-matched low-rank residuals, and the finished TP-SSCS detector or its protocol-specific adaptation. The AISTAP-SIM low-rank comparator uses \texttt{low\_rank\_residual\_k30}. Thresholds are chosen independently for standalone scores from background samples; the finished TP-SSCS decision uses the named residual-plus-gate-union policy and is checked against the empirical false-alarm ceiling. The primary metric is $P_{\mathrm{D}}$ at $P_{\mathrm{FA}}\in\{10^{-5},3\times10^{-5},10^{-4},3\times10^{-4},10^{-3},3\times10^{-3},10^{-2}\}$, and paired bootstrap intervals are reported over the proper independent unit. The AISTAP-SIM claim is limited to the two official full-test conditions plus the stated cross-condition, seed-sensitivity, and threshold-source audits.
+
+\vspace{-1.15\baselineskip}
+\section{Results}
+
+\noindent We report the results in three steps: first, the rescue ablation; second, the frozen-policy validation on the official AISTAP-SIM assets; and third, the external boundary checks on IPIX and SSDD.
+
+\subsection{Rescue Ablation}
+\begingroup\linespread{0.96}\selectfont
+
+The first question is whether the strict low-false-alarm gain really needs local gate-rescue or whether a simpler score combination is enough. Fig.~\ref{fig:rescue-ablation} summarizes the answer. Table~\ref{tab:lowrank-audit} gives the same ablation values in compact form. We tested raw only, residual only, fixed mixtures, normalized max fusion, heuristic discrepancy switching, gate-only variants, single-channel gates, constant or shuffled gates, and the final OR policy on the same 210 target-bearing frames. At $P_{\mathrm{FA}}=10^{-5}$, the final policy reached $P_{\mathrm{D}}=0.1845$, above the best checked fixed mixture at this point (0.1335 for $w=0.50$), normalized max/heuristic switch (0.1198), residual/global/constant gate (0.1015), gate-only (0.0961), raw (0.0800), and shuffled gate (0.0505). Across the full seven-point grid, a residual-heavy fixed mixture had slightly higher AUC (0.5378 versus 0.5313), so the result supports local rescue at strict low false alarm, not universal dominance.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig3_rescue_ablation.pdf}
+\caption{Rescue ablation at the strictest operating point. The final OR policy wins at $P_{\mathrm{FA}}=10^{-5}$ against simpler combinations, while a residual-heavy fixed mixture keeps a slight AUC edge over the full seven-point grid.}
+\label{fig:rescue-ablation}
+\end{figure}
+
+\NonFloatTableBlock{tab:lowrank-audit}{Representative Low-Rank Audit on Public AISTAP-SIM Samples}{%
+\scriptsize
+\setlength{\tabcolsep}{3.0pt}
+\renewcommand{\arraystretch}{1.04}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}ccccc@{}}
+\toprule
+$k$ & Med $C_{\mathrm{att}}$ & Wind $C_{\mathrm{att}}$ & Noise $C_{\mathrm{att}}$ & $L_{\mathrm{tgt}}$ \\
+\midrule
+1  & 2.197  & 2.012  & 0.062 & 0.925  \\
+20 & 11.268 & 9.339  & 1.022 & 13.906 \\
+30 & 12.951 & 10.813 & 1.506 & 19.525 \\
+\bottomrule
+\end{tabular*}\\[0.1em]
+\scriptsize Values are in dB; $C_{\mathrm{att}}$ is clutter attenuation and $L_{\mathrm{tgt}}$ is target loss.
+}
+
+\endgroup
+
+\subsection{Main AISTAP-SIM Validation}
+\begingroup\linespread{0.96}\selectfont
+
+\NonFloatFigureBlock{fig:main-validation}{\includegraphics[width=\columnwidth]{figures/fig4_main_validation.pdf}}{Frozen-policy validation on the official AISTAP-SIM full-test assets. TP-SSCS improves detection across the representative operating points, with the strongest separation at the lowest false-alarm setting.}
+
+The central in-domain result evaluates a fixed TP-SSCS detector on \texttt{simMed\_test.mat} and \texttt{simWind\_test.mat}. Fig.~\ref{fig:main-validation} summarizes the operating curve, and Table~\ref{tab:aistap-main-operating-points} collects the representative operating points. No asset-specific retuning is applied. Across 210 target-bearing frames and seven operating points, TP-SSCS wins all combined comparisons against both raw and rank-matched residual scores, and all empirical false-alarm checks remain within the stated protocol ceiling. Representative operating values are as follows: at $P_{\mathrm{FA}}=10^{-5}$, TP-SSCS reaches $P_{\mathrm{D}}=0.1845$ versus 0.0800 for raw and 0.1015 for low-rank residual; at $10^{-3}$ it reaches 0.7029 versus 0.3771 and 0.6592; at $10^{-2}$ it reaches 0.8678 versus 0.6551 and 0.8388.
+
+\NonFloatTableBlock{tab:aistap-main-operating-points}{Representative AISTAP-SIM Official Full-Asset Detection Results}{%
+\scriptsize
+\setlength{\tabcolsep}{2.0pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}lccccc@{}}
+\toprule
+Target $P_{\mathrm{FA}}$ & Raw $P_{\mathrm{D}}$ & Low-rank $P_{\mathrm{D}}$ & TP-SSCS $P_{\mathrm{D}}$ & $\Delta$ vs. Raw & $\Delta$ vs. Low-rank \\
+\midrule
+$1{\times}10^{-5}$ & 0.0800 & 0.1015 & \textbf{0.1845} & 0.1046 & 0.0831 \\
+$1{\times}10^{-3}$ & 0.3771 & 0.6592 & \textbf{0.7029} & 0.3258 & 0.0436 \\
+$1{\times}10^{-2}$ & 0.6551 & 0.8388 & \textbf{0.8678} & 0.2127 & 0.0290 \\
+\bottomrule
+\end{tabular*}
+}
+
+Together, these representative rows show that the official gain is not a single-threshold artifact. The advantage is largest at the strictest operating point, where target support is hardest to preserve, and remains positive at the more permissive operating points.
+
+We also repeated the threshold-source audit with thresholds estimated only from target-free frames. Each official asset contains 23 target-free frames and 105 target-bearing frames. In same-asset calibration, target-bearing frames use thresholds estimated from target-free frames of the same asset; in cross-asset calibration, each asset uses target-free frames from the other official asset. This audit preserves the ordering advantage: TP-SSCS wins 7/7 combined operating points against both raw and \texttt{low\_rank\_residual\_k30} in both modes, with positive paired-bootstrap intervals. However, the transferred thresholds are not fully false-alarm calibrated on target-bearing backgrounds. At nominal $10^{-5}$, the measured TP-SSCS empirical false-alarm rate is $8.89\times10^{-4}$ in same-asset calibration and $8.99\times10^{-4}$ in cross-asset calibration. The target-free result is therefore a robustness and boundary audit, not a replacement for the primary empirical false-alarm protocol.
+
+\NonFloatTableBlock{tab:threshold-source-audit}{Threshold-Source Audit on the Official AISTAP-SIM Full Assets}{%
+\scriptsize
+\setlength{\tabcolsep}{3.0pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular*}{\columnwidth}{@{\extracolsep{\fill}}p{0.28\columnwidth} p{0.28\columnwidth} p{0.18\columnwidth} p{0.18\columnwidth}@{}}
+\toprule
+Calibration mode & Threshold source & Combined wins & Empirical $P_{\mathrm{FA}}$ at nominal $10^{-5}$ \\
+\midrule
+Same-asset calibration & Target-free frames from the same official asset & 7/7 vs. raw and residual baseline & $8.89\times10^{-4}$ \\
+Cross-asset calibration & Target-free frames from the other official asset & 7/7 vs. raw and residual baseline & $8.99\times10^{-4}$ \\
+\bottomrule
+\end{tabular*}
+}
+
+\endgroup
+
+TP-SSCS therefore improves the calibrated operating curve while retaining the rank-matched residual as a strong comparator.
+
+Additional robustness audits further strengthen the official empirical-protocol result. Across seeds 7, 11, and 23, the same finished-detector protocol preserves 21/21 combined wins against both raw maps and \texttt{low\_rank\_residual\_k30}, with a maximum cross-seed target-$P_{\mathrm{D}}$ range of 0.0079. A fixed-weight fusion sweep over $w\in\{0,0.05,\ldots,1\}$ selected $w=1.0$ at $P_{\mathrm{FA}}=10^{-5}$, meaning that the best global fixed mixture collapsed to the residual baseline rather than reproducing the adaptive gain. TP-SSCS still reached $P_{\mathrm{D}}=0.1845$, compared with 0.1015 for this best fixed fusion. A paired frame bootstrap gave a TP-SSCS minus fixed-fusion gain of 0.0831 with 95\% CI [0.0752, 0.0910]. Against the best of 75 parameter-swept global/local CFAR score families, TP-SSCS wins all seven combined and all 14 asset-level comparisons; at $10^{-5}$ the best local CFAR was raw GOCA with training window 4 and guard 1, reaching $P_{\mathrm{D}}=0.1025$. For this reason, the official claim is framed as a fixed-policy detector gain under a stated empirical threshold protocol rather than a deployment-ready fixed-threshold calibration claim.
+
+The supervised-baseline audit gives the complementary boundary. A leave-one-asset-out raw/residual HGB trained on one official full asset and tested on the other reaches $P_{\mathrm{D}}=0.3052$ at $10^{-5}$ and beats compact TP-SSCS at all seven combined operating points when sufficient official labels are available. TP-SSCS-derived HGB features reach 0.3396 at $10^{-5}$, but this is a different supervised regime. The label-cost audit therefore positions compact TP-SSCS as a Pareto point, not as the supervised upper bound: it uses zero positive target labels from the official full assets, has seven-point AUC 0.5313, and is not dominated by positive-pixel HGB budgets up to 32 labeled target pixels; HGB exceeds it from 64 positive pixels onward, and all-label HGB reaches AUC 0.7271. Classical SMI/MVDR/AMF/Kelly detectors are cited as adaptive-detection context but not reported numerically because the current score-map protocol does not define a frozen steering vector, secondary-cell covariance rule, guard geometry, and regularization policy. The implemented classical audit is therefore the raw/residual global and local CFAR family, not a full adaptive matched-filter benchmark.
+
+The interpretation is consistent across scales. The gain is not tied to a single threshold, a single seed, or a single comparator family. The gate restores target support while preserving the background-tail control that the residual branch already provides. This is the detector-level behavior targeted here. It is also why the external validation that follows is reported as bounded evidence rather than as a replacement for the official in-domain claim.
+
+A width--step ablation was added to test whether the compact gate was an arbitrary choice. Hidden widths 8, 16, 32 and 64 were crossed with 50, 150 and 500 training steps, and every saved state was evaluated on both official full-test assets under the same seven false-alarm operating points. The best mean $P_{\mathrm{D}}$ over the seven operating points was obtained by width 32 and 500 steps (0.5308), but the original 16/150 setting remained close (0.5283) and preserved the same low-$P_{\mathrm{FA}}$ behavior ($P_{\mathrm{D}}=0.1845$ at $10^{-5}$). Wider or longer settings were not uniformly better: width 16 with 500 steps dropped to 0.5224, width 32 with 50 steps dropped to 0.4953, and width 64 with 150 steps dropped to 0.4727. This supports the use of a compact gate as a stability-oriented design rather than as an under-sized convenience.
+
+A lightweight CNN baseline was also trained on the public AISTAP-SIM sample and evaluated on the two official full-test assets with the same empirical false-alarm calibration. The baseline is deliberately described as a compact sanity check rather than as the strongest possible SAR detector: it uses two input channels, z-scored log raw score and z-scored log rank-30 residual score, with two 3-by-3 convolutional layers of width 8 followed by a 1-by-1 output layer, 737 trainable parameters, Adam at learning rate 0.01, 150 steps, and seed 20260721. The CNN reached $P_{\mathrm{D}}=0.1499$ at $P_{\mathrm{FA}}=10^{-5}$, $0.4392$ at $10^{-4}$, and $0.8211$ at $10^{-2}$. This baseline is intended to test whether a very simple learned pixel scorer can replace the proposed gate, not to claim superiority over all larger or task-specific CNN/SAR detectors. It is competitive at some middle operating points but does not dominate TP-SSCS across the low-false-alarm curve.
+
+Fig.~\ref{fig:robustness-audit} summarizes the robustness audits and the compact-gate width-step check.
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig6_robustness_audit.pdf}
+\caption{Robustness audits and compactness checks. Seed sensitivity stays narrow, the best fixed fusion collapses to the residual baseline, the CFAR family does not overturn the ordering, and the compact gate remains stable across a small width--step sweep.}
+\label{fig:robustness-audit}
+\end{figure}
+
+The external studies are calibrated boundary checks, not interchangeable accuracy numbers; zero-shot transfer, validation-selected fusion, and supervised SSDD adaptation answer different questions.
+\par\vspace{0.20\baselineskip}
+\subsection{External Boundary Checks}
+
+\begin{figure*}[!t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig5_external_boundary.pdf}
+\caption{External boundary checks on IPIX and SSDD. Direct AISTAP-SIM-to-IPIX transfer fails under domain shift, a validation-selected IPIX fusion gives a modest bounded gain, and SSDD adaptation becomes useful only after the strictest false-alarm tail is relaxed.}
+\label{fig:external-boundary}
+\end{figure*}
+
+Fig.~\ref{fig:external-boundary} summarizes the external boundary checks. The bounded external checks on IPIX and SSDD separate negative direct zero-shot transfer, validation-selected IPIX fusion, and supervised SSDD adaptation. AISTAP-SIM carries the strongest claim because the detector policy is fixed and tested on official full-test assets, while IPIX and SSDD only bound external behavior under weaker but explicit protocol constraints.
+
+The negative IPIX zero-shot result marks a domain-shift boundary. AISTAP-SIM provides simulated airborne range-Doppler target support, whereas IPIX contains measured sea-clutter recordings with different waveform, grazing, sea-state, and recording dependence. Directly applying the AISTAP-SIM-trained gate therefore changes both the input distribution seen by $Z$ and the meaning of a target-support event. The validation-selected IPIX fusion result is intentionally narrower: it tests whether a single residual-aware coefficient can help after one held-out recording is used for selection. On 12 disjoint test recordings, the selected fusion gives $P_{\mathrm{D}}=0.0644$ versus 0.0513 for raw at $10^{-5}$ with zero false alarms, and 0.0695 versus 0.0532 at $10^{-4}$ with 1408/16121856 false alarms; the recording-level 95\% CI for the $10^{-5}$ fusion-minus-raw gain is [0.0024, 0.0250]. The resulting claim is bounded adaptation under recording-level evaluation, rather than zero-shot generalization.
+
+\noindent\textit{Feature-shift audit.} Relative to the AISTAP-SIM public-sample background distribution, IPIX background windows shifted by 5.17 AISTAP standard deviations in log raw score, 6.27 standard deviations in log residual score, and 2.88 standard deviations in raw-residual discrepancy. Median shifts were similarly large: 5.35, 6.94 and 2.71 AISTAP standard deviations for the same three features. The local-contrast feature was much closer, but the score-scale and residual-discrepancy features seen by the gate were not distribution matched.
+
+\noindent\textit{Target-free normalization.} We also tested whether the measured-domain failure could be repaired by target-free background normalization. For each IPIX window, raw, low-rank residual, TP-SSCS gate score, and validation-selected residual fusion were recalibrated by background z-score and robust median/MAD z-score before the same empirical false-alarm thresholding. This is an unsupervised target-domain calibration, not pure zero-shot transfer, because it uses IPIX background statistics. Under the rank-constrained threshold rule used here, these monotone within-window transformations did not change the target/background ordering and therefore did not materially change detection. At $P_{\mathrm{FA}}=10^{-5}$, the best IPIX result remained validation-selected residual fusion with $P_{\mathrm{D}}=0.0743$, compared with 0.0676 for raw. The result indicates that simple monotone feature calibration is insufficient for IPIX transfer, without ruling out covariance alignment, subspace adaptation, or adversarial domain matching.
+
+\noindent\textit{SSDD external adaptation.} The SSDD result has a different boundary. The learned gate improves the official test split at $P_{\mathrm{FA}}\geq3\times10^{-4}$, but the validated policy falls back to raw intensity at $10^{-5}$, $3\times10^{-5}$, and $10^{-4}$. This pattern is more consistent with extreme-tail instability than with complete gate failure. When the admissible number of background exceedances is very small, a few high-valued background pixels can dominate threshold selection. The fallback keeps the strictest false-alarm claims conservative and lets the supervised gate contribute once the background tail is better sampled.
+
+\noindent\textit{Extreme-tail audit.} At $P_{\mathrm{FA}}=10^{-5}$, the gate alone reached $P_{\mathrm{D}}=0.0035$, whereas raw intensity reached 0.0188 under matched empirical false-alarm calibration. At $3\times10^{-5}$, the gate reached 0.0291 and raw reached 0.0373. The learned gate became useful only after the tail was less sparse: at $3\times10^{-4}$ it reached 0.2630, compared with 0.1625 for raw and 0.0025 for the low-rank score. The raw fallback at the three strictest SSDD operating points is therefore validation-supported rather than manually imposed after test inspection. At $P_{\mathrm{FA}}=10^{-5}$, the gate background distribution had kurtosis 38.286, a 99.99th percentile of 7.544, a maximum of 61.443, and a calibrated threshold of 17.245, whereas raw intensity reached $P_{\mathrm{D}}=0.0188$ with a less extreme tail. A tail-stabilized learned score, for example by trimming extreme gate-background responses, fitting an explicit extreme-value tail, or stabilizing thresholds across validation images, is a natural extension. It is not introduced here because the present work tests target-preserving fusion under fixed false-alarm calibration rather than proposing a separate extreme-tail model.
+
+\section{Discussion}
+
+Structured-clutter suppression should be evaluated as a calibrated detector policy, not as residual image cleanup. A residual map can look cleaner simply because it has removed both background structure and weak target support. TP-SSCS addresses that failure mode by keeping raw evidence available while retaining the rank-matched residual as the main background-tail controller. The official AISTAP-SIM result matters because it tests this policy under a shared empirical false-alarm rule.
+
+The interpretation stops at the stated boundary. The target-free threshold-transfer audit preserved TP-SSCS ordering but did not preserve nominal false-alarm rate, so it is a calibration boundary rather than a deployment-ready threshold rule. IPIX gives the same kind of boundary from another direction: direct AISTAP-SIM-to-IPIX transfer is negative, while one validation-selected fusion coefficient improves held-out recordings. SSDD is narrower still because it uses supervised SAR-image adaptation and raw fallback at the strictest operating points.
+
+The practical rule is straightforward. A candidate suppressor should be judged by whether it preserves target support, whether it improves $P_{\mathrm{D}}$ after false-alarm calibration, and whether its external evidence has been separated from in-domain validation. TP-SSCS is one compact implementation of that rule.
+
+\section{Conclusion}
+
+We show that structured-clutter suppression should not be judged by residual cleanliness alone. On public AISTAP-SIM samples, stronger low-rank attenuation can remove the target support that low-false-alarm detection needs. TP-SSCS resolves that conflict with one policy decision: trust residual evidence where it is locally reliable, and otherwise preserve raw target evidence.
+
+The decisive evidence is a frozen-policy evaluation on two official AISTAP-SIM full-test assets. Across 210 target-bearing frames and seven operating points, TP-SSCS improves over both raw and rank-matched residual scores under matched empirical false-alarm calibration, and the seed, fixed-fusion, bootstrap, and CFAR audits all point in the same direction. The external evidence is narrower: direct IPIX zero-shot transfer is negative, whereas validation-selected IPIX fusion and supervised SSDD adaptation are protocol-specific results.
+
+The practical rule is to judge a candidate suppressor by whether its calibrated score preserves target support and improves the operating curve, not by whether its residual looks sparse. TP-SSCS is one compact implementation of that rule, and the supported claim is limited to fixed-policy AISTAP-SIM validation plus bounded external adaptation.
+
+\section*{Acknowledgment}
+
+Supported by NSFC 62202148, Hubei NSF 2022CFB908/2019CFB530, and CSC 201808420418. The authors acknowledge the public AISTAP-SIM, Dartmouth IPIX, and SSDD datasets.
+
+\section*{Data and Code Availability}
+
+The AISTAP-SIM, Dartmouth IPIX, and SSDD datasets are publicly available from their respective sources. Derived outputs, evaluation logs, intermediate results, and analysis scripts for AISTAP-SIM validation, IPIX fusion, SSDD adaptation, and bootstrap checks are archived at Zenodo (\url{https://doi.org/10.5281/zenodo.21463506}) and documented in the project repository (\url{https://github.com/niubisile-wq/tpsscs-radar}).
+\begingroup
+\fontsize{7.3}{8.2}\selectfont
+\enlargethispage{3\baselineskip}
+\begin{thebibliography}{99}
+
+\bibitem{reed1974adaptive}
+I.~S. Reed, J.~D. Mallett, and L.~E. Brennan, ``Rapid convergence rate in adaptive arrays,'' \emph{IEEE Transactions on Aerospace and Electronic Systems}, vol.~AES-10, no.~6, pp.~853--863, Nov. 1974, doi: 10.1109/TAES.1974.307893.
+
+\bibitem{melvin2004stap}
+W.~L. Melvin, ``A STAP overview,'' \emph{IEEE Aerospace and Electronic Systems Magazine}, vol.~19, no.~1, pp.~19--35, Jan. 2004, doi: 10.1109/MAES.2004.1263229.
+
+\bibitem{melvin2014stap}
+W.~L. Melvin, ``Space-time adaptive processing for radar,'' in \emph{Academic Press Library in Signal Processing: Volume 2, Communications and Radar Signal Processing}. Academic Press, 2014, pp.~595--665, doi: 10.1016/B978-0-12-396500-4.00012-0.
+
+\bibitem{rohling1983cfar}
+H. Rohling, ``Radar CFAR thresholding in clutter and multiple target situations,'' \emph{IEEE Transactions on Aerospace and Electronic Systems}, vol.~AES-19, no.~4, pp.~608--621, Jul. 1983, doi: 10.1109/TAES.1983.309350.
+
+\bibitem{gandhi1988cfar}
+P.~P. Gandhi and S.~A. Kassam, ``Analysis of CFAR processors in nonhomogeneous background,'' \emph{IEEE Transactions on Aerospace and Electronic Systems}, vol.~24, no.~4, pp.~427--445, Jul. 1988, doi: 10.1109/7.7185.
+
+\bibitem{kelly1986adaptive}
+E.~J. Kelly, ``An adaptive detection algorithm,'' \emph{IEEE Transactions on Aerospace and Electronic Systems}, vol.~AES-22, no.~2, pp.~115--127, Mar. 1986, doi: 10.1109/TAES.1986.310745.
+
+\bibitem{candes2011rpca}
+E.~J. Candes, X. Li, Y. Ma, and J. Wright, ``Robust principal component analysis?'' \emph{Journal of the ACM}, vol.~58, no.~3, pp.~1--37, Jun. 2011, doi: 10.1145/1970392.1970395.
+
+\bibitem{vaswani2018robustsubspace}
+N. Vaswani, T. Bouwmans, S. Javed, and P. Narayanamurthy, ``Robust subspace learning: Robust PCA, robust subspace tracking, and robust subspace recovery,'' \emph{IEEE Signal Processing Magazine}, vol.~35, no.~4, pp.~32--55, Jul. 2018, doi: 10.1109/MSP.2018.2826566.
+
+\bibitem{panagopoulos2004smalltarget}
+S. Panagopoulos and J.~J. Soraghan, ``Small-target detection in sea clutter,'' \emph{IEEE Transactions on Geoscience and Remote Sensing}, vol.~42, no.~7, pp.~1355--1361, Jul. 2004, doi: 10.1109/TGRS.2004.827259.
+
+\bibitem{liu2020polsarcfar}
+T. Liu, Z. Yang, A. Marino, G. Gao, and J. Yang, ``Robust CFAR detector based on truncated statistics for polarimetric synthetic aperture radar,'' \emph{IEEE Transactions on Geoscience and Remote Sensing}, vol.~58, no.~9, pp.~6731--6747, Sep. 2020, doi: 10.1109/TGRS.2020.2979252.
+
+\bibitem{chen2022drenet}
+J. Chen, K. Chen, H. Chen, Z. Zou, and Z. Shi, ``A degraded reconstruction enhancement-based method for tiny ship detection in remote sensing images with a new large-scale dataset,'' \emph{IEEE Transactions on Geoscience and Remote Sensing}, vol.~60, pp.~1--14, 2022, doi: 10.1109/TGRS.2022.3180894.
+
+\bibitem{liu2025pgdn}
+C. Liu, X. Song, D. Yu, L. Qiu, F. Xie, Y. Zi, and Z. Shi, ``Infrared small target detection based on prior guided dense nested network,'' \emph{IEEE Transactions on Geoscience and Remote Sensing}, vol.~63, pp.~1--15, 2025, doi: 10.1109/TGRS.2025.3542232.
+
+\bibitem{zhu2017deeprs}
+X.~X. Zhu, D. Tuia, L. Mou, G.-S. Xia, L. Zhang, F. Xu, and F. Fraundorfer, ``Deep learning in remote sensing: A comprehensive review and list of resources,'' \emph{IEEE Geoscience and Remote Sensing Magazine}, vol.~5, no.~4, pp.~8--36, Dec. 2017, doi: 10.1109/MGRS.2017.2762307.
+
+\bibitem{zhu2021deeplearningsar}
+X.~X. Zhu, S. Montazeri, M. Ali, Y. Hua, Y. Wang, L. Mou, Y. Shi, F. Xu, and R. Bamler, ``Deep learning meets SAR: Concepts, models, pitfalls, and perspectives,'' \emph{IEEE Geoscience and Remote Sensing Magazine}, vol.~9, no.~4, pp.~143--172, Dec. 2021, doi: 10.1109/MGRS.2020.3046356.
+
+\bibitem{eldarymli2016saratr}
+K. El-Darymli, E.~W. Gill, P. McGuire, D. Power, and C. Moloney, ``Automatic target recognition in synthetic aperture radar imagery: A state-of-the-art review,'' \emph{IEEE Access}, vol.~4, pp.~6014--6058, 2016, doi: 10.1109/ACCESS.2016.2611492.
+
+\bibitem{zou2018ram}
+Z. Zou and Z. Shi, ``Random access memories: A new paradigm for target detection in high resolution aerial remote sensing images,'' \emph{IEEE Transactions on Image Processing}, vol.~27, no.~3, pp.~1100--1111, Mar. 2018, doi: 10.1109/TIP.2017.2773199.
+
+\bibitem{liu2024evidence}
+Y. Liu, G. Yan, F. Ma, Y. Zhou, and F. Zhang, ``SAR ship detection based on explainable evidence learning under intraclass imbalance,'' \emph{IEEE Transactions on Geoscience and Remote Sensing}, vol.~62, pp.~1--15, 2024, doi: 10.1109/TGRS.2024.3373668.
+
+\bibitem{zhou2024fewshot}
+Z. Zhou, L. Zhao, K. Ji, and G. Kuang, ``A domain-adaptive few-shot SAR ship detection algorithm driven by the latent similarity between optical and SAR images,'' \emph{IEEE Transactions on Geoscience and Remote Sensing}, vol.~62, pp.~1--18, 2024, doi: 10.1109/TGRS.2024.3421512.
+
+\bibitem{shen2024ellknet}
+J. Shen, L. Bai, Y. Zhang, M. C. Momi, S. Quan, and Z. Ye, ``ELLK-Net: An efficient lightweight large kernel network for SAR ship detection,'' \emph{IEEE Transactions on Geoscience and Remote Sensing}, vol.~62, pp.~1--14, 2024, doi: 10.1109/TGRS.2024.3451399.
+
+\bibitem{ma2024ssdnet}
+Y. Ma, D. Guan, Y. Deng, W. Yuan, and M. Wei, ``3SD-Net: SAR small ship detection neural network,'' \emph{IEEE Transactions on Geoscience and Remote Sensing}, vol.~62, pp.~1--13, 2024, doi: 10.1109/TGRS.2024.3454308.
+
+\bibitem{qin2025rdbdino}
+C. Qin, L. Zhang, X. Wang, G. Li, Y. He, and Y. Liu, ``RDB-DINO: An improved end-to-end transformer with refined de-noising and boxes for small-scale ship detection in SAR images,'' \emph{IEEE Transactions on Geoscience and Remote Sensing}, vol.~63, pp.~1--17, 2025, doi: 10.1109/TGRS.2024.3515150.
+
+\bibitem{tuia2016domain}
+D. Tuia, C. Persello, and L. Bruzzone, ``Domain adaptation for the classification of remote sensing data: An overview of recent advances,'' \emph{IEEE Geoscience and Remote Sensing Magazine}, vol.~4, no.~2, pp.~41--57, Jun. 2016, doi: 10.1109/MGRS.2016.2548504.
+
+\bibitem{vega2024aistap}
+D. Vega, M. Newey, D. Barrett, and A. Axelrod, ``STAP-informed neural network for radar moving target indicator,'' in \emph{Proc. 2024 IEEE Radar Conference (RadarConf24)}, 2024, pp.~1--6, doi: 10.1109/RadarConf2458775.2024.10548264.
+
+\bibitem{haykin2002seaclutter}
+S. Haykin, R. Bakker, and B.~W. Currie, ``Uncovering nonlinear dynamics: The case study of sea clutter,'' \emph{Proceedings of the IEEE}, vol.~90, no.~5, pp.~860--881, May 2002, doi: 10.1109/JPROC.2002.1015011.
+
+\bibitem{dewind2010database}
+H. de Wind, J. Cilliers, and P. Herselman, ``DataWare: Sea clutter and small boat radar reflectivity databases [Best of the Web],'' \emph{IEEE Signal Processing Magazine}, vol.~27, no.~2, pp.~145--148, Mar. 2010, doi: 10.1109/MSP.2009.935415.
+
+\bibitem{wang2019ssdd}
+Y. Wang, C. Wang, H. Zhang, Y. Dong, and S. Wei, ``A SAR dataset of ship detection for deep learning under complex backgrounds,'' \emph{Remote Sensing}, vol.~11, no.~7, Art.~765, 2019, doi: 10.3390/rs11070765.
+
+\bibitem{zhang2021ssdd}
+T. Zhang, X. Zhang, J. Li, and X. Xu, ``SAR Ship Detection Dataset (SSDD): Official release and comprehensive data analysis,'' \emph{Remote Sensing}, vol.~13, no.~18, Art.~3690, 2021, doi: 10.3390/rs13183690.
+
+\bibitem{huang2018opensarship}
+L. Huang, B. Liu, B. Li, W. Guo, W. Yu, Z. Zhang, and W. Yu, ``OpenSARShip: A dataset dedicated to Sentinel-1 ship interpretation,'' \emph{IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing}, vol.~11, no.~1, pp.~195--208, Jan. 2018, doi: 10.1109/JSTARS.2017.2755672.
+
+\bibitem{wei2020hrsid}
+S. Wei, X. Zeng, Q. Qu, M. Wang, H. Su, and J. Shi, ``HRSID: A high-resolution SAR images dataset for ship detection and instance segmentation,'' \emph{IEEE Access}, vol.~8, pp.~120234--120254, 2020, doi: 10.1109/ACCESS.2020.3005861.
+
+\bibitem{leng2023rawsar}
+X. Leng, K. Ji, and G. Kuang, ``Ship detection from raw SAR echo data,'' \emph{IEEE Transactions on Geoscience and Remote Sensing}, vol.~61, pp.~1--11, 2023, doi: 10.1109/TGRS.2023.3271905.
+
+\end{thebibliography}
+\endgroup
+
+\end{document}
+

@@ -1,33 +1,26 @@
-Dear Editor-in-Chief and Associate Editors,
+Dear Editor,
 
-We are pleased to submit our manuscript, "Target-Preserving Structured-Clutter Suppression for Low-False-Alarm Radar Detection," for consideration as a regular paper in IEEE Transactions on Geoscience and Remote Sensing.
+We are pleased to submit our manuscript entitled "Target-Preserving Detector Policy for Structured-Clutter Suppression at Low False-Alarm Rates" for consideration as a regular paper in IEEE Transactions on Aerospace and Electronic Systems.
 
-This manuscript addresses a practical limitation in radar clutter-suppression evaluation. Suppression methods are often assessed by the apparent cleanliness or sparsity of the residual background, whereas operational radar detection depends on whether weak target evidence remains detectable after false-alarm calibration. A residual that looks cleaner can still be a weaker detector input if the target support has also been attenuated. We therefore formulate structured-clutter suppression as a target-preserving detection problem under matched empirical false-alarm constraints.
+This paper addresses a practical but underemphasized issue in low-false-alarm radar detection: structured-clutter suppression can improve background cleanliness while simultaneously removing weak target support. To address this, we propose TP-SSCS, a target-preserving detector policy that combines a rank-matched residual branch with a compact raw-evidence rescue branch under an explicit false-alarm calibration rule.
 
-The proposed TP-SSCS policy combines raw evidence, low-rank residual evidence, and a compact trainable gate so that residual information is used when it is beneficial while raw target support remains available when residualization would suppress the target. The method is evaluated as a detector policy rather than as a visually motivated denoising front end. This framing is directly aligned with TGRS because it connects radar signal-processing design with calibrated remote-sensing detection performance at low false-alarm probabilities.
+The manuscript makes three main contributions:
+1. It identifies and measures the conflict between clutter attenuation and target preservation on public AISTAP-SIM samples.
+2. It introduces a frozen detector policy that preserves weak target evidence while maintaining calibrated low-false-alarm performance.
+3. It validates the method on official AISTAP-SIM full-test assets and provides bounded external checks on IPIX and SSDD.
 
-The main in-domain evidence is based on official AISTAP-SIM full-test assets under a fixed-policy evaluation protocol. Across 210 target-bearing frames and seven operating points, TP-SSCS improves probability of detection over both raw maps and rank-matched residual baselines under the same empirical false-alarm calibration. At P_FA = 10^-5, TP-SSCS reaches P_D = 0.1845, compared with 0.0800 for raw maps and 0.1015 for residual maps; at P_FA = 10^-2, it reaches P_D = 0.8678, compared with 0.6551 and 0.8388, respectively. Additional checks include fixed-weight fusion, bootstrap uncertainty, parameter-swept CFAR baselines, seed sensitivity, and a compact learned-baseline sanity check. These experiments are included to support the central claim rather than to broaden it beyond the available evidence.
+Across 210 target-bearing frames and seven operating points on the official AISTAP-SIM assets, TP-SSCS improves detection performance over both raw maps and rank-matched low-rank residual baselines under matched empirical false-alarm calibration. We believe the manuscript will be of interest to readers working on radar detection, structured-clutter suppression, and robust sensing under strict false-alarm constraints.
 
-We have deliberately kept the scope of the manuscript bounded. TP-SSCS is not presented as a universal cross-dataset detector or as a general-purpose clutter-removal module. Instead, the manuscript separates fixed-policy AISTAP-SIM validation from adaptation-dependent external behavior on Dartmouth IPIX sea-clutter recordings and SSDD SAR ship imagery. The external checks are reported to clarify the limits of direct transfer and to avoid overstating generalization. We believe this claim discipline will help readers evaluate the method fairly and reproduce the results without ambiguity about dataset role or calibration protocol.
+This manuscript is original, has not been published previously, and is not under consideration elsewhere. All authors have approved the manuscript and agree with its submission to IEEE Transactions on Aerospace and Electronic Systems.
 
-The contributions of the manuscript are:
+Corresponding author:
+Wei Xiong
+School of Electrical and Electronic Engineering
+Hubei University of Technology
+Wuhan 430068, China
+Email: xw@mail.hbut.edu.cn
 
-1. A target-preserving formulation of structured-clutter suppression for low-false-alarm radar detection.
-2. A compact TP-SSCS detector policy that combines raw target support, low-rank residual evidence, and gated target preservation.
-3. Fixed-policy validation on official AISTAP-SIM full-test assets with matched empirical false-alarm calibration.
-4. Supporting robustness, uncertainty, baseline, and bounded external checks that define both the evidence for the method and its current limits.
-
-The manuscript is original, has not been published previously, and is not under consideration by any other journal or conference. All authors have approved this submission. The public datasets used in the study are cited in the manuscript. The code, derived outputs, logs, figures, and reproducibility materials are archived at Zenodo:
-
-https://doi.org/10.5281/zenodo.21463506
-
-The associated GitHub repository is:
-
-https://github.com/niubisile-wq/tpsscs-radar
-
-Thank you for considering our manuscript for IEEE Transactions on Geoscience and Remote Sensing.
+Thank you for your consideration.
 
 Sincerely,
-
 Zixuan Liu and Wei Xiong
-Hubei University of Technology
