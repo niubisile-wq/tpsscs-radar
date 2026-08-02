@@ -1,0 +1,9 @@
+method,pd_at_1e_5,checked_grid_auc
+TP-SSCS,0.1845,0.5313
+Best fixed mixture,0.1335,0.5378
+Normalized maximum,0.1198,
+Discrepancy switch,0.1198,
+Residual,0.1015,
+Gate only,0.0961,
+Raw,0.0800,
+Shuffled gate,0.0505,

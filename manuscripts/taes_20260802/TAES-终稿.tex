@@ -1,0 +1,652 @@
+\documentclass[journal]{IEEEtran}
+
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{bm}
+\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{url}
+\usepackage{tabularx}
+
+\makeatletter
+\setlength{\@fptop}{0pt}
+\setlength{\@fpsep}{8pt}
+\setlength{\@fpbot}{0pt plus 1fil}
+\makeatother
+\renewcommand{\topfraction}{0.96}
+\renewcommand{\bottomfraction}{0.96}
+\renewcommand{\textfraction}{0.03}
+\renewcommand{\floatpagefraction}{0.88}
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\floatsep}{8pt plus 2pt minus 2pt}
+\setlength{\dbltextfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\dblfloatsep}{8pt plus 2pt minus 2pt}
+\setlength{\intextsep}{6pt plus 1pt minus 1pt}
+\setlength{\abovedisplayskip}{4pt plus 1pt minus 1pt}
+\setlength{\belowdisplayskip}{4pt plus 1pt minus 1pt}
+\setlength{\abovedisplayshortskip}{3pt plus 1pt minus 1pt}
+\setlength{\belowdisplayshortskip}{3pt plus 1pt minus 1pt}
+\flushbottom
+
+\newcommand{\TightSubsection}[1]{%
+  \par\vspace{0.25\baselineskip}%
+  \noindent\textit{#1}\par\vspace{0.20\baselineskip}%
+}
+
+\newcommand{\NonFloatTableBlock}[3]{%
+  \par\vspace{0.05em}
+  \par\noindent\begin{minipage}{\columnwidth}
+  \centering
+  \refstepcounter{table}\label{#1}%
+  {\footnotesize\textbf{TABLE~\thetable. #2}}\\[0.45em]
+  #3%
+  \end{minipage}
+  \par\vspace{0.18em}
+}
+
+\newcommand{\NonFloatFigureBlock}[3]{%
+  \par\vspace{0.03em}
+  \par\noindent\begin{minipage}{\columnwidth}
+  \centering
+  \refstepcounter{figure}\label{#1}%
+  #2%
+  \par\vspace{0.20em}
+  {\footnotesize\textbf{FIG.~\thefigure. #3}}%
+  \end{minipage}
+  \par\vspace{0.06em}
+}
+
+\begin{document}
+
+\title{Target-Preserving Detector Policy for Structured-Clutter Suppression Under Bounded Alarm Budgets}
+
+\author{Zixuan Liu and Wei Xiong%
+\thanks{Z. Liu is with the Detroit Green Technology Institute, Hubei University of Technology, Wuhan 430068, China (e-mail: 2411621306@hbut.edu.cn). ORCID: 0009-0008-4941-5641. W. Xiong is with the School of Electrical and Electronic Engineering, Hubei University of Technology, Wuhan 430068, China, and also with the Department of Computer Science and Engineering, University of South Carolina, Columbia, SC 29201, USA (e-mail: xw@mail.hbut.edu.cn). Corresponding author: W. Xiong.}%
+\thanks{We used public AISTAP-SIM assets, Dartmouth IPIX sea-clutter recordings, and the SSDD SAR ship detection dataset.}}
+
+% TAES submission draft. IEEE Transactions on Aerospace and Electronic Systems
+% uses the standard IEEEtran journal layout; this running head is updated for
+% the destination journal. Replace it with the production header if requested
+% after acceptance.
+\markboth{IEEE Transactions on Aerospace and Electronic Systems}%
+{Liu and Xiong: Target-Preserving Detector Policy}
+
+\maketitle
+\linespread{0.96}\selectfont
+
+\begin{abstract}
+Structured-clutter suppression can reduce the background tail while eroding weak-target evidence. This paper proposes target-preserving structured-clutter suppression (TP-SSCS), a compact bounded-alarm policy that combines a rank-matched residual with spatially selective raw-evidence rescue. On public AISTAP-SIM samples, increasing retained rank increased target loss, whereas TP-SSCS reduced mean loss from 6.191 to 0.197 dB. We evaluated the method through mask-assisted mechanism diagnostics, a fixed-threshold transfer audit, and a target-blind equal-alarm-budget test over 210 target-bearing frames. From seven alarms per frame, TP-SSCS reached frame-macro $P_{\mathrm{D}}=0.1735$, compared with 0.1306 for raw scoring, 0.1579 for the residual, and 0.1324 for steering-bank AMF/Kelly, with positive paired bootstrap intervals. The methods were statistically tied at the one-alarm limit. A separate calibration audit measured a target-frame background rate of $7.66\times10^{-4}$ for TP-SSCS at nominal $P_{\mathrm{FA}}=10^{-5}$. TP-SSCS therefore improves multi-cell target ranking under bounded alarm budgets, while operational fixed-threshold use requires representative background calibration.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Radar detection, adaptive radar signal processing, clutter suppression, constant false-alarm rate, target preservation.
+\end{IEEEkeywords}
+
+% Final framework for this manuscript:
+% I. Introduction
+% II. Method
+% III. Experiments
+% IV. Discussion
+% V. Conclusion
+
+\section{Introduction}
+
+Radar surveillance systems must detect weak targets in structured clutter while keeping the false-alarm rate extremely low. At that operating point, a cleaner residual can still be a worse detector input if suppression removes target support. Low-false-alarm processing must therefore balance background attenuation, target preservation, and operating-point calibration.
+
+Classical STAP and CFAR remain the natural reference point for this problem \cite{reed1974adaptive,ginolhac2014persymmetry,melvin2014stap,rohling1983cfar,kelly1986adaptive,gandhi1988cfar}. The broader signal-processing literature develops matched and adaptive subspace detectors, data-dependent tests for non-Gaussian clutter, and covariance-unknown invariant tests \cite{scharf1994matched,kraut2001adaptive,gini1999clairvoyant,demaio2007rao,conte1996amf,demaio2010invariance,liu2014doublesubspace}. Compound-Gaussian covariance and texture models further address heavy-tailed radar backgrounds \cite{candan2023covariance,ollila2012compound}. STAP adapts a spatial--temporal filter from training data, whereas CFAR converts a selected statistic into a decision under a background model. Their combination leaves a target-preservation question when suppression removes signal support before thresholding.
+
+At the signal-processing level, low-rank and robust-subspace methods exploit structured interference to form cleaner residuals \cite{candes2011rpca,vaswani2018robustsubspace}. Low-rank target--clutter separation has also been evaluated with radar measurements and airborne maritime surveillance data \cite{yin2018lowrank,cao2020maritime}. Sea-clutter studies motivate compound models for high-resolution returns and mitigation tailored to non-Gaussian backgrounds \cite{ward1981compound,conte2004mitigation}. Complementary STAP studies exploit prior covariance knowledge, robust direct-data-domain processing, sparse spectrum estimation, clutter sparsity, and atomic-norm models \cite{stoica2008prior,cristallini2012robust,sun2011d3sr,yang2013sparsity,feng2018atomic}. Sparse separation on measured Ingara sea clutter provides a closely related detection example \cite{rosenberg2020sparse}, while multichannel SAR--GMTI analysis characterizes target signal-to-noise loss introduced by clutter suppression \cite{jao2023snrloss}. Together, these studies motivate structure-aware processing and map-level evaluation. The remaining opportunity is cellwise raw--residual routing that separates score preservation from operating-point calibration.
+
+That distinction matters because suppression quality and threshold validity fail in different ways. A residual can look cleaner and still erase useful target support, and a threshold can remain valid on target-free backgrounds yet drift once target-bearing statistics change. TP-SSCS is built around that split: one branch controls clutter, one branch restores local evidence, and the shared alarm budget checks whether the final ranking still behaves after suppression.
+
+At the decision level, adaptive methods model heterogeneous clutter through latent disturbance classes \cite{coluccia2024adaptive}, Pareto and Weibull-mixture CFAR laws \cite{weinberg2013pareto,vancao2014weibull}, and knowledge-based or subspace tests for compound-Gaussian interference \cite{xue2019knowledge,jiang2023subspace}. Clutter-free training data and learned CFAR-constrained scoring provide complementary routes to covariance mismatch and false-alarm control \cite{rong2022clutterfree,diskin2024cfarnet}. Differentiable Neyman--Pearson training further connects learned scoring to explicit false-alarm objectives \cite{qu2025np}. Transfer learning provides a general framework for reusing representations under domain shift \cite{pan2010transfer}, while a STAP-informed neural network on AISTAP-SIM improves discrimination from data \cite{vega2024aistap}. These directions improve clutter modeling and score learning. The present problem instead asks when residual evidence should be trusted and where raw target evidence should be restored after suppression.
+
+The public AISTAP-SIM release makes that gap measurable, because target-bearing and target-free references are available for suppression and preservation audits. In these data, stronger low-rank attenuation can suppress more clutter while also eroding target support. The rank parameter therefore controls both denoising and detector risk. Target-free threshold transfer adds a second requirement: the operating point must remain valid when the background distribution changes.
+
+To address the target-loss problem, we propose target-preserving structured-clutter suppression (TP-SSCS), a compact ranking policy under bounded alarm budgets. The method keeps a rank-matched residual branch and adds a raw-evidence rescue branch where residualization is likely to remove target support. We evaluate score construction separately from threshold transport: mask-assisted operating points diagnose the rescue mechanism, target-free fixed thresholds audit calibration transfer, and a shared alarm budget tests target-blind extreme-tail ranking. Dartmouth IPIX then extends the audit to a measured-domain transfer case.
+
+This paper makes three contributions. First, it frames structured-clutter suppression as a bounded-alarm ranking problem that separates target preservation from operating-point calibration. Second, it introduces TP-SSCS, which combines rank-matched residual control with spatially selective raw-evidence rescue. Third, it evaluates the policy through target-free threshold transfer, equal target-blind alarm budgets, steering-bank AMF/Kelly/ANMF/ACE baselines, paired frame uncertainty, and a measured-domain transfer audit.
+
+The remainder of the paper is organized as follows. Section~II presents the method. Section~III reports the experiments. Section~IV discusses the evidence and operating boundaries, and Section~V concludes the paper.
+
+\section{Method}
+
+TP-SSCS consists of a rank-constrained clutter estimate, a local target-preservation gate, and a declared score readout. Figure~\ref{fig:tpsscs-policy} summarizes the inference path: the rank-matched residual controls the background tail, whereas the compact gate routes raw evidence to cells whose residual support may have been attenuated. The primary target-blind readout fuses the two within-frame ranks under one alarm budget; an independently thresholded logical union is retained only as a mechanism diagnostic. This section first defines the radar observation and residual scores, then gives the gate mapping and its training objective, and finally specifies both readouts.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig1_tp_sscs_policy_singlecol.pdf}
+\caption{TP-SSCS score construction and declared readouts. A rank-matched residual controls the background tail, while a compact gate provides spatially selective raw-evidence rescue. The primary target-blind policy fuses within-frame ranks under one alarm budget; independent branch thresholds and their union are retained only for mask-assisted diagnosis.}
+\label{fig:tpsscs-policy}
+\end{figure}
+
+\subsection{Observation Model and Problem Formulation}
+
+Let $\bm{X}\in\mathbb{C}^{N_c\times N_d\times N_r}$ denote one multichannel range-Doppler frame, where $N_c$, $N_d$, and $N_r$ are the numbers of channels, Doppler cells, and range cells, respectively. The implementation reshapes the frame into
+\begin{equation}
+    \bm{A}=\operatorname{mat}(\bm{X})
+    \in\mathbb{C}^{(N_cN_d)\times N_r}
+\end{equation}
+and computes the singular-value decomposition $\bm{A}=\bm{U}\bm{\Sigma}\bm{V}^{H}$. The rank-$k$ clutter estimate and its residual are
+\begin{align}
+    \bm{L}_k & = \operatorname{fold}
+    (\bm{U}_k\bm{\Sigma}_k\bm{V}_k^{H}), \\
+    \bm{R}_k & = \bm{X}-\bm{L}_k .
+\end{align}
+Thus, the residual comparator and TP-SSCS use exactly the same low-rank estimate. This rank matching isolates the effect of the target-preservation policy from that of residual-rank selection.
+
+The operator $\operatorname{mat}(\cdot)$ stacks the channel and Doppler axes while retaining range as the column axis; $\operatorname{fold}(\cdot)$ is its inverse. Each frame is processed independently, and no target-free secondary window is required by the decomposition itself. Consequently, a target that is coherent with a dominant singular component can enter $\bm{L}_k$ and be attenuated in $\bm{R}_k$. This is the target-leakage mechanism addressed by the rescue branch. The method does not assume that increasing $k$ monotonically improves detector performance.
+
+For a cell $(d,r)$, the noncoherent raw and residual statistics are
+\begin{align}
+    S_{\mathrm{raw}}(d,r) & =
+    \sum_{c=1}^{N_c}|X_{c,d,r}|^2, \\
+    S_{\mathrm{res}}(d,r) & =
+    \sum_{c=1}^{N_c}|R_{k,c,d,r}|^2.
+\end{align}
+Let $\mathcal{T}$ and $\mathcal{B}$ denote the target and background supports, respectively, with $\mathcal{T}\cap\mathcal{B}=\varnothing$. For a score map $S$ and threshold $\tau$, the empirical operating probabilities are
+\begin{align}
+    \widehat P_{\mathrm{D}}(S,\tau) & =
+    \frac{1}{|\mathcal{T}|}\sum_{(d,r)\in\mathcal{T}}
+    \mathbb I[S(d,r)>\tau], \\
+    \widehat P_{\mathrm{FA}}(S,\tau) & =
+    \frac{1}{|\mathcal{B}|}\sum_{(d,r)\in\mathcal{B}}
+    \mathbb I[S(d,r)>\tau].
+\end{align}
+The design objective is to increase $\widehat P_{\mathrm{D}}$ subject to $\widehat P_{\mathrm{FA}}\leq\alpha$. A lower residual energy alone is therefore insufficient, because it does not determine whether target support survives threshold calibration.
+
+The target and background supports are used only for supervised gate training and empirical operating-point evaluation. At inference, the gate receives neither support mask. This distinction is important: TP-SSCS learns how raw and residual evidence should be routed, whereas the false-alarm threshold is set separately from background scores.
+
+\subsection{TP-SSCS Score Construction}
+
+The gate receives only statistics available at inference. Its two-channel input is
+\begin{equation}
+    \bm{Z}(d,r)=
+    \begin{bmatrix}
+    \log[1+S_{\mathrm{raw}}(d,r)]\\
+    \log[1+S_{\mathrm{res}}(d,r)]
+    \end{bmatrix}.
+\end{equation}
+The logarithm compresses the dynamic range while retaining the local disagreement between raw and residual evidence. No target coordinates or detector thresholds are supplied to the gate.
+
+The gate network contains two $3\times3$ convolutional layers followed by a $1\times1$ output layer. With $*$ denoting convolution, its forward map is
+\begin{align}
+    \bm{H}_1 & = \operatorname{GELU}(\bm{W}_1*\bm{Z}+\bm{b}_1), \\
+    \bm{H}_2 & = \operatorname{GELU}(\bm{W}_2*\bm{H}_1+\bm{b}_2), \\
+    g_{\phi} & = \sigma(\bm{W}_3*\bm{H}_2+b_3),
+\end{align}
+where $g_{\phi}(d,r)\in[0,1]$ is the raw-evidence weight. The same scalar weight is applied to all channels at a given range-Doppler cell. The gated complex map and its detection statistic are
+\begin{align}
+    G_{\phi,c,d,r} & = g_{\phi}(d,r)X_{c,d,r}
+    +[1-g_{\phi}(d,r)]R_{k,c,d,r}, \\
+    S_{\mathrm{gate}}(d,r) & =
+    \sum_{c=1}^{N_c}|G_{\phi,c,d,r}|^2.
+\end{align}
+Consequently, $g_{\phi}\simeq1$ restores the raw observation, whereas $g_{\phi}\simeq0$ retains the rank-$k$ residual. The gate branch is used as a selective rescue statistic rather than as a replacement for the residual detector.
+
+More specifically, $\bm{W}_1\in\mathbb{R}^{h\times2\times3\times3}$, $\bm{W}_2\in\mathbb{R}^{h\times h\times3\times3}$, and $\bm{W}_3\in\mathbb{R}^{1\times h\times1\times1}$. Both $3\times3$ layers use unit stride and one-cell padding, so the output has the same $N_d\times N_r$ support as the input. There is no pooling, downsampling, or global feature aggregation. The two spatial convolutions give the gate a $5\times5$ receptive field, allowing it to compare a cell with its immediate range-Doppler neighborhood while retaining a local decision.
+
+The fusion is performed before noncoherent integration. This ordering preserves the channel-dependent phase and amplitude relations in $\bm{X}$ and $\bm{R}_k$ until the final energy statistic is formed. In contrast, a scalar mixture of $S_{\mathrm{raw}}$ and $S_{\mathrm{res}}$ cannot reconstruct complex target support that was removed from the residual. The local complex-valued route is therefore the operative difference between the gate score and a fixed score-level interpolation.
+
+\subsection{Gate Training}
+
+The binary target mask is denoted by $Y(d,r)=\mathbb I[(d,r)\in\mathcal{T}]$. Because target cells are sparse, the positive class weight is
+\begin{equation}
+    w_{+}=\min\left(100,
+    \frac{|\mathcal{B}|}{\max(|\mathcal{T}|,1)}\right).
+\end{equation}
+The weighted binary cross-entropy over the range-Doppler grid $\Omega$ is
+\begin{multline}
+    \mathcal{L}_{\mathrm{BCE}}=-\frac{1}{|\Omega|}
+    \sum_{(d,r)\in\Omega}\bigl\{
+    w_{+}Y(d,r)\log g_{\phi}(d,r) \\
+    +[1-Y(d,r)]\log[1-g_{\phi}(d,r)]\bigr\}.
+\end{multline}
+To maintain target-background separation after complex-valued fusion, define
+\begin{equation}
+    \mu_{\mathcal{T}}=\frac{1}{|\mathcal{T}|}
+    \sum_{(d,r)\in\mathcal{T}}S_{\mathrm{gate}}(d,r),
+    \quad
+    \mu_{\mathcal{B}}=\frac{1}{|\mathcal{B}|}
+    \sum_{(d,r)\in\mathcal{B}}S_{\mathrm{gate}}(d,r).
+\end{equation}
+The score-margin loss and the complete objective are
+\begin{align}
+    \mathcal{L}_{\mathrm{mar}} & =
+    \operatorname{softplus}(\mu_{\mathcal{B}}-\mu_{\mathcal{T}}+\delta), \\
+    \mathcal{L} & = \mathcal{L}_{\mathrm{BCE}}
+    +\lambda_{\mathrm{mar}}\mathcal{L}_{\mathrm{mar}}
+    +\lambda_g\frac{1}{|\Omega|}\sum_{(d,r)\in\Omega}g_{\phi}(d,r),
+\end{align}
+where $\delta=0.10$, $\lambda_{\mathrm{mar}}=0.5$, and $\lambda_g=0.02$. The last term penalizes indiscriminate raw routing and preserves the residual branch as the default path.
+
+The three terms have distinct roles. The weighted cross-entropy assigns high raw weights to labeled target cells despite severe class imbalance. The margin term acts on $S_{\mathrm{gate}}$, not directly on $g_{\phi}$, and therefore requires the routed complex map to retain target-background score separation. Finally, the mean-gate penalty discourages the trivial solution $g_{\phi}\equiv1$, which would reproduce the raw map everywhere and eliminate clutter suppression. Here $\operatorname{softplus}(x)=\log(1+\exp x)$ provides a smooth margin penalty.
+
+The reported model uses $k=30$ and 16 hidden channels, giving 2641 trainable gate parameters. It is optimized with Adam for 150 full-development-batch steps at learning rate 0.02. Four public AISTAP-SIM items are used for optimization and two disjoint public items for configuration selection. The random seed is 7. The resulting state is frozen before evaluation on the two official full-test assets. The residual comparator also uses $k=30$.
+
+Only the convolutional gate parameters $\phi$ are updated. The rank-$k$ decomposition has no trainable parameters and is recomputed during each forward pass. At every optimization step, the loss is evaluated on each of the four training items, averaged, and followed by one Adam update. Model selection and all hyperparameter choices are completed using the six public items; no official full-test frame contributes an optimization or model-selection gradient.
+
+\subsection{Diagnostic Calibration and Target-Blind Alarm Budget}
+
+We distinguish score diagnostics from target-blind operation. For the mask-assisted diagnostic, each score family is calibrated independently because the raw, residual, and gate statistics have different scales. Let $b_{(1)}\leq\cdots\leq b_{(N_B)}$ be the ordered scores on a declared background support and let $q_{\alpha}=\lfloor\alpha N_B\rfloor$. The strict order-statistic threshold is
+\begin{equation}
+    \tau_{\alpha}=b_{(N_B-q_{\alpha})}.
+\end{equation}
+It admits at most $q_{\alpha}$ exceedances on that same support. This diagnostic compares score ordering and rescue behavior on a declared support. The target-blind evaluation below replaces this mask-dependent threshold with a shared frame-level alarm budget.
+
+The diagnostic TP-SSCS decision combines a residual branch with a zero-exceedance gate branch:
+\begin{multline}
+    D^{\mathrm{diag}}_{\alpha}(d,r)=
+    \mathbb I[S_{\mathrm{res}}(d,r)>\tau_{\mathrm{res},\alpha}] \\
+    \lor
+    \mathbb I[S_{\mathrm{gate}}(d,r)>\tau_{\mathrm{gate},0}],
+    \label{eq:union-decision}
+\end{multline}
+where $\tau_{\mathrm{gate},0}$ is the maximum gate score on the same declared background support. We retain this rule only as a mask-assisted mechanism diagnostic and separately test thresholds estimated from target-free frames.
+
+The primary target-blind ranking test uses one equal alarm budget for every method. Let $N=N_dN_r$ and
+\begin{equation}
+    K_{\alpha}=\lceil \alpha N\rceil .
+    \label{eq:alarm-budget}
+\end{equation}
+For a standalone statistic, the detector selects its $K_{\alpha}$ highest-scoring cells, with deterministic tie breaking by ascending cell index. For TP-SSCS, define normalized within-frame ranks $Q_{\mathrm{res}}$ and $Q_{\mathrm{gate}}$, scaled so that the largest score has rank one, and form
+\begin{equation}
+    Q_{\mathrm{TP}}(d,r)=
+    \max\{Q_{\mathrm{res}}(d,r),Q_{\mathrm{gate}}(d,r)\}.
+\end{equation}
+The detector selects the $K_{\alpha}$ largest values of $Q_{\mathrm{TP}}$. Thus, the two branches share one budget rather than receiving $K_{\alpha}$ alarms each. No target coordinate enters ranking or selection.
+
+For every frame, the number of false alarms is no greater than $K_{\alpha}$. After decisions are frozen, the labeled mask is used only to report
+\begin{equation}
+    \widehat P_{\mathrm{FA}}
+    \leq \frac{K_{\alpha}}{N-|\mathcal{T}|}.
+\end{equation}
+Because of the ceiling in (\ref{eq:alarm-budget}), this finite-grid policy guarantees an alert count, while fixed-threshold calibration is audited separately. At $N=64\times1024$ and nominal $10^{-5}$, one alarm is allowed per frame.
+
+The computational cost is dominated by the singular-value decomposition of the $(N_cN_d)\times N_r$ matrix. The gate adds $\mathcal{O}[N_dN_r(18h+9h^2+h)]$ operations for hidden width $h$, which is small relative to the low-rank decomposition for the reported $h=16$.
+
+\subsection{Implementation and Computational Cost}
+
+The input is converted to complex double precision before decomposition. The two real-valued score channels and the convolutional gate are evaluated in single precision, after which $g_{\phi}$ is cast back to the complex input type for fusion. This mixed representation follows the implemented forward path and avoids discarding complex radar information before the routed map is formed.
+
+For $m=N_cN_d$ and $n=N_r$, the full singular-value decomposition has complexity $\mathcal{O}[\min(m,n)^2\max(m,n)]$ and dominates both training and inference. The gate requires approximately $N_dN_r(18h+9h^2+h)$ multiply-accumulate operations. Its parameter count, including biases, is
+\begin{equation}
+    N_{\phi}=9h^2+21h+1,
+\end{equation}
+which equals 2641 for $h=16$. The remaining score construction and diagnostic union are linear in $N_cN_dN_r$. For the target-blind readout, full ranking adds $O(N\log N)$ time, or expected linear time with top-$K_\alpha$ selection. Thus, TP-SSCS adds a local, fixed-capacity routing head to the rank-matched decomposition rather than introducing a second high-capacity detector.
+
+A full CPU timing pass covered all 210 target-bearing frames on an Intel Core i7-14650HX under Windows 11. Median score-construction time was 229.94 ms per frame for the rank-30 SVD plus TP-SSCS gate and 132.45 ms for the shared AMF/Kelly/ANMF/ACE stack; the corresponding 95th percentiles were 302.23 and 168.70 ms. A separate 24-frame profile measured 438.1 MB median peak resident memory for TP-SSCS. These measurements report implementation cost on the stated platform.
+
+\begin{table*}[!t]
+\caption{Implementation Cost and Capacity}
+\label{tab:implementation-cost}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4.5pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabularx}{\textwidth}{@{}lcccX@{}}
+\toprule
+Component & Parameters & Runtime / profile & Scale & Note \\
+\midrule
+Rank-30 SVD & 0 & Included in 229.94 ms/frame & Dominant & Recomputed for each frame \\
+TP-SSCS gate & 2641 & Included in 229.94 ms/frame & Fixed & Local routing head only \\
+Comparator stack & 0 & 132.45 ms/frame & Shared & AMF/Kelly/ANMF/ACE baseline stack \\
+Peak memory & -- & 438.1 MB median & 24-frame profile & TP-SSCS implementation on the stated CPU \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+\section{Experiments}
+
+The experiments address four questions. First, does low-rank suppression remove target support as the retained rank increases? Second, does spatially selective raw-evidence rescue improve score ordering in a mask-assisted mechanism diagnostic? Third, under an equal target-blind alarm budget, how does TP-SSCS compare with raw, residual, and adaptive detectors? Finally, what fails under fixed-threshold and sensing-domain transfer?
+
+\subsection{Experimental Setup}
+
+Table~\ref{tab:experimental-data} summarizes the data roles and evaluation units. Public AISTAP-SIM samples are used for the low-rank audit, gate training, and model selection. The two official full-test assets, \texttt{simMed\_test.mat} and \texttt{simWind\_test.mat}, contain 210 target-bearing frames in total \cite{vega2024aistap}. Each asset also contains 23 target-free frames: the first 19 estimate covariance and fixed thresholds, while the final four form a sequestered H0 audit role. No official full-test target label is used to train TP-SSCS or to construct a target-blind decision.
+
+These experiments answer four separate questions. The low-rank audit asks whether suppression removes target support, the ablation asks whether spatially selective rescue matters, the equal-alarm-budget comparison asks whether TP-SSCS improves ranking under a shared declaration budget, and the calibration and transfer audits ask where that gain stops holding.
+
+The AISTAP-SIM release models a Ku-band GMTI radar with six antenna channels, 64 Doppler bins, and 1024 range bins. Each released simulation array contains 2048 frames with $C=6$ channels. The \texttt{simMed} and \texttt{simWind} assets represent moderate- and high-wind ground-clutter conditions, respectively, whereas \texttt{simNoiseOnly} contains Gaussian noise without ground clutter. Dartmouth IPIX supplies measured coherent sea-clutter recordings for a historically exposed transfer diagnostic \cite{haykin2002seaclutter,dewind2010database}.
+
+\begin{table*}[!t]
+\caption{Datasets, Roles, and Evaluation Protocols}
+\label{tab:experimental-data}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{4.0pt}
+\renewcommand{\arraystretch}{1.10}
+\begin{tabularx}{\textwidth}{@{}p{0.19\textwidth}p{0.28\textwidth}p{0.18\textwidth}X@{}}
+\toprule
+Data & Role & Evaluation unit & Protocol \\
+\midrule
+Public AISTAP-SIM samples & Mechanism audit and gate training & Target-bearing frame & Rank audit, target-loss analysis, and model selection \\
+Official AISTAP-SIM assets & Primary target-blind ranking evaluation & Target-bearing frame & Equal alarm budgets on \texttt{simMed\_test.mat} and \texttt{simWind\_test.mat}; separate fixed-threshold audit \\
+Dartmouth IPIX & Measured-domain boundary audit & Recording & Negative direct transfer and historically exposed file-disjoint adaptation \\
+SSDD & Supervised external boundary audit & Image and annotation & Strict-tail adaptation check on the official test split \cite{wang2019ssdd,zhang2021ssdd} \\
+\bottomrule
+\end{tabularx}
+\end{table*}
+
+The mask-assisted diagnostic uses (\ref{eq:union-decision}); the target-blind evaluation uses the common budget in (\ref{eq:alarm-budget}). The primary grid is $\alpha\in\{10^{-5},3\times10^{-5},10^{-4},3\times10^{-4},10^{-3},3\times10^{-3},10^{-2}\}$. We report frame-macro $P_{\mathrm{D}}$, pooled false alarms, the finite-grid alarm rate, and a one-sided 95\% Clopper--Pearson cell-count upper bound. Because range--Doppler cells are correlated, the binomial bound is descriptive; paired bootstrap intervals use the 210 target-bearing frames as the independent resampling units \cite{efron1979bootstrap}.
+
+\subsection{Compared Methods and Evaluation Metrics}
+
+The primary target-blind comparison includes raw energy, the rank-30 residual, steering-bank AMF, Kelly, ANMF, ACE, and TP-SSCS. A fixed 65-vector direction-cosine bank spans $[-0.1,0.1]$ using the released wavelength and channel spacing. For each Doppler bin, one six-channel covariance is estimated from all range cells in the first 19 target-free frames of both conditions and receives diagonal loading $10^{-3}\operatorname{tr}(\bm{R})/N_c$. Each adaptive statistic is maximized over the bank. ANMF and ACE are algebraically identical for this point-target complex-vector model; Kelly approaches AMF under the large pooled secondary support, so tied or near-tied results are retained rather than suppressed.
+
+The mask-assisted ablation additionally evaluates fixed score mixtures, normalized maximum fusion, a discrepancy-based switch, gate-only scores, single-channel gates, spatially constant gates, and a spatially shuffled gate. A separate diagnostic covers 75 global and local CFAR score families. A compact two-channel CNN and leave-one-asset-out histogram gradient boosting (HGB) provide supervised score references, not label-matched target-blind comparators.
+
+Detection probability is computed over labeled target cells only after every decision is frozen. At $\alpha=10^{-5}$, the finite grid permits one alarm per frame, so the result is interpreted as a top-one ranking test rather than a smooth approximation to an arbitrarily small false-alarm probability. We therefore report that point without requiring a superiority claim and use the first grid point with seven alarms per frame, $\alpha=10^{-4}$, as the primary comparative operating point.
+
+\subsection{Rescue Ablation}
+
+The low-rank audit first quantifies the suppression--preservation conflict. Figure~\ref{fig:mechanism-audit} shows that increasing the retained rank from 1 to 30 raises clutter attenuation in both AISTAP-SIM clutter conditions. In \texttt{simMed}, the same change increases target loss from 0.925 to 19.525 dB; the high-wind condition shows the same pattern, whereas the noise-only control remains small. Thus, selecting the residual only by clutter attenuation can remove the weak target support required by the detector.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig2_mechanism_audit_singlecol.pdf}
+\caption{Suppression--preservation mechanism on public AISTAP-SIM samples. Clutter attenuation and target loss are shown against retained rank for two structured-clutter conditions and a noise-only control.}
+\label{fig:mechanism-audit}
+\end{figure}
+
+Figure~\ref{fig:rescue-ablation} compares local rescue with simpler combinations on the same 210 target-bearing frames under mask-assisted diagnostic calibration. At nominal $P_{\mathrm{FA}}=10^{-5}$, TP-SSCS achieved $P_{\mathrm{D}}=0.1845$. The best fixed mixture reached 0.1335, normalized maximum fusion and the discrepancy switch reached 0.1198, and the residual score reached 0.1015. These values isolate score behavior on a common declared support; the following subsection reports target-blind performance.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig3_rescue_ablation_singlecol.pdf}
+\caption{Rescue ablation. (a) TP-SSCS provides the highest $P_{\mathrm{D}}$ at $P_{\mathrm{FA}}=10^{-5}$. (b) A residual-heavy fixed mixture has a slightly higher seven-point checked-grid AUC.}
+\label{fig:rescue-ablation}
+\end{figure}
+
+Spatially shuffling the learned gate reduced $P_{\mathrm{D}}$ to 0.0505. This control removes the correspondence between local residual loss and raw-evidence rescue while preserving the gate-value distribution. The decrease therefore isolates spatial conditioning as the useful component. Over the complete seven-point grid, the residual-heavy fixed mixture obtained an AUC of 0.5378, compared with 0.5313 for TP-SSCS. The benefit of local rescue was therefore concentrated at strict false-alarm rates, while fixed fusion retained a slightly larger full-grid AUC.
+
+\subsection{Target-Blind Equal-Alarm-Budget Evaluation}
+
+The primary experiment applies the target-blind rule in (\ref{eq:alarm-budget}) to all 210 target-bearing frames. Every method receives the same $K_{\alpha}$ alarms per frame, and no asset-specific score threshold is selected from target labels. Figure~\ref{fig:main-validation} shows the complete seven-point ranking curve and paired TP-SSCS differences. Table~\ref{tab:aistap-main} reports four representative budgets.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig8_alarm_budget_singlecol.pdf}
+\caption{Target-blind equal-alarm-budget evaluation on 210 AISTAP-SIM frames. (a) Frame-macro $P_{\mathrm{D}}$; the finite grid permits only one alarm per frame at $\alpha=10^{-5}$. Kelly is visually coincident with AMF, and ACE equals ANMF. (b) TP-SSCS differences with 95\% paired frame-bootstrap intervals. The intervals overlap zero at $10^{-5}$ and are positive from $10^{-4}$ onward.}
+\label{fig:main-validation}
+\end{figure}
+
+\begin{table}[t]
+\caption{Target-Blind Equal-Alarm-Budget Results}
+\label{tab:aistap-main}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{2.1pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{@{}ccccccc@{}}
+\toprule
+$\alpha$ & $K$ & Raw & Residual & AMF & ANMF & TP-SSCS \\
+\midrule
+$10^{-5}$ & 1 & \textbf{0.0301} & 0.0290 & 0.0293 & 0.0035 & 0.0293 \\
+$10^{-4}$ & 7 & 0.1306 & 0.1579 & 0.1324 & 0.0174 & \textbf{0.1735} \\
+$10^{-3}$ & 66 & 0.3551 & 0.5904 & 0.5730 & 0.1010 & \textbf{0.7018} \\
+$10^{-2}$ & 656 & 0.6491 & 0.8367 & 0.8681 & 0.3302 & \textbf{0.9196} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+At $\alpha=10^{-5}$, the one-alarm grid resolves the best-ranked cell. TP-SSCS reached 0.02935, compared with 0.03008 for raw, 0.02902 for the residual, and 0.02928 for AMF/Kelly; all paired intervals crossed zero. At $\alpha=10^{-4}$, TP-SSCS increased frame-macro $P_{\mathrm{D}}$ by 0.04284 over raw (95\% interval [0.03452, 0.05151]), 0.01559 over the residual ([0.01066, 0.02057]), and 0.04104 over AMF ([0.03529, 0.04686]). Under the common 1470-declaration budget, it produced 274 false declarations, compared with 526, 369, and 552, respectively. The intervals remained positive at all larger budgets, placing the benefit in the multi-cell candidate regime.
+
+Figure~\ref{fig:case-audit} complements the aggregate curve with mask-assisted cases selected by fixed extrema over all 210 target-bearing frames. In the selected rescue case, TP-SSCS reached $P_{\mathrm{D}}=0.400$, compared with 0.067 for raw and 0.133 for the residual; the mean gate weight was 0.493 on target cells and $7.81\times10^{-4}$ on background cells. In the selected failure case, TP-SSCS and the residual both reached zero while raw reached 0.120. The pair visualizes both local rescue and target leakage, while the aggregate curve quantifies target-blind operating behavior.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig7_aistap_case_audit_singlecol.pdf}
+\caption{Mask-assisted case diagnostic on official AISTAP-SIM frames at nominal $P_{\mathrm{FA}}=10^{-5}$. (a) The frame maximizing TP-SSCS gain over the stronger raw/residual comparator. (b) The frame minimizing TP-SSCS gain relative to raw. Cyan markers indicate target cells; marker fill in the gate column encodes raw-evidence weight. Score colors use a within-map normalized log scale only for visualization.}
+\label{fig:case-audit}
+\end{figure}
+
+\subsection{Calibration and Robustness Audits}
+
+Fixed-threshold transfer used the first 19 target-free frames per condition for covariance and condition-robust thresholds; the final four per condition were excluded from all fitted quantities. At nominal $10^{-5}$, TP-SSCS produced four alarms among 524,288 sequestered H0 cells, giving $7.63\times10^{-6}$ with a one-sided 95\% cell-count upper bound of $1.75\times10^{-5}$. On target-bearing frames, the same policy produced 10,538 background alarms among 13,754,674 cells, or $7.66\times10^{-4}$. AMF and Kelly showed similar scale transfer, whereas raw energy became strongly conservative. This distribution shift separates the ranking gain from fixed-threshold calibration and motivates the shared-budget operating rule.
+
+\begin{table}[t]
+\caption{Fixed-Threshold Audit at Nominal $10^{-5}$}
+\label{tab:threshold-audit}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.0pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Method & H0 audit $P_{\mathrm{FA}}$ & Target-frame background $P_{\mathrm{FA}}$ \\
+\midrule
+Raw & 0 & $1.16\times10^{-6}$ \\
+Residual & $3.81\times10^{-6}$ & $1.07\times10^{-4}$ \\
+AMF & 0 & $1.08\times10^{-3}$ \\
+Kelly & 0 & $1.17\times10^{-3}$ \\
+ANMF/ACE & $1.91\times10^{-6}$ & $2.82\times10^{-5}$ \\
+TP-SSCS & $7.63\times10^{-6}$ & $7.66\times10^{-4}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+A target-blind per-frame generalized Pareto calibration was frozen after the fixed-threshold audit. TP-SSCS and ANMF/ACE each produced 12 alarms among 524,288 H0 audit cells at nominal $10^{-5}$, with a cell-count upper bound of $3.71\times10^{-5}$. Because this exceeded the predeclared $2\times/3\times$ gate, evaluation stopped before the target frames. The audit identifies tail calibration as an open deployment problem.
+
+Figure~\ref{fig:statistical-robustness} retains the mask-assisted effect-size and seed diagnostic. Across seeds 7, 11, and 23, the largest diagnostic $P_{\mathrm{D}}$ range was 0.0079. A $4\times3$ width--step audit showed no monotonic capacity benefit: the reported width-16/150-step model reached 0.5283, compared with the audit maximum of 0.5308.
+
+\begin{table}[t]
+\caption{Rank and Seed Sensitivity Across the Operating Grid}
+\label{tab:sensitivity}
+\centering
+\footnotesize
+\setlength{\tabcolsep}{3.6pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+$P_{\mathrm{FA}}$ & $\Delta P_{\mathrm{D}}$ vs raw & $\Delta P_{\mathrm{D}}$ vs residual & Seed range \\
+\midrule
+$10^{-5}$ & $-0.00073$ & $0.00033$ & $0.00466$ \\
+$10^{-4}$ & $0.04284$ & $0.01559$ & $0.00418$ \\
+$10^{-3}$ & $0.34676$ & $0.11149$ & $0.00734$ \\
+$10^{-2}$ & $0.27046$ & $0.08293$ & $0.00769$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig6_statistical_robustness_singlecol.pdf}
+\caption{Mask-assisted statistical diagnostic on the official AISTAP-SIM assets. (a) Paired target-bearing-frame intervals for TP-SSCS minus raw and rank-30 residual scores under the shared diagnostic support. (b) Cross-seed $P_{\mathrm{D}}$ range for seeds 7, 11, and 23.}
+\label{fig:statistical-robustness}
+\end{figure}
+
+Additional mask-assisted score references define the supervision range. At nominal $10^{-5}$, the strongest of 75 CFAR settings, raw GOCA, reached $P_{\mathrm{D}}=0.1025$, and a compact CNN reached 0.1499. A leave-one-asset-out raw/residual HGB reached 0.3052; it first exceeded TP-SSCS diagnostic AUC at 64 positive pixels, and the all-label model reached 0.7271. TP-SSCS occupies the compact synthetic-label setting, while HGB provides the label-assisted upper comparison.
+
+\subsection{Measured-Domain Stress Test}
+
+AISTAP-SIM-to-IPIX transfer exposed substantial domain shift. Relative to the AISTAP training distribution, log raw score, log residual score, and raw--residual discrepancy shifted by 5.17, 6.27, and 2.88 standard deviations, respectively. These shifts affect both gate inputs and threshold calibration. Background z-score and median/MAD normalization preserved target--background ordering, showing that monotone rescaling alone could not align the domains.
+
+For a file-disjoint transfer diagnostic, one IPIX recording selected a residual-aware scalar coefficient and 12 different recordings were scored. At nominal $P_{\mathrm{FA}}=10^{-5}$, the adapted score reached $P_{\mathrm{D}}=0.0644$, compared with 0.0513 for raw scoring, with zero observed false alarms. At $10^{-4}$, the corresponding values were 0.0695 and 0.0532, with 1408 false alarms among 16,121,856 evaluated background cells. The recording-level 95\% bootstrap interval for the gain at $10^{-5}$ was [0.0024, 0.0250]. Because method development used locally available recordings and target-bin annotations, this result is reported as an annotation-assisted transfer audit. Together, the IPIX experiments define the measured-domain boundary and motivate prospectively frozen calibration on operational airborne data.
+
+\subsection{External Boundary Checks}
+
+The IPIX and SSDD experiments are not folded into the main AISTAP-SIM claim; they delimit it. Figure~\ref{fig:external-boundary} collects the two checks as a compact boundary panel. IPIX probes measured-domain transfer, while SSDD probes whether the learned gate can survive a different sensing geometry and a stricter tail regime.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{figures/fig5_external_boundary_singlecol.pdf}
+\caption{External boundary checks on IPIX and SSDD. Direct AISTAP-SIM-to-IPIX transfer is not reliable under measured-domain shift, validation-selected IPIX fusion gives a bounded gain, and SSDD adaptation becomes useful only after the strictest false-alarm tail is relaxed.}
+\label{fig:external-boundary}
+\end{figure}
+
+Direct AISTAP-SIM-to-IPIX transfer exposed substantial domain shift. Relative to the AISTAP training distribution, log raw score, log residual score, and raw--residual discrepancy shifted by 5.17, 6.27, and 2.88 standard deviations, respectively. Background z-score and median/MAD normalization preserved target--background ordering, showing that monotone rescaling alone could not align the domains. One IPIX recording selected a residual-aware scalar coefficient and 12 different recordings were scored. At nominal $P_{\mathrm{FA}}=10^{-5}$, the adapted score reached $P_{\mathrm{D}}=0.0644$, compared with 0.0513 for raw scoring, with zero observed false alarms. At $10^{-4}$, the corresponding values were 0.0695 and 0.0532, with 1408 false alarms among 16,121,856 evaluated background cells. The recording-level 95\% bootstrap interval for the gain at $10^{-5}$ was [0.0024, 0.0250]. This result supports validation-selected adaptation, not zero-shot transfer \cite{haykin2002seaclutter,dewind2010database}.
+
+The SSDD check points to a different boundary. At $P_{\mathrm{FA}}=10^{-5}$ and $3\times10^{-5}$, raw intensity exceeded the learned gate, while at $3\times10^{-4}$ the gate became useful and reached 0.2630 compared with 0.1625 for raw. The gate therefore helps once the admissible tail is less sparse, but it is not automatically the best score at the strictest operating points. This makes SSDD a supervised boundary audit rather than a universal transfer claim \cite{wang2019ssdd,zhang2021ssdd}.
+
+\section{Discussion}
+
+The combined evidence identifies local evidence routing as the operative mechanism. Higher retained rank improved clutter attenuation while removing target support, and gate shuffling broke the spatial correspondence needed for rescue. Fixed mixtures likewise missed cells where residualization had selectively attenuated the target. The equal-alarm-budget experiment located the useful operating regime: top-one performance was similar across raw, residual, AMF, and TP-SSCS scores, whereas TP-SSCS produced positive paired gains from seven alarms per frame onward. TP-SSCS is therefore most useful when surveillance retains a short candidate list for downstream inspection.
+
+The adaptive-detector comparison places this gain in context. Classical subspace, invariant, and adaptive matched-filter analyses show that detector behavior depends on signal and covariance assumptions \cite{scharf1994matched,kraut2001adaptive,demaio2007rao,conte1996amf,demaio2010invariance,liu2014doublesubspace}. AMF and Kelly used the same target-free covariance estimates and 65-point steering bank and remained competitive at one alarm per frame. Once the budget admitted several cells, TP-SSCS benefited from complementary raw and residual evidence. The lower ANMF/ACE ranking may reflect scale-invariant normalization under steering and covariance mismatch \cite{candan2023covariance,ollila2012compound}. This comparison positions TP-SSCS as an evidence-routing layer rather than another covariance-normalized detector.
+
+Detector ordering and fixed-threshold calibration are separate deployment questions, as reflected by Pareto and inhomogeneous-background CFAR laws and by data-dependent, clutter-free-training, and learned-CFAR formulations \cite{weinberg2013pareto,vancao2014weibull,qu2025np,gini1999clairvoyant,rong2022clutterfree,diskin2024cfarnet}. The target-free thresholds passed the independent null audit, then shifted on target-bearing backgrounds to $P_{\mathrm{FA}}=7.66\times10^{-4}$ at nominal $10^{-5}$. The generalized-Pareto audit also exceeded its predeclared gate. Equal alarm budgets isolate score ordering by fixing the number of declarations; operational fixed-threshold use requires representative calibration, shift monitoring, and prospectively frozen tail validation.
+
+The mechanism result also argues against a simple score-fusion explanation. When the gate is spatially shuffled, the gain collapses even though the gate-value distribution is preserved, which means the improvement depends on alignment between local residual loss and raw-evidence rescue rather than on an extra score channel alone. In that sense, TP-SSCS changes where evidence is taken from before it changes how it is ranked.
+
+The gate adds 2641 trainable parameters to the rank-matched decomposition and required a median 229.94 ms per frame on the stated CPU. The IPIX transfer case further showed that maritime single-channel scores and calibration differ substantially from the synthetic six-channel airborne domain. Its annotation-assisted adaptation produced a positive diagnostic, while future operational validation should use prospectively frozen calibration. Within the current evidence, TP-SSCS provides a compact target-preservation layer for bounded-alert ranking after structured-clutter suppression.
+
+These audits define the use boundary. TP-SSCS improves ranking under a shared declaration budget, but it does not by itself solve cross-domain tail calibration or guarantee fixed-threshold transfer in a new sensing regime. The external IPIX and SSDD checks reinforce that the method is strongest as a bounded in-domain ranking policy, not as a universal transfer rule.
+
+\section{Conclusion}
+
+This paper addressed weak-target loss caused by low-rank structured-clutter suppression. TP-SSCS combines a rank-matched residual for background-tail reduction with spatially selective raw-evidence rescue. Across 210 target-bearing AISTAP-SIM frames, TP-SSCS reached macro $P_{\mathrm{D}}=0.1735$ at seven alarms per frame, compared with 0.1306 for raw scoring, 0.1579 for the residual, and 0.1324 for AMF/Kelly. Paired gains were positive from this budget onward, while the one-alarm scores remained statistically similar. The resulting policy preserves complementary evidence before ranking cells under a shared alarm budget.
+
+Practically, TP-SSCS is most useful in surveillance pipelines that retain a short candidate list for downstream inspection. Its main benefit appears when alarm budgets are tight and candidate ordering matters. The fixed-threshold and measured-domain audits identify representative calibration as the next operational requirement.
+
+The IPIX and SSDD checks delimit the claim: external transfer is possible only in narrower, protocol-specific forms, and the strictest tails remain the hardest part of deployment.
+
+\section*{Acknowledgment}
+
+This work was supported by NSFC 62202148, Hubei NSF 2022CFB908/2019CFB530, and CSC 201808420418.
+
+\section*{Data and Code Availability}
+
+The AISTAP-SIM, Dartmouth IPIX, and SSDD datasets are public. Scripts and derived outputs supporting this revision accompany the submission; the prior public release is archived at Zenodo (\url{https://doi.org/10.5281/zenodo.21463506}) and GitHub (\url{https://github.com/niubisile-wq/tpsscs-radar}).
+\IEEEtriggeratref{40}
+\begingroup
+\fontsize{7.0}{7.6}\selectfont
+\begin{thebibliography}{99}
+
+\bibitem{reed1974adaptive}
+I.~S. Reed, J.~D. Mallett, and L.~E. Brennan, ``Rapid convergence rate in adaptive arrays,'' \emph{IEEE Transactions on Aerospace and Electronic Systems}, vol.~AES-10, no.~6, pp.~853--863, Nov. 1974, doi: 10.1109/TAES.1974.307893.
+
+\bibitem{ginolhac2014persymmetry}
+G. Ginolhac, P. Forster, F. Pascal, and J.-P. Ovarlez, ``Exploiting persymmetry for low-rank space--time adaptive processing,'' \emph{Signal Processing}, vol.~97, pp.~242--251, Apr. 2014, doi: 10.1016/j.sigpro.2013.10.026.
+
+\bibitem{melvin2014stap}
+W.~L. Melvin, ``Space-time adaptive processing for radar,'' in \emph{Academic Press Library in Signal Processing: Volume 2, Communications and Radar Signal Processing}. Academic Press, 2014, pp.~595--665, doi: 10.1016/B978-0-12-396500-4.00012-0.
+
+\bibitem{rohling1983cfar}
+H. Rohling, ``Radar CFAR thresholding in clutter and multiple target situations,'' \emph{IEEE Transactions on Aerospace and Electronic Systems}, vol.~AES-19, no.~4, pp.~608--621, Jul. 1983, doi: 10.1109/TAES.1983.309350.
+
+\bibitem{gandhi1988cfar}
+P.~P. Gandhi and S.~A. Kassam, ``Analysis of CFAR processors in nonhomogeneous background,'' \emph{IEEE Transactions on Aerospace and Electronic Systems}, vol.~24, no.~4, pp.~427--445, Jul. 1988, doi: 10.1109/7.7185.
+
+\bibitem{kelly1986adaptive}
+E.~J. Kelly, ``An adaptive detection algorithm,'' \emph{IEEE Transactions on Aerospace and Electronic Systems}, vol.~AES-22, no.~2, pp.~115--127, Mar. 1986, doi: 10.1109/TAES.1986.310745.
+
+\bibitem{scharf1994matched}
+L.~L. Scharf and B. Friedlander, ``Matched subspace detectors,'' \emph{IEEE Transactions on Signal Processing}, vol.~42, no.~8, pp.~2146--2157, Aug. 1994, doi: 10.1109/78.301849.
+
+\bibitem{kraut2001adaptive}
+S. Kraut, L.~L. Scharf, and L.~T. McWhorter, ``Adaptive subspace detectors,'' \emph{IEEE Transactions on Signal Processing}, vol.~49, no.~1, pp.~1--16, Jan. 2001, doi: 10.1109/78.890324.
+
+\bibitem{gini1999clairvoyant}
+F. Gini, M.~V. Greco, and A. Farina, ``Clairvoyant and adaptive signal detection in non-Gaussian clutter: A data-dependent threshold interpretation,'' \emph{IEEE Transactions on Signal Processing}, vol.~47, no.~6, pp.~1522--1531, Jun. 1999, doi: 10.1109/78.765121.
+
+\bibitem{demaio2007rao}
+A. De Maio, ``Rao test for adaptive detection in Gaussian interference with unknown covariance matrix,'' \emph{IEEE Transactions on Signal Processing}, vol.~55, no.~7, pp.~3577--3584, Jul. 2007, doi: 10.1109/TSP.2007.894238.
+
+\bibitem{conte1996amf}
+E. Conte, M. Lops, and G. Ricci, ``Adaptive matched filter detection in spherically invariant noise,'' \emph{IEEE Signal Processing Letters}, vol.~3, no.~8, pp.~248--250, Aug. 1996, doi: 10.1109/97.511809.
+
+\bibitem{demaio2010invariance}
+A. De Maio and E. Conte, ``Adaptive detection in Gaussian interference with unknown covariance after reduction by invariance,'' \emph{IEEE Transactions on Signal Processing}, vol.~58, no.~6, pp.~2925--2934, Jun. 2010, doi: 10.1109/TSP.2010.2044835.
+
+\bibitem{liu2014doublesubspace}
+W. Liu, W. Xie, J. Liu, and Y. Wang, ``Adaptive double subspace signal detection in Gaussian background---Part I: Homogeneous environments,'' \emph{IEEE Transactions on Signal Processing}, vol.~62, no.~9, pp.~2345--2357, May 2014, doi: 10.1109/TSP.2014.2309556.
+
+\bibitem{candan2023covariance}
+C. Candan and F. Pascal, ``Covariance matrix estimation of texture correlated compound-Gaussian vectors for adaptive radar detection,'' \emph{IEEE Transactions on Aerospace and Electronic Systems}, vol.~59, no.~3, pp.~3009--3020, Jun. 2023, doi: 10.1109/TAES.2022.3221385.
+
+\bibitem{ollila2012compound}
+E. Ollila, D.~E. Tyler, V. Koivunen, and H.~V. Poor, ``Compound-Gaussian clutter modeling with an inverse Gaussian texture distribution,'' \emph{IEEE Signal Processing Letters}, vol.~19, no.~12, pp.~876--879, Dec. 2012, doi: 10.1109/LSP.2012.2221698.
+
+\bibitem{candes2011rpca}
+E.~J. Candes, X. Li, Y. Ma, and J. Wright, ``Robust principal component analysis?'' \emph{Journal of the ACM}, vol.~58, no.~3, pp.~1--37, Jun. 2011, doi: 10.1145/1970392.1970395.
+
+\bibitem{vaswani2018robustsubspace}
+N. Vaswani, T. Bouwmans, S. Javed, and P. Narayanamurthy, ``Robust subspace learning: Robust PCA, robust subspace tracking, and robust subspace recovery,'' \emph{IEEE Signal Processing Magazine}, vol.~35, no.~4, pp.~32--55, Jul. 2018, doi: 10.1109/MSP.2018.2826566.
+
+\bibitem{yin2018lowrank}
+J. Yin, C. Unal, M. Schleiss, and H. Russchenberg, ``Radar target and moving clutter separation based on the low-rank matrix optimization,'' \emph{IEEE Transactions on Geoscience and Remote Sensing}, vol.~56, no.~8, pp.~4765--4780, Aug. 2018, doi: 10.1109/TGRS.2018.2837051.
+
+\bibitem{cao2020maritime}
+C. Cao, J. Zhang, J. Meng, X. Zhang, and X. Mao, ``Clutter suppression and target tracking by the low-rank representation for airborne maritime surveillance radar,'' \emph{IEEE Access}, vol.~8, pp.~160774--160789, 2020, doi: 10.1109/ACCESS.2020.3021124.
+
+\bibitem{ward1981compound}
+K.~D. Ward, ``Compound representation of high resolution sea clutter,'' \emph{Electronics Letters}, vol.~17, no.~16, pp.~561--563, Aug. 1981, doi: 10.1049/el:19810394.
+
+\bibitem{conte2004mitigation}
+E. Conte and A. De Maio, ``Mitigation techniques for non-Gaussian sea clutter,'' \emph{IEEE Journal of Oceanic Engineering}, vol.~29, no.~2, pp.~284--302, Apr. 2004, doi: 10.1109/JOE.2004.826901.
+
+\bibitem{stoica2008prior}
+P. Stoica, J. Li, X. Zhu, and J.~R. Guerci, ``On using a priori knowledge in space-time adaptive processing,'' \emph{IEEE Transactions on Signal Processing}, vol.~56, no.~6, pp.~2598--2602, Jun. 2008, doi: 10.1109/TSP.2007.914347.
+
+\bibitem{cristallini2012robust}
+D. Cristallini and W. B\"{u}rger, ``A robust direct data domain approach for STAP,'' \emph{IEEE Transactions on Signal Processing}, vol.~60, no.~3, pp.~1283--1294, Mar. 2012, doi: 10.1109/TSP.2011.2176335.
+
+\bibitem{sun2011d3sr}
+K. Sun, H. Meng, Y. Wang, and X. Wang, ``Direct data domain STAP using sparse representation of clutter spectrum,'' \emph{Signal Processing}, vol.~91, no.~9, pp.~2222--2236, Sep. 2011, doi: 10.1016/j.sigpro.2011.04.006.
+
+\bibitem{yang2013sparsity}
+Z. Yang, X. Li, H. Wang, and W. Jiang, ``On clutter sparsity analysis in space-time adaptive processing airborne radar,'' \emph{IEEE Geoscience and Remote Sensing Letters}, vol.~10, no.~5, pp.~1214--1218, Sep. 2013, doi: 10.1109/LGRS.2012.2236639.
+
+\bibitem{feng2018atomic}
+W. Feng, Y. Guo, Y. Zhang, and J. Gong, ``Airborne radar space time adaptive processing based on atomic norm minimization,'' \emph{Signal Processing}, vol.~148, pp.~31--40, Jul. 2018, doi: 10.1016/j.sigpro.2018.02.008.
+
+\bibitem{rosenberg2020sparse}
+L. Rosenberg, V. Duk, and B.~W.-H. Ng, ``Detection in sea clutter using sparse signal separation,'' \emph{IEEE Transactions on Aerospace and Electronic Systems}, vol.~56, no.~6, pp.~4384--4394, Dec. 2020, doi: 10.1109/TAES.2020.2989093.
+
+\bibitem{jao2023snrloss}
+J. K. Jao, ``Target signal-to-noise loss in multichannel SAR--GMTI clutter suppression,'' \emph{IEEE Transactions on Aerospace and Electronic Systems}, vol.~59, no.~6, pp.~9463--9479, Dec. 2023, doi: 10.1109/TAES.2023.3321259.
+
+\bibitem{coluccia2024adaptive}
+A. Coluccia, A. Fascista, D. Orlando, and G. Ricci, ``Adaptive radar detection in heterogeneous clutter plus thermal noise via the expectation-maximization algorithm,'' \emph{IEEE Transactions on Aerospace and Electronic Systems}, vol.~60, no.~1, pp.~212--225, Feb. 2024, doi: 10.1109/TAES.2023.3322389.
+
+\bibitem{weinberg2013pareto}
+G.~V. Weinberg, ``Constant false alarm rate detectors for Pareto clutter models,'' \emph{IET Radar, Sonar \& Navigation}, vol.~7, no.~2, pp.~153--163, Feb. 2013, doi: 10.1049/iet-rsn.2011.0374.
+
+\bibitem{vancao2014weibull}
+T.-T. Van Cao, ``Modelling of inhomogeneity in radar clutter using Weibull mixture densities,'' \emph{IET Radar, Sonar \& Navigation}, vol.~8, no.~3, pp.~180--194, Mar. 2014, doi: 10.1049/iet-rsn.2012.0367.
+
+\bibitem{xue2019knowledge}
+J. Xue, S. Xu, and P. Shui, ``Knowledge-based target detection in compound Gaussian clutter with inverse Gaussian texture,'' \emph{Digital Signal Processing}, vol.~95, Art. no.~102590, Dec. 2019, doi: 10.1016/j.dsp.2019.102590.
+
+\bibitem{jiang2023subspace}
+Q. Jiang, Y. Wu, W. Liu, D. Zheng, T. Jian, and P. Gong, ``Subspace-based distributed target detection in compound-Gaussian clutter,'' \emph{Digital Signal Processing}, vol.~140, Art. no.~104141, Aug. 2023, doi: 10.1016/j.dsp.2023.104141.
+
+\bibitem{rong2022clutterfree}
+Y. Rong, A. Aubry, A. De Maio, and M. Tang, ``Adaptive radar detection in Gaussian interference using clutter-free training data,'' \emph{IEEE Transactions on Signal Processing}, vol.~70, pp.~978--993, 2022, doi: 10.1109/TSP.2022.3152009.
+
+\bibitem{diskin2024cfarnet}
+T. Diskin, Y. Beer, U. Okun, and A. Wiesel, ``CFARnet: Deep learning for target detection with constant false alarm rate,'' \emph{Signal Processing}, vol.~223, Art. no.~109543, Oct. 2024, doi: 10.1016/j.sigpro.2024.109543.
+
+\bibitem{qu2025np}
+Q. Qu, H. Chen, W. Liu, B. Li, and Y.-L. Wang, ``Neural-network-based false alarm controllable detector for weak targets via a differentiable NP loss,'' \emph{IEEE Transactions on Aerospace and Electronic Systems}, vol.~61, no.~5, pp.~12258--12270, Oct. 2025, doi: 10.1109/TAES.2025.3572501.
+
+\bibitem{pan2010transfer}
+S.~J. Pan and Q. Yang, ``A survey on transfer learning,'' \emph{IEEE Transactions on Knowledge and Data Engineering}, vol.~22, no.~10, pp.~1345--1359, Oct. 2010, doi: 10.1109/TKDE.2009.191.
+
+\bibitem{vega2024aistap}
+D. Vega, M. Newey, D. Barrett, and A. Axelrod, ``STAP-informed neural network for radar moving target indicator,'' in \emph{Proc. 2024 IEEE Radar Conference (RadarConf24)}, 2024, pp.~1--6, doi: 10.1109/RadarConf2458775.2024.10548264.
+
+\bibitem{haykin2002seaclutter}
+S. Haykin, R. Bakker, and B.~W. Currie, ``Uncovering nonlinear dynamics: The case study of sea clutter,'' \emph{Proceedings of the IEEE}, vol.~90, no.~5, pp.~860--881, May 2002, doi: 10.1109/JPROC.2002.1015011.
+
+\bibitem{dewind2010database}
+H. de Wind, J. Cilliers, and P. Herselman, ``DataWare: Sea clutter and small boat radar reflectivity databases [Best of the Web],'' \emph{IEEE Signal Processing Magazine}, vol.~27, no.~2, pp.~145--148, Mar. 2010, doi: 10.1109/MSP.2009.935415.
+
+\bibitem{wang2019ssdd}
+Y. Wang, C. Wang, H. Zhang, Y. Dong, and S. Wei, ``A SAR dataset of ship detection for deep learning under complex backgrounds,'' \emph{Remote Sensing}, vol.~11, no.~7, Art.~765, 2019, doi: 10.3390/rs11070765.
+
+\bibitem{zhang2021ssdd}
+T. Zhang, X. Zhang, J. Li, and X. Xu, ``SAR Ship Detection Dataset (SSDD): Official release and comprehensive data analysis,'' \emph{Remote Sensing}, vol.~13, no.~18, Art.~3690, 2021, doi: 10.3390/rs13183690.
+
+\bibitem{efron1979bootstrap}
+B. Efron, ``Bootstrap methods: Another look at the jackknife,'' \emph{The Annals of Statistics}, vol.~7, no.~1, pp.~1--26, Jan. 1979, doi: 10.1214/aos/1176344552.
+
+\end{thebibliography}
+\endgroup
+
+\end{document}
+
+
+
+
+

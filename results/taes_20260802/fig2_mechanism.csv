@@ -1,0 +1,10 @@
+dataset,k,clutter_attenuation_db,target_loss_db
+simMed,1,2.197,0.925
+simMed,20,11.268,13.906
+simMed,30,12.951,19.525
+simWind,1,2.012,1.046
+simWind,20,9.339,13.958
+simWind,30,10.813,18.144
+simNoiseOnly,1,0.062,0.118
+simNoiseOnly,20,1.022,1.233
+simNoiseOnly,30,1.506,1.981
